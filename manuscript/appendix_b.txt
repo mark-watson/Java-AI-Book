@@ -1,0 +1,12 @@
+# Using the Example Code with Clojure
+
+Clojure with Java libraries is a great combination because you get to reuse already written Java libraries and you have the ability to quickly and interactively call Java code via the Clojure *repl*.
+
+It is easy using Java code in Clojure projects. I usually package Java libraries as-is in a JAR file for use in Clojure projects and do a local **mvn install** to make the Java library code easily usable with lein project.clj files.
+
+Another approach I sometimes use is to include the Java source code in my Clojure project and setup project.clj to compile the Java code.
+
+We will look at both of these approaches in this appendix.
+
+TBD
+

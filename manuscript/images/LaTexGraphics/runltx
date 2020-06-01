@@ -1,0 +1,142 @@
+#!/bin/bash 
+#
+# $Id: runltx,v 1.13 2007/01/15 22:39:40 frank Exp $
+#
+#set -x
+
+MPFILE="FOOBAR"
+PARAM=
+## Is string documentclass present in ltx file?
+grep documentclass $1 >& /dev/null
+if test $? = 1
+then 
+ # no "documentclass" present --> not LaTeX --> exit
+ echo "$1 not runnable LaTeX"
+ exit 0
+fi
+
+## If eps file already exists --> do nothing
+
+F=`basename $1 .ltx`
+if test -r $F.eps
+then
+  echo $F.eps already made
+  exit
+fi
+
+## No EPS file yet --> run LaTeX
+
+LATEX=latex
+export TEXINPUTS=inputs:pstricks:
+export HOMETEXMF=../../texmf:
+export TEXMFHOME=../../texmf:
+
+    echo "*************************** latex $F.ltx FIRST RUN "
+
+$LATEX $F.ltx
+if test $? -gt 0
+  then
+    echo "*************************** latex $F.ltx has ERRORS"
+    exit 1
+fi
+                                                                         
+# we need two runs for some PSTricks examples
+    echo "*************************** latex $F.ltx SECOND RUN "
+
+$LATEX $F.ltx
+if test $? -gt 0
+  then
+    echo "*************************** latex $F.ltx has ERRORS"
+    exit 1
+fi
+R=`grep ' Process ' $F.log` >& /dev/null
+if test $? = 0
+then
+  # We have to deal with Metapost
+
+  MFILE=`grep ' Process ' $F.log | tail -1 | awk '{print $3}'`
+
+  MPFILE=`basename $MFILE .mp`
+    echo "*************************** Metapost run $MFILE.mp "
+  mpost $MPFILE
+  if test $? -gt 0
+  then
+    echo "********************** Metapost $MPFILE.mp has ERRORS"
+    exit 1
+  fi
+  $LATEX $F.ltx
+  if test $? -gt 0
+  then
+    echo "*************************** latex $F.ltx has ERRORS"
+    exit 1
+  fi
+else
+  R=`grep "t forget to process" $F.log` >& /dev/null
+  if test $? = 0
+  then
+    # We have to process Metafont of Metapost file for mfpic
+    MFILE=`grep "t forget to process" $F.log | tail -1 | \
+             awk '{print $6}' | sed 's/\!//'`
+    R=`echo $MFILE | awk -F'.' '{print $2}'`
+    if test "$R" = "mf"
+    then
+      MFFILE=`basename $MFILE .mf`
+      mf "\\mode=ljfour; input $MFFILE"
+      if test $? -gt 0
+      then
+	echo "********************** Metafont $MFFILE.mf has ERRORS"
+	exit 1
+      fi
+    else # hopefully now "mp"
+      MPFILE=`basename $MFILE .mp`
+	echo "*************************** Metapost run $MFILE.mp "
+      mpost $MPFILE
+      if test $? -gt 0
+      then
+	echo "********************** Metapost $MPFILE.mp has ERRORS"
+	exit 1
+      fi
+    fi
+    $LATEX $F.ltx
+    if test $? -gt 0
+    then
+      echo "*************************** latex $F.ltx has ERRORS"
+      exit 1
+    fi
+    gftopk $MFFILE.600gf
+    PARAM="-mode ljfour -D600"
+  else
+    R=`grep -i "musixtex" $F.log` >& /dev/null
+    if test $? = 0
+    then
+      # We have to process musxitex file with musixflex
+      PARAM="-mode ljfour -D600"
+      musixflx $F
+      $LATEX $F.ltx
+      if test $? -gt 0
+      then
+        echo "*************************** latex $F.ltx has ERRORS"
+        exit 1
+      fi
+    fi
+  fi
+fi 
+#export KPATHSEA_DEBUG=32
+dvips  -j0 -E $PARAM $F -o $F.eps
+#
+# we can't do subesetting in chapter two as long a "w.eps" is used
+#
+#      ^ no font subsetting with 0
+
+./cleaneps $F.eps
+
+# 
+if test ! -s $F.eps
+then
+  rm $F.eps
+  echo "*************************** eps file $F.eps has zero size"
+  exit 1
+fi
+rm -f $F.dvi $F.aux $F.log $F.idx $MPFILE.* ftmp.mp  mfpicex.* $F.mx1 $F.mx2
+rm -f LGCmatrix.dat
+

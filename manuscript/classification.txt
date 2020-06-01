@@ -1,0 +1,25 @@
+# Classification {#classification}
+
+
+We used neural networks to classify data sets in the
+[Chapter on Neural Networks](#neural-networks). In this chapter we will look at two
+additional techniques for classifying data: Bayesian Classifiers and
+Support-Vector Machines.
+
+Bayesian Classifiers
+--------------------
+
+We will use the ci-bayes open source (Artistic License) library in this
+section. This library is patterned after examples in Toby Segaran’s book
+“Programming Collective Intelligence”.
+
+TBD
+
+Support-Vector Machines
+-----------------------
+
+We will use the LIBSVM library found on the web site
+http://www.csie.ntu.edu.tw/ cjlin/libsvm/ in this section. A JAR file is
+included with th ZIP file for this book as well as the LIBSVM license.
+
+TBD

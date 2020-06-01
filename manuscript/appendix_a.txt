@@ -1,0 +1,10 @@
+# Using the Example Code with JRuby
+
+JRuby with Java libraries is a good combination because you get to reuse already written Java libraries and you have the ability to quickly and interactively call Java code via the JRuby *irb repl*.
+
+
+It is easy using Java code in JRuby projects. I usually package Java libraries as-is in a JAR file for use in JRuby projects but I also sometimes write thin Java API wrappers t make the JRuby interface code simpler.
+
+
+TBD
+

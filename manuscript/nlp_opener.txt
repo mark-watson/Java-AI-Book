@@ -1,0 +1,51 @@
+# Natural Language Processing using the opeNER Framework {#opener-nlp}
+
+I hope that the last chapter provided you with both an understanding of
+Natural Language Processing (NLP) and Java code that is easy to understand and
+modify for your own projects. I want to provide you in this chapter
+with more tools for incorporating NLP technologies into the systems that you design and implement.
+I am borrowing heavily from my own experience and project requirements in writing this chapter.
+I hope that reading about my experience will be interesting and useful to you.
+
+Starting in early 2014 I started modifying and improving my commercial product
+[knowledgebooks.com](http://knowledgebooks.com) that is a document repository system
+with advanced search and natural language query functionality. This is a one-man
+project and to save developent effort I was looking to replace as much of the required functionality as possible with
+open source software with a "commercial friendly" license (i.e., an Apache 2, MIT, or LGPL license).
+I originally looking at the excellent Stanford NLP library but its GPL license
+was not compatible with my requirements for a commercial product.
+
+I decided to use the European Union funded project opeNER.
+
+TBD: web url for opeNER
+
+## Overview of opeNER
+
+TBD
+
+## Understanding the XML representation of Data used in the opeNER Processing Pipeline
+
+TBD
+
+
+## Setting up opeNER Command Line Utilities
+
+The command line tools can be installed on your laptop or server for local development. The only part of the opeNER
+system that we will use that can not be installed locally is a component to augment NER by searching DBPedia for
+cononical URIs to represent entities like people, countries, companies, etc.
+
+TBD
+
+## Setting up opeNER as a Service
+
+TBD
+
+## Using Results from the opeNER Pipeline in Java Applications
+
+TBD
+
+
+
+
+
+

@@ -1,0 +1,218 @@
+# Data Science Techniques  {#data-science-chapter}
+
+
+I added this chapter to the fourth edition of this book for two reasons:
+
+- The material we already covered on information extraction, machine learning and the semantic web is the basis for understanding how data science techniques have influenced many fields that were previously not considered to be "hard science."
+- The availability of public data sets and relevant open source software packages has drastically reduced the cost of extracting useful information from data.
+
+Data is constantly collected on our actions when we make a purchase, when we post to social media like Twitter, Google+, and Facebook, mobile applications, and the many small devices that we interact with in our lives. This data is collected automatically by software without the cost of human labor. Large companies exploit this data on a massive scale but in my work (and probably in your work also) there are many opportunities for what I think of *small big data* that are data sources that do not require huge budgets. 
+
+While large data sets are collected automatically the exploration and exploitation of big data is very much a human and interactive activity.
+
+Much of the literature on data science covers interactive tools like R, Octave (or the commercial MATLAB product), Hadoop Pig, etc. because data science is experimental in nature and it is important to be able to explore data and test hypothesis quickly. However if you are primarily a Java developer you should at least consider using as your custom data science working environment a combination of available open source Java libraries, your own application specific code, and interactive JVM languages like Scala, Clojure, and JRuby.  I believe that the key requirement is using an interactive `repl` for quick experiments and exploration.
+
+If you use the Clojure language then I strongly suggest learning [Incanter](http://incanter.org/).  Just like using an interactive shell in Octave and R, with Incanter you use Clojure's interactive repl for exploratory development. If Clojure is your primary development language then I suggest that you quickly read through this chapter to hopefully get some useful ideas and then head over to the Incanter web site, install Incanter and use it.
+
+This chapter is for readers who want to remain Java centric to build up their own working environments. So if you primarily use Clojure then you might be better off using Clojure and Incanter. If you primarily use Scala then you might want to use a library like [ScalaLab](https://code.google.com/p/scalalab/).
+
+
+## A Mix of Open Source and Proprietary Tools
+
+I can safely say that almost no one builds large data science projects from scratch: they are usually built with open source tools or less commonly around proprietary products. There are two approaches that I have used for different requirements and types of projects:
+
+- Use open source tools and open source the tools that you build in order to both share and to get help from other people. I share my open source projects on [my github account](https://github.com/mark-watson?tab=repositories).
+- Build proprietary application specific extensions and applications. Two examples of my own proprietary projects are [KBSPortal.com](http://kbsportal.com/) and [KnowledgeBooks.com](http://knowledgebooks.com/). Open source projects licensed under the Apache 2 and MIT licenses can be incorporated into proprietart projects so you don't necessarily have to write all of the code yourself.
+
+As a consultant I offer clients the same advice I give to you: unless you are fairly sure that you will make money from proprietary software projects, you may be able to save money by developing open source software if you can get other people to join the project and share the work.
+
+It is as important to have a good open source (and perhaps proprietary development) strategy for code that you will write as selecting the best set of tools and libraries to build your projects on top of.
+
+I mentioned that tools like Octave and R are often used for Data Science projects because of built in Linear Algebra and Visualization support. When developing in a Java environment, [jBLAS](http://mikiobraun.github.io/jblas/) is a useful wrapper for the Blass Linear Algebra package. 
+
+There are also useful Java tools for visualization. [Prefuse](https://github.com/prefuse/Prefuse) is an older project that uses the Java2D library for rendering. While not Java, the Javascript [D3 toolkit](http://d3js.org/) is excellent for web based visualization. Typically you will write a web service that serves JSON data that is consumed by a web based Javascript application that uses D3. Play with the D3 examples and look at the example source code to see if there is a *canned* example that is close to what you need. For charts and data graphs you can use [JFreeChart](http://www.jfree.org/jfreechart/).
+
+I also use and recommend the [Graphviz](http://www.graphviz.org/Gallery.php) program for displaying graphs. Graphviz uses a simple format for input data files so it is very easy write Graphviz data files in any programming language. The Graphviz application will redraw a graph display when an input data file is updated, so you can get interactive graph displays, for some loose sense of the word *interactive*. There is also a [utility project that makes Graphviz directly callable from Java](https://github.com/jabbalaci/graphviz-java-api).
+
+In any case, even though languages like Octave have built in linear algebra and visualization tools, you can build up your Java development environment with similar functionality - you just need to put together what you need yourself.
+
+
+## Handling "small big data" in a Cost Effective Way
+
+I use two very different techniques when I need to deal with *small big data* that I will discuss in the rest of this chapter. When all of the data I need to process can fit into physical memory on a large server, I lease a large memory server for a short period of time for specific projects. For larger datasets I very much like map reduce applications and the easiest way to run large map reduce problems is with Amazon Elastic MapReduce but you might find it less expensive to set up your own [Hadoop cluster](https://hadoop.apache.org/docs/stable/).
+
+Unless you have a large budget you are unlikely going to be processing huge data sets like a complete crawl of the web. However you are likely to have smaller data sets for customer data, web logs, sensor data, etc. that you do need to process and you will want to analyze these "small big data" as inexpensively as possible.
+
+If you do ever have an application that requires processing a very large portion of the web, you will want to look at the [Common Crawl](http://commoncrawl.org/) project that makes a vast amount of web pages available for processing on Amazon AWS. Users of the Common Crawl data set report that it costs between $200 and $500 in Amazon AWS charges to filter the data set.
+
+## Writing and Testing MapReduce Applications
+
+I use MapReduce applications for both customer projects and my own research projects.
+
+The following figure shows an overview of a production Hadoop setup using a number of (usually low cost) networked computers. The Hadoop File System (HDFS) is a low cost distributed store for any structured and unstructured data that your business may use. MapReduce applications perform specific calculations to generate reports, add processed data to a relational database, etc.
+
+{#fig-hadoop-overview}
+![Hadoop MapReduce Overview](images/hadoop_overview.png)
+
+If you are using Amazon Elastic MapReduce, then typically both your input data and generated output data will be stored in S3.
+
+MapReduce applications are not real time since you might only run a specific application a few times a day depending on how important up to date results are and also the cost of running the application. However as seen in the last figure, the output of a MapReduce job may be a business or user model that can be used in real time.
+
+There are three Hadoop configurations that I use in my own work:
+
+- [Hadoop Single Node Setup](https://hadoop.apache.org/docs/stable/single_node_setup.html) that I run on my laptop for development and debugging MapReduce applications.
+- [Hadoop Cluster Setup](https://hadoop.apache.org/docs/stable/cluster_setup.html) that is usually kept running long term for running batched MapReduce jobs.
+- [Amazon Elastic MapReduce](https://aws.amazon.com/documentation/elasticmapreduce/)
+
+MapReduce jobs are most useful for handling very large amounts of data; some examples are:
+
+- Processing customer data that might include personal information like sex, age, marital status, job category, etc., and data specific to transactions like purchases and product returns.
+- Web blogs for a web site where you might do localization based on IP address, look for navigation patterns through your web site, etc.
+- Recommendation systems that cluster similar users and try to predict the types of products that each user might purchase.
+
+
+
+## Example Application: MapReduce Application for Finding Proper Names in Text
+
+Assuming that you have cloned [the github repository for this book](https://github.com/mark-watson/Java-AI-Book-Code) the following files can be used for the example in this section:
+
+The file **namefinder.jar** in the top level directory contains all compiled code and data that you need to run this example.
+
+If you want to rebuild this JAR file, then use the following assets in the github repo:
+
+- The data for human names is in test\_data/peoplenames.ser
+- The code for finding names in text is in:
+-- src/com/knowledgebooks/nlp/ExtractNames.java
+-- src/com/knowledgebooks/nlp/util/ScoredList.java
+-- src/com/knowledgebooks/nlp/util/Tokenizer.java
+- The code for the Hadoop Map Reduce job is in src/com/knowledgebooks/mapreduce/NameFinder.java
+
+To make it easier for you to write your own MapReduce applications while working in the git repository for this book, I created a Unix style Makefile with a target for building a JAR file with all dependencies (I have split long lines in the following listing to fit the page width):
+
+~~~~~~~~
+mapreduce_example:
+	rm -r -f mr_temp
+	mkdir -p mr_temp/nlp/com/knowledgebooks/mapreduce
+	mkdir -p mr_temp/nlp/com/knowledgebooks/nlp/util
+	cp src/nlp/com/knowledgebooks/mapreduce/NameFinder.java \
+	       mr_temp/nlp/com/knowledgebooks/mapreduce/
+	cp src/nlp/com/knowledgebooks/nlp/util/ScoredList.java \
+	       mr_temp/nlp/com/knowledgebooks/nlp/util/
+	cp src/nlp/com/knowledgebooks/nlp/util/Tokenizer.java \
+	       mr_temp/nlp/com/knowledgebooks/nlp/util/
+	cp src/nlp/com/knowledgebooks/nlp/ExtractNames.java \
+	       mr_temp/nlp/com/knowledgebooks/nlp/
+	mkdir -p mr_temp/test_data
+	cp test_data/propername.ser mr_temp/test_data/
+	(cd mr_temp; jar xvf ../lib/hadoop-core-1.1.2.jar)
+	(cd mr_temp; javac nlp/com/knowledgebooks/mapreduce/NameFinder.java)
+	(cd mr_temp; jar cvf ../namefinder.jar .)
+~~~~~~~~
+
+Remember that when you package your MapReduce application in a JAR file that you have to place everything the application needs in the JAR file. For namefinder.jar, I added the compiled Java class files in the core Hadoop JAR file hadoop-core-1.1.2.jar and also the serialized data the NLP code needs in the file test_data/propername.ser.
+
+This same JAR file can be run on Amazon Elastic MapReduce with a few additional steps:
+
+- Create an empty S3 bucket for the output
+- Copy the input text files to a new S3 bucket
+- Using the AWS Admin Console web app you can run a Elastic MapReduce job entirely from Amazon's web app or by using the AWS command line tools.
+
+
+If you have not used Hadoop before, please do install a single node setup and follow these directions for running my Names Finder sample MapReduce application:
+
+There is a JAR file $$namefinder.jar$$ at the top level of the git repository for this book. Assuming that you have installed Hadoop as a single cluster, copy this JAR file to the top level directory of your Hadoop installation:
+
+    cp namefinder.jar $HADOOP_HOME/
+    cd $HADOOP_HOME
+
+Then create an empty output directory and an input directory full of any number of text files:
+
+    rm -r -f output
+    mkdir input
+
+And, from the top level directory for the git repository for this book, copy some input data to test with:
+
+    cp test_data/mapreduce_input.txt $HADOOP_HOME/input/
+
+Then run Hadoop in the development mode in the Hadoop home directory:
+
+bin/hadoop jar namefinder.jar nlp.com.knowledgebooks.mapreduce.NameFinder input output
+
+Please note that you must remove the output directory before running this MapReduce application. The output from this small test run will be in the file $$HADOOP\_HOME/output/part-00000$$.
+
+
+## Using Inexpensive Large Memory Leased Servers
+
+Although there is some overhead for setting up servers I like to rent a large memory server, and after saving my results, terminate the server to save money. I like to use two different strategies:
+
+- Rent a large memory server by the month for long running experiments and work tasks.
+- Allocate a large memory instance AWS EC2 instance and snapshot it when I am done if the server configuration is likely useful in the future. I use this strategy when I only need a server for a day or two at a time.
+
+By shopping around I usually can find 64 GB of RAM physical servers for about a $100/month, which is much much less expensive than using AWS but also a lot less convenient. Most recently I have leased servers from [hetzner.de](http://www.hetzner.de/en/) but you should shop around for a good price. I favor using AWS for projects that are a good fit for Elastic MapReduce, S3 and perhaps other AWS services like DynamoDB or SimpleDB. 
+
+I discuss two projects that I have done with fairly large data sets using large memory servers in the next two sections.
+
+## Example Application Idea: Using the Google Book Project NGRAM Data Sets
+
+Google has made public [ngram data from scanned books that have been published in the last few hundred years](http://storage.googleapis.com/books/ngrams/books/datasetsv2.html). This highly compressed data set is over two terabytes. How does one go about fetching and processing this much data? I placed a few files in the directory **google\_book\_ngram\_data** in the git repository for this book.
+
+I rented a large memory server with two terabytes of disk space. The compressed data would not fit on a two terabyte disk, and the uncompressed data would require a whopping 10 to 12 terabytes of disk space.
+
+If you go to the [web page for the ngram data](http://storage.googleapis.com/books/ngrams/books/datasetsv2.html) you will find different versions of the data set, with the most recent first. I copied the HTML source for this page and cut the text for for 1gram, 2gram, 3gram, 4gram, and 5gram links and put this in the file google\_book\_ngram\_data/ngrams\_uris.txt. The file google\_book\_ngram\_data/best_ngrams.rb is a script for fetching the Google ngram files in small batches, uncompressing them, and keeping ngrams with a count above a set **CUTOFF** value that is set at the top of the script. The other value that needs to be set is the value of the variable $$match$$, also at the top of the Ruby script file.
+
+You will need to run the script $$best\_ngrams.rb$$ five times, setting the variable $$match$$ to:
+
+- 1gram
+- 2gram
+- 3gram
+- 4gram
+- 5gram
+
+And Adjusting the value of $$CUTOFF$$.
+
+Also, on the leased Linux server I used, I was putting the best ngram data (best in the sense that I only kept ngrams with a use count greater than $$CUTOFF$$) in my home directory "/home/markw" - you will want to change the target directory for your system.
+
+Here are the first few lines of the $$best\_ngrams.rb$$ script:
+
+~~~~~~~~
+match = "3gram"
+CUTOFF = 500
+
+$words = "====="
+$count = 0
+
+$out = File.new("/home/markw/#{match}.txt", 'w')
+
+File.new("ngrams_uris.txt").lines.each do |line|
+  if line.index("<a href='") && line.index(match)
+~~~~~~~~
+
+This script shows an inexpensive way to process a lot of data without spending much money or having to run a MapReduce application using Hadoop. The key point is that I only needed to process each compressed file one time, and used Google's naming convention where all 1gram files contain the string "1gram", etc.
+
+
+## Example Application Idea: Using Wikipedia Data Dumps
+
+As you may know, you can download a [data dump of all Wikipedia data](https://en.wikipedia.org/wiki/Wikipedia:Database_download) with or without version information and comments. When I want to process the entire Wikipedia set of English language articles I choose the second option and just get the current pages with no comments of versioning information. [This is the direct download link for current Wikipedia articles.](http://download.wikimedia.org/enwiki/latest/enwiki-latest-pages-articles.xml.bz2) There are no comments or user pages in this GZIP file. This is not as much data as you might think, only about 9 gigabytes compressed or about 42 gigabytes uncompressed.
+
+For my own work and research, I use both the NLP code from this book and also my commercial NLP product [KBSportal.com](http://kbsportal.com) to perform named entity detection for each article, cluster articles by similarity, and generate RDF meta data for Wikipedia articles.
+
+While you might think that these applications are a good fit for Hadoop MapReduce applications, I find that since the current Wikipedia wrticles are only about 42 gigabytes, it is easier to write one off applications that make one or more passes through the articles and collect whatever data my application needs.
+
+If you are interested in NLP and text mining then the Wikipedia article data dump is a great resource!
+
+## Conclusion
+
+The term *Data Science* is a catch all phrase covering data collection and data cleansing, statistical analysis, machine learning, and data visualization. I hope that in this short chapter I have given you a few useful ideas for implementing your own projects.
+
+When you start a new project make sure that you clearly understand:
+
+- What problem are you trying to solve?
+- How much data is available?
+- How much data cleansing is required?
+- What options do you have for processing data? (e.g., available servers that are lightly used, use of Amazon AWS, etc.)
+
+As usual, it is always best to create relatively small data sets for use during software development.
+
+
+
+ 
