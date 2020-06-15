@@ -2,14 +2,15 @@ preface.txt
 introduction.txt
 search.txt
 reasoning.txt
-semantic_web.txt
-expert_systems.txt
+anomaly_detection.md
 genetic_algorithms.txt
-machine_learning_weka.txt
+deeplearning.md
 machine_learning_neural_networks.txt
 statistical_nlp.txt
-nlp_opener.txt_
+opennlp.md
 information_extraction.txt
-data_science_techniques.txt
+semantic_web.txt
+kgc.md
+kgn.md
 conclusion.txt
 
