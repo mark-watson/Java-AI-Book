@@ -5,6 +5,8 @@ chapter we will use a few of my open source NLP projects. In the next chapter I 
 one of many fine open source projects to provide more examples of using NLP to get you started using
 NLP in your own projects.
 
+The material in this chapter is dated but useful. It is dated because deep learning networks now far surpass the capabilities of statistics and symbolic NLP. The material is useful because most experts in AI believe that deep learning only takes us so far, and in order to reach general artificial intelligence we will use some form of hybrid deep learning, symbolic AI, and probabalistic systems.
+
 We will cover a wide variety of techniques for processing text in this
 chapter. The part of speech tagger, text categorization, clustering,
 spelling, and entity extraction examples are all derived from either my
