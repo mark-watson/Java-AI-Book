@@ -1,16 +1,17 @@
-preface.txt
-introduction.txt
-search.txt
-reasoning.txt
+preface.md
+introduction.md
+search.md
+reasoning.md
 anomaly_detection.md
-genetic_algorithms.txt
-machine_learning_neural_networks.txt
+genetic_algorithms.md
+machine_learning_weka.md 
+machine_learning_neural_networks.md
 deeplearning.md
-statistical_nlp.txt
+statistical_nlp.md
 opennlp.md
-information_extraction.txt
-semantic_web.txt
+information_extraction.md
+semantic_web.md
 kgc.md
 kgn.md
-conclusion.txt
+conclusion.md
 
