@@ -77,7 +77,7 @@ import java.io.*;
  */
 public class ClassifierWisconsinData {
 
-  private static Logger log = LoggerFactory.getLogger(ClassifierWisconsinData.class);
+  private static final Logger log = LoggerFactory.getLogger(ClassifierWisconsinData.class);
 
   public static void main(String[] args) throws Exception {
     int numHidden = 3;
@@ -90,13 +90,16 @@ public class ClassifierWisconsinData {
     int labelIndex = 9;
     int numClasses = 2;
 
-    RecordReader rr = new CSVRecordReader();
-    rr.initialize(new FileSplit(new File("data/","training.csv")));
-    DataSetIterator trainIter = new RecordReaderDataSetIterator(rr,batchSize,labelIndex,numClasses);
+    RecordReader recordReader = new CSVRecordReader();
+    recordReader.initialize(new FileSplit(new File("data/","training.csv")));
+    DataSetIterator trainIter =
+        new RecordReaderDataSetIterator(recordReader,batchSize,labelIndex,numClasses);
 
-    RecordReader rrTest = new CSVRecordReader();
-    rrTest.initialize(new FileSplit(new File("data/","testing.csv")));
-    DataSetIterator testIter = new RecordReaderDataSetIterator(rrTest,batchSize,labelIndex,numClasses);
+    RecordReader recordReaderTest = new CSVRecordReader();
+    recordReaderTest.initialize(
+        new FileSplit(new File("data/","testing.csv")));
+    DataSetIterator testIter =
+        new RecordReaderDataSetIterator(recordReaderTest,batchSize,labelIndex,numClasses);
 
     MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
         .seed(seed) //use the same random seed
@@ -137,8 +140,6 @@ public class ClassifierWisconsinData {
     }
     System.out.println(eval.stats());
     System.out.println("Evaluate model....");
-    System.out.println(eval.stats());
-
     System.out.println("\n****************Example finished********************");
   }
 }

@@ -17,31 +17,15 @@ the same pattern: a motivation for learning a technique, some theory for
 the technique, and a Java example program that you can experiment with.
 [My Java example programs for this book can be found on github](https://github.com/mark-watson/Java-AI-Book-Code) and can be used
 under both the LGPL3 and Apache 2 licenses - choose whichever of these two
-licenses that works best for you.
+licenses that works best for you. Git pull request with code improvements will be appreciated by me and the readers of this book.
 
-My goal is to teach you both the theory of common AI techniques and to
-provide you with Java source code to save you some time and effort.
-Because my example code is licensed under the LGPL you can use the code
-for any purposes including commercial applications. Your only
-responsibility for using my LGPL licensed code is that if you improve the
-code, you should make your changes to my example code public, preferably
-by sharing them with me so readers of future editions of this
-book can benefit from your improvements.
+My goal is to teach you both the theory of common AI techniques and to provide you with Java source code to save you some time and effort. Even though I have worked almost exclusively in the field of deep learning in the last six years, I urge you, dear reader, to look at the field of AI as being far broader than machine learning and deep learning in particular. Just as it is wrong to consider the higher level fields of Category Theory or Group Theory to "be" mathematics, there is far more to AI than machine learning. Here we will take a more balanced view of AI, and indeed, my own current research is in hybrid AI, that is, the fusion of deep learning with good old fashioned symbolic AI, probabilistic reasoning, and explainability. 
 
-I have been interested in AI since reading Bertram Raphael’s excellent
-book *Thinking Computer: Mind Inside Matter* in the early 1980s. I have
-also had the good fortune to work on many interesting AI projects
-including the development of commercial expert system tools for the
-Xerox LISP machines and the Apple Macintosh, development of commercial
-neural network tools, application of natural language and expert systems
-technology, medical information systems, application of AI technologies
-to Nintendo and PC video games, and the application of AI technologies
-to the financial markets. I have also applied statistical natural
-language processing techniques to analyzing social media data from
-Twitter and Facebook.
 
-I enjoy AI programming, and hopefully this enthusiasm will also infect
-you the reader.
+I have been interested in AI since reading Bertram Raphael’s excellent book *Thinking Computer: Mind Inside Matter* in the early 1980s. I have also had the good fortune to work on many interesting AI projects including the development of commercial expert system tools for the Xerox LISP machines and the Apple Macintosh, development of commercial neural network tools, application of natural language and expert systems
+technology, medical information systems, application of AI technologies to Nintendo and PC video games, and the application of AI technologies to the financial markets. I have also applied statistical natural language processing techniques to analyzing social media data from Twitter and Facebook.
+
+I enjoy AI programming, and hopefully this enthusiasm will also infect you the reader.
 
 **Software Licenses for example programs in this book**
 

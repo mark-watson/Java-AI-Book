@@ -4,6 +4,7 @@ search.md
 reasoning.md
 anomaly_detection.md
 genetic_algorithms.md
+expert_systems.md
 machine_learning_weka.md 
 machine_learning_neural_networks.md
 deeplearning.md
