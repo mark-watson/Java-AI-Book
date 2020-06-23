@@ -17,6 +17,12 @@ use RDF and RDFS to define relationships between data represented as unique URIs
 I wrote a separate book *Practical Semantic Web Programming in Java* that goes into much more detail on the use of Sesame, Jena, Protege, OwlApis, RDF/RDFS/OWL modeling, and Descriptive
 Logic Reasoners. This chapter is meant to get you interested in this technology but is not intended as a detailed guide. You can get a free PDF of *Practical Semantic Web Programming in Java* on my web site. There is also a version for the Common Lisp language that is also available as a free PDF file.
 
+## Available Tools
+
+In previous Java books using RDF, I used the open source Sesame libraries. Sesame is now called RDF4J and is part of the Eclipse organization's projects.
+
+I decided to use the Apache Jena project in tis new edition because I think Jena is slightly easier to set up a light weight development environment. When we need a local RDF server for our example code, we will use a command line version of the [Fuseki](https://jena.apache.org/documentation/fuseki2/) server. For client applications we will use the Jena library for working with RDF and performing SPARQL queries on both our local Fuseki server and also remote SPARQL endpoints (i.e., public RDF data sources with SPARQL query interfaces) like DBPedia and WikiData.
+
 ## Relational Database Model Has Problems Dealing with Rapidly Changing Data Requirements  {#rdms-problems}
 
 When people are first introduced to Semantic Web technologies their first reaction is often something like, “I can just do that with a database.” The relational database model is an efficient way to express and work with slowly changing data models. There are some clever tools for dealing with data change requirements in the database world (ActiveRecord and migrations being a good example) but it is awkward to have end users and even developers tagging on new data attributes to relational database tables.
