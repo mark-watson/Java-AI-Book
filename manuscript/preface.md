@@ -1,7 +1,9 @@
 Preface
 =======
 
-The latest edition of this book is always available at [https://leanpub.com/javaai](https://leanpub.com/javaai). Currently the latest edition was released in the summer of 2020. It has been 5+ years since the last edition and this is largely a rewrite, dropping some material like Drools based expert systems, and placing a heavier emphasis on machine learning, particularly neural networks and deep learning. I have also greatly expanded discussion of the semantic web and linked data including examples to generate knowledge graphs automatically from text documents and also a system to help navigate public Knowledge Graphs like DBPedia and WikiData.
+The latest edition of this book is always available at [https://leanpub.com/javaai](https://leanpub.com/javaai). Currently the latest edition was released in the summer of 2020. It has been 5+ years since the last edition and this is largely a rewrite, dropping some material like Drools based expert systems, Weka for machine learning, and the implementation of a RDF server with geolocation support. I am now placing a heavier emphasis on neural networks and deep learning, a greatly expanded discussion of the semantic web and linked data including examples to generate knowledge graphs automatically from text documents and also a system to help navigate public Knowledge Graphs like DBPedia and WikiData.
+
+I decided what material to keep from old editions and what new material to add based on what my estimation is of which AI technologies are most useful and interesting to Java developers.
 
 I have been developing commercial Artificial Intelligence (AI) tools and applications since the 1980s.
 
@@ -14,20 +16,37 @@ I wrote this book for both professional programmers and home hobbyists who alrea
 My goal is to teach you both the theory of common AI techniques and to provide you with Java source code to save you some time and effort. Even though I have worked almost exclusively in the field of deep learning in the last six years, I urge you, dear reader, to look at the field of AI as being far broader than machine learning and deep learning in particular. Just as it is wrong to consider the higher level fields of Category Theory or Group Theory to "be" mathematics, there is far more to AI than machine learning. Here we will take a more balanced view of AI, and indeed, my own current research is in hybrid AI, that is, the fusion of deep learning with good old fashioned symbolic AI, probabilistic reasoning, and explainability. 
 
 
+## Personal Artificial Intelligence Journey
+
 I have been interested in AI since reading Bertram Raphael’s excellent book *Thinking Computer: Mind Inside Matter* in the early 1980s. I have also had the good fortune to work on many interesting AI projects including the development of commercial expert system tools for the Xerox LISP machines and the Apple Macintosh, development of commercial neural network tools, application of natural language and expert systems technology, medical information systems, application of AI technologies to Nintendo and PC video games, and the application of AI technologies to the financial markets. I have also applied statistical natural language processing techniques to analyzing social media data from Twitter and Facebook.
 
 I enjoy AI programming, and hopefully this enthusiasm will also infect you the reader.
 
-**Software Licenses for example programs in this book**
+## Maven Setup for Combining Examples in this Book
 
-My example programs are licensed under the LGPL version 3 and/or Apache 2. I use several open source libraries and their licenses are:
+The chapter on WordNet uses the examples from the previous chapter on OpenNLP. Both chapters discuss the use of maven to support this code and data sharing.
+
+Additionally, the chapter Statistical Natural Language Processing is configured so the code and linguistic data can be combined with other examples.
+
+In this process, it is assumed that all sub-projects are in the same parent directory. For example, in the GitHub repo for the examples we use has subdirectories **opennlp** and **wordnet** and the relative position of these directories is required for data sharing. Code sharing is achieved by installing the code in your local maven repository, for example:
+
+        cd openly
+        man install
+
+Now, the code in the OpenNLP example is installed on the system.
+
+## Software Licenses for Example Programs in this Book
+
+My example programs are licensed under the LGPL version 3 and the Apache 2. I use several open source libraries and their licenses are:
 
 -   PowerLoom Reasoning: LGPL
 -   Jena Semantic Web: Apache 2
 
 TBD: make sure last list is complete
 
-**Acknowledgements**
+My desire is for you too be able to use the code examples and data in your projects with no hassles.
+
+## Acknowledgements
 
 I process the manuscript for this book using the [leanpub.com](http://leanpub.com) publishing system and I recommend leanpub.com to other authors. Write one manuscript and use leanpub.com to generate assets for PDF, iPad/iPhone, and Kindle versions.
 
@@ -36,8 +55,7 @@ friend Tom Munnecke for my photo in this Preface. I have a library full of books
 
 In particular, I would like to thank the authors of the following two books that have had the most influence on me:
 
--   Stuart Russell and Peter Norvig’s **Artificial Intelligence: A Modern Approach** which I consider to be the best single reference book for
-    AI theory
+-   Stuart Russell and Peter Norvig’s **Artificial Intelligence: A Modern Approach** which I consider to be the best single reference book for AI theory
 -   John Sowa’s book **Knowledge Representation** is a resource that I frequently turn to for a holistic treatment of logic, philosophy, and knowledge representation in general
 
 **Book Editor:**

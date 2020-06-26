@@ -1,8 +1,6 @@
 # Machine Learning with Weka {#ml-weka}
 
-Weka is a standard Java tool for performing both machine learning
-experiments and for embedding trained models in Java applications. I
-have used Weka since 1999 and it is often my tool of choice on machine
+Weka is a standard Java tool for performing both machine learning experiments and for embedding trained models in Java applications. I have used Weka since 1999 and it is often my tool of choice on machine
 learning projects that are compatible with Weka’s use of the GPL
 license. In addition to the material in this chapter you should visit
 the primary Weka web site www.cs.waikato.ac.nz/ml/weka for more examples
