@@ -76,14 +76,14 @@ There is a **Makefile** for this example that has targets for running the exampl
 
 {linenos=off}
 ~~~~~~~~
-    example:
-      mvn install
-      mvn exec:java -Dexec.mainClass="com.markwatson.wordnet_example.WordNetAndOpenNlpExample"
+example:
+ mvn install
+ mvn exec:java -Dexec.mainClass="com.markwatson.wordnet_example.WordNetAndOpenNlpExample"
 
-    get_wordnet_data:
-      wget https://wordnetcode.princeton.edu/wn3.1.dict.tar.gz
-      tar xvfz wn3.1.dict.tar.gz
-      rm -f wn3.1.dict.tar.gz
+get_wordnet_data:
+ wget https://wordnetcode.princeton.edu/wn3.1.dict.tar.gz
+ tar xvfz wn3.1.dict.tar.gz
+ rm -f wn3.1.dict.tar.gz
 ~~~~~~~~
 
 If you removed the **extjwnl-data-wn31** dependency from the project **pom.xml** file, then you need to fetch the data just one time:
@@ -237,12 +237,61 @@ public class WordNetAndOpenNlpExample {
 }
 ~~~~~~~~
 
+The Java class **PointerTargetNode** (line 39) contains two instance variables: a **Sysnset** and a pointer type (e.g., noun or verb). The class **Synset** contains a part of speech (e.g., a noun), pointers to related synsets, descriptive words (or lamas) for the synset, and a descriptive gloss that we have seen examples of. The class **IndexWord** contains a part of speech for the current word sense, a descriptive word (lemma) and a list of available synsets.
+
 Earlier you saw two screen shots examining the output data in a IntelliJ Community Edition debug session. To better understand the Java interface to WordNet, I suggest also setting breakpoints to examine the data structures used by the **net.sf.extjwnl** library, especially the Java classes **net.sf.extjwnl.data** and **net.sf.extjwnl.data.IndexWord**. 
 
+## Other Type Relationships Supported by WordNet
+
+The WordNet lexical database is an ongoing research project that includes many years of effort by professional linguists. My own use of WordNet over the last ten years has been simple, mainly using the database to determine synonyms (called synsets in WordNet) and looking at the possible parts of speech of words. For reference (from the [Wikipedia article on WordNet](http://en.wikipedia.org/wiki/WordNet)), here is a small subset of the type of relationships contained in WordNet for verbs shown by examples (also from the [Wikipedia article](http://en.wikipedia.org/wiki/WordNet):
+
+- hypernym: travel (less general) is an hypernym of movement (more general)
+-entailment: to sleep is entailed by to snore because you must be asleep to snore
+
+Here are a few of the relations supported for nouns: 8
+
+- hypernyms: canine is a hypernym of dog since every dog is of type canine
+- hyponyms: dog (less general) is a hyponym of canine (more general)
+- holonym : building is a holonym of window because a window is part of a building
+- meronym: window is a meronym of building because a window is part of a building
+
+Some of the related information maintained for adjectives is:
+
+- related nouns:
+- similar to
+
+I find the WordNet book (WordNet: An Electronic Lexical Database (Language, Speech, and Communication) by Christiane Fellbaum, 1998) to be a detailed reference for WordNet but there have been several new releases of WordNet since the book was published. 
+
+The [WordNet site](http://wordnet.princeton.edu/) and the [Wikipedia article on WordNet](http://en.wikipedia.org/wiki/WordNe) are also good sources of information if you decide to make WordNet part of your toolkit.
+
+
 ## Wrap-up and Ideas for Using WordNet
+
+WordNet provides a rich linguistic database for human linguists but although I have been using WordNet since 1999, I do not often use it in automated systems. I tend to use it for manual reference and sometimes for simple tasks like augmenting a list of terms with synonyms.
 
 We only used WordNet entries for nouns. You might want to make copies of the file **WordNetAndOpenNlpExample.java** and instead of looking up entries for nouns, you might want to try other parts of speech: verbs, adjectives, and adverbs. You might also make a copy of **WordNetAndOpenNlpExample.java** and don't use OpenNLP to tag text and rather look up all four supported parts of speech for each word in the input text.
 
 WordNet is a powerful tool for automating natural language processing but it is not easy to work with. I hope that with this simple example that you are now motivated to dive in deeper and consider using WordNet for your projects, where it is appropriate to do so.
+
+### Using a Part of Speech Tagger to Use the Correct WordNet Synonyms
+
+WordNet will give us both synonyms and antonyms (opposite meaning) of words. The problem is that we can only get words with similar and opposite meanings for specific “senses” of a word. Using for  example, synonyms of the word “bank” in the sense of a verb meaning “have confidence or faith in” are:
+
+- trust
+- swear
+- rely
+
+while synonyms for “bank” in the sense of a noun meaning “a financial institution that accepts deposits and channels the money into lending activities” are:
+
+- depository financial institution
+- banking concern
+- banking company
+
+So, it does not make too much sense to try to maintain a data map of synonyms for a given word. It does make some sense to try to use some information about the context of a word. We did this with some degree of accuracy by using the part of speech tagger from the last chapter on OpenNLP to at least determine that a word in a sentence is a noun or a verb, and thus limit the mapping of possible synonyms for the word in its current context.
+
+### Using WordNet Synonyms to Improve Document Clustering
+
+Another suggestion for a WordNet-based project is to use the OpenNLP part of speech to identify the probable part of speech for each word in all text documents that you want to cluster, and augment the documents with sysnset (synonym) data. You can then cluster the documents similarly to how we will calculate document similarity in the Section on clustering text documents by content.
+
 
 
