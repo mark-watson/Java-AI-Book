@@ -50,8 +50,9 @@ import org.jsoup.select.Elements;
 public class MySitesExamples {
 
   public static void main(String[] args) throws Exception {
-    Document doc = Jsoup.connect("http://democracynow.org").get();
-    //Document doc = Jsoup.connect("http://abcnews.com/").get();
+    Document doc = Jsoup.connect("https://markwatson.com")
+        .userAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10.0; rv:77.0) Gecko/20100101 Firefox/77.0")
+        .timeout(2000).get();
     Elements newsHeadlines = doc.select("div p");
     for (Element element : newsHeadlines) {
       System.out.println(" next element text: " + element.text());
@@ -140,7 +141,7 @@ Output will look something like this:
 Notice that there are different types of URIs like #, relative, and absolute. Any characters following a # character do not affect the routing of which web page is shown (or which API is called) but the characters after the # character are available for use in specifying anchor positions on a web page or extra parameters for API calls. Relative APIs like consulting/ (as seen in line 5) are understood to be relative to the base URI of the web site.
 
 
-I often require that URIs be absolute URIs (i.e., starts with a protocol like "http:" or "https:") and lines 28-33 show how to select just absolute URI anchors. In line 30 I am specifying the attribute as "abs:href" to be more selective.
+I often require that URIs be absolute URIs (i.e., starts with a protocol like "http:" or "https:") and lines 28-33 show how to select just absolute URI anchors. In line 31 I am specifying the attribute as "abs:href" to be more selective.
  
 The output looks like:
 
