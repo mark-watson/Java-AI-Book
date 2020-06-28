@@ -15,6 +15,10 @@ We will use pre-trained models for tokenizing text, recognizing the names of org
 
 After building a classification model we finish up this chapter with an interesting topic: statistically parsing sentences to discover the most probable linguistic structure of each sentence in input text. We will not use parsing in the rest of this book so you may skip the last section of this chapter if you are not currently interested in parsing sentences into linguistic components like noun and verp phrases, proper nouns, nouns, adjectives, etc.
 
+The following UML class diagrams will give you an overview of my wrapper for the OpenNLP library and for the unit test class:
+
+![UML class diagram for wrapper code for OpenNLP](images/opennlp-uml.png)
+
 
 ## Using OpenNLP Pre-Trained Models
 

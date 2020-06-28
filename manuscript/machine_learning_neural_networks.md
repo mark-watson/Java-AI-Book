@@ -1,9 +1,7 @@
 # Neural Networks {#neural-networks}
 
-Neural networks can be used to efficiently solve many problems that are
-intractable or difficult using other AI programming techniques. I spent
-almost two years on a DARPA neural network tools advisory panel, wrote
-the first version of the ANSim neural network product, and have used
+Neural networks can be used to efficiently solve many problems that are intractable or difficult using other AI programming techniques. I spent
+almost two years on a DARPA neural network tools advisory panel, wrote the first version of the ANSim neural network product, and have used
 neural networks for a wide range of application problems (radar
 interpretation, bomb detection, and as controllers in computer games).
 Mastering the use of simulated neural networks will allow you to solve
@@ -85,6 +83,10 @@ neurons in this way.
 
 The activation absorbed through dendrites is summed together, but the
 firing of a neuron only occurs when a threshold is passed. In neural network simulations there are several common ways to model neurons and connections between neurons that we will see n both this and the next chapter.
+
+The following UML class diagram will give you an overview all of the neural network library classes in this chapter before we dive into the code:
+
+![UML class diagram for neural network code](images/neuralnetwork-uml.png)
 
 ## Hopfield Neural Networks  {#hopfield}
 

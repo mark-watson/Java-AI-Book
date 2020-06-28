@@ -360,7 +360,7 @@ Once you interactively develop concepts, rules and relations then it is
 likely that you may want to use them with PowerLoom in an embedded mode,
 making PowerLoom a part of your application. I will get you started with
 a few Java example programs. The source code for this chapter is in the
-subdirectory src-powerloom-reasoning.
+subdirectory powerloom.
 
 If you download the PowerLoom manual (a PDF file) from the PowerLoom web
 site, you will have the complete Java API documentation for the Java
@@ -369,6 +369,10 @@ separate documentation). I have found that I usually use just a small
 subset of the Java PowerLoom APIs and I have “wrapped” this subset in a
 wrapper class in the file PowerLoomUtils.java. We will use my wrapper
 class for the examples in the rest of this chapter.
+
+The following UML class diagram will give you an overview before we dive into the code:
+
+![UML class diagram for the Powerloom example](images/powerloom.png)
 
 My wrapper class has the follow public methods:
 

@@ -1,4 +1,4 @@
-# Statistical Natural Language Processing {#statistical-nlp}
+# Natural Language Processing
 
 I have been working in the field of Natural Language Processing (NLP) since 1982. In this
 chapter we will use a few of my open source NLP projects. In the next chapter I have selected
@@ -25,6 +25,13 @@ additional software for Statistical Natural Language Processing. For
 Python programmers I can recommend the statistical NLP toolkit NLTK
 (nltk.sourceforge.net) that includes an online book and is licensed
 using the GPL.
+
+The following UML class diagrams will give you an overview of my NLP library code:
+
+![UML class diagram for top level NLP code](images/nlp-uml.png)
+
+![Separate UML utility NLP code](images/nlp-utils-uml.png)
+
 
 ## Tokenizing, Stemming, and Part of Speech Tagging Text  {#tokenizing-and-tagging}
 

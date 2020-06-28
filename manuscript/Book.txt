@@ -9,7 +9,7 @@ deeplearning.md
 statistical_nlp.md
 opennlp.md
 wordnet.md
-information_extraction.md
+information_gathering.md
 semantic_web.md
 kgc.md
 kgn.md

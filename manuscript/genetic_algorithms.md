@@ -109,12 +109,8 @@ chapter in the [GA Example Section](#java-ga-example).
 ## Java Library for Genetic Algorithms  {#java-ga-lib}
 
 
-The full implementation of the GA library is in the Java source file
-Genetic.java. The following code snippets shows the method signatures
-defining the public API for the library; note that there are two
-constructors, the first using default values for the fraction of
-chromosomes on which to perform crossover and mutation operations and
-the second constructor allows setting explicit values for these
+The full implementation of the GA library is in the Java source file Genetic.java. The following code snippets shows the method signatures defining the public API for the library; note that there are two
+constructors, the first using default values for the fraction of chromosomes on which to perform crossover and mutation operations and the second constructor allows setting explicit values for these
 parameters:
 
 ~~~~~~~~
@@ -193,13 +189,13 @@ order:
     }
 ~~~~~~~~
 
-The last class **ChromosomeComparator** is used when using the Java
-**Collection** class static **sort** method.
+The last class **ChromosomeComparator** is used when using the Java **Collection** class static **sort** method.
 
-The class **Genetic** is an abstract class: you must subclass it and
-implement the method **calcFitness** that uses an application specific
-fitness function (that you must supply) to set a fitness value for each
-chromosome.
+The class **Genetic** is an abstract class: you must subclass it and implement the method **calcFitness** that uses an application specific fitness function (that you must supply) to set a fitness value for each chromosome.
+
+The following UML class diagram provides an overview of the Java classes and their public APIs:
+
+![UML Class Diagram for library and test program](images/genetic-uml.png)
 
 This GA library provides the following behavior:
 
