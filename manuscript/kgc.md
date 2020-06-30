@@ -2,25 +2,16 @@
 
 Here we develop a complete application. The Knowledge Graph Creator (KGcreator) is a tool for automating the generation of data for Knowledge Graphs from raw text data. We will see how to create a single standalone executable file using SBCL Common Lisp. The application can also be run during development from a repl. This application also implements a web application interface.
 
-Data created by KGcreator generates data in two formats:
+Data created by KGcreator generates data in RDF triples suitable for loading into any linked data/semantic web data store.
 
-- Neo4j graph database format (text format)
-- RDF triples suitable for loading into any linked data/semantic web data store.
-
-This example application works by identifying entities in text. Example entity types are people, companies, country names, city names, broadcast network names, political party names, and university names. We saw earlier code for detecting entities in the chapter on natural language processing (NLP) and we will reuse this code. We will discuss later three strategies for reusing code from different projects.
+This example application works by identifying entities in text. Example entity types are people, companies, country names, city names, broadcast network names, political party names, and university names. We saw earlier code for detecting entities in the chapter on making named entities to DBPedia URIs and we will reuse this code. We will discuss later three strategies for reusing code from different projects.
 
 When I originally wrote KGCreator as two research prototypes, one in Common Lisp (the example in this chapter) and one in Haskell (which I also use as an example in my book [Haskell Tutorial and Cookbook](https://leanpub.com/haskell-cookbook/). The example in this chapter is a port of these systems to Java.
 
-The following figure shows part of a Neo4j Knowledge Graph created with the example code. This graph has shortened labels in displayed nodes but Neo4j offers a web browser-based console that lets you interactively explore Knowledge Graphs. We don't cover setting up Neo4j here so please use the [Neo4j documentation](https://neo4j.com/docs/operations-manual/current/introduction/). As an introduction to RDF data, the semantic web, and linked data you can get free copies of my two books [Practical Semantic Web and Linked Data Applications, Common Lisp Edition](http://markwatson.com/opencontentdata/book_lisp.pdf) and [Practical Semantic Web and Linked Data Applications, Java, Scala, Clojure, and JRuby Edition](http://markwatson.com/opencontentdata/book_java.pdf).
-
-{width=80%}
 ![Part of a Knowledge Graph shown in Neo4j web application console](images/neo4j.jpg)
 
-Here is a detail view:
-
-
-{width=50%}
 ![Detail of Neo4j console](images/neo4j_ex1.jpg)
+
 
 ## Implementation Notes
 
@@ -85,11 +76,8 @@ The following listing of file ** TBD  TBD rename:  src/kgcreator/neo4j.lisp** is
 
 You can load all of KGCreator but just execute the test function at the end of this file using:
 
-{lang="lisp",linenos=off}
+{lang="java",linenos=on}
 ~~~~~~~~
-(ql:quickload "kgcreator")
-(in-package #:kgcreator)
-(kgcreator:test2a)
 ~~~~~~~~
 
 ## Implementing the Top Level Application APIs
