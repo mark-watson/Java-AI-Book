@@ -1,23 +1,26 @@
 # Automatically Generating Data for Knowledge Graphs {#kgcreator}
 
-Here we develop a complete application. The Knowledge Graph Creator (KGcreator) is a tool for automating the generation of data for Knowledge Graphs from raw text data. Here we generate RDF data for a Knowledge Graph. You might also be interested in the Knowledge Graph Creator implementation in [my Common Lisp book](https://leanpub.com/lovinglisp) that also generates data for the Neo4J open source graph database.
+Here we develop a complete application using the package developed in the earlier chapter *Resolve Entity Names to DBPedia References*. The Knowledge Graph Creator (KGcreator) is a tool for automating the generation of data for Knowledge Graphs from raw text data. Here we generate RDF data for a Knowledge Graph. You might also be interested in the Knowledge Graph Creator implementation in [my Common Lisp book](https://leanpub.com/lovinglisp) that also generates data for the Neo4J open source graph database.
 
 Data created by KGcreator generates data in RDF triples suitable for loading into any linked data/semantic web data store.
 
-This example application works by identifying entities in text. Example entity types are people, companies, country names, city names, broadcast network names, political party names, and university names. We saw earlier code for detecting entities in the chapter on making named entities to DBPedia URIs and we will reuse this code. We will discuss later three strategies for reusing code from different projects.
+This example application works by identifying entities in text. Example entity types are people, companies, country names, city names, broadcast network names, political party names, and university names. We saw earlier code for detecting entities in the chapter on making named entities to DBPedia URIs and we will reuse this code.
 
-When I originally wrote KGCreator as two research prototypes, one in Common Lisp (the example in this chapter) and one in Haskell (which I also use as an example in my book [Haskell Tutorial and Cookbook](https://leanpub.com/haskell-cookbook/). The example in this chapter is a port of these systems to Java.
+When I originally wrote KGCreator as two research prototypes, one in Common Lisp (the example in this chapter) and one in [Haskell](https://leanpub.com/haskell-cookbook/). The example in this chapter is a port of these systems to Java.
 
 ## Implementation Notes
 
+The implementation is contained in a single Java class **KGC** and the **jumit** test class **KgcTest** is used to process the test files included with this example.
+
+As can be seen in the following figure I have defined final static strings for each type of entity type URI. For example, **personTypeUri** has the value **"<http://www.w3.org/2000/01/rdf-schema#person>"**.
+
 ![Overview of Java Class UML Diagram for the Knowledge Graph Creator](images/kgc-uml.png)
 
-TBD
-
+The following figure shows a screen shot of this example project in the free Community Edition of IntelliJ.
 
 ![IDE View of Project](images/kgc-ide.png)
 
-TBD
+Notice in this screen shot that there are several test files in the directory **test_data**. The files with the file extension **.meta** contain a single line which is the URI for the source of the text in the machine text file. For example, the meta file **test1.meta** provides the URI for the source of the text in the file **test1.txt**.
 
 
 ## Generating RDF Data
@@ -86,9 +89,12 @@ public class KGC  {
 					// try to open the meta file with the same extension:
 					String metaAbsolutePath = child.getAbsolutePath();
 					File meta = 
-					  new File(metaAbsolutePath.substring(0, metaAbsolutePath.length() - 4) + ".meta");
+					  new File(metaAbsolutePath.substring(0,
+					                                  metaAbsolutePath.length() - 4)
+					                                   + ".meta");
 					System.out.println("meta:" + meta);
-					String [] text_and_meta = readData(child.getAbsolutePath(), meta.getAbsolutePath());
+					String [] text_and_meta = 
+					  readData(child.getAbsolutePath(), meta.getAbsolutePath());
 					String metaData = "<" + text_and_meta[1].strip() + ">";
 					TextToDbpediaUris kt = 
 					  new TextToDbpediaUris(text_and_meta[0]);
@@ -101,9 +107,11 @@ public class KGC  {
 						            " " + personTypeUri + " .");
 					}
 					for (int i=0; i<kt.companyNames.size(); i++) {
-						out.println(metaData + " " + subjectUri + " " + 
+						out.println(metaData + " " + 
+						            subjectUri + " " + 
 						            kt.companyUris.get(i) + " .");
-						out.println(kt.companyUris.get(i) + " " + labelUri + " \"" +
+						out.println(kt.companyUris.get(i) + " " +
+						           labelUri + " \"" +
 						           kt.companyNames.get(i) + "\" .");
 						out.println(kt.companyUris.get(i) + " " + typeOfUri + 
 						            " " + companyTypeUri + " .");

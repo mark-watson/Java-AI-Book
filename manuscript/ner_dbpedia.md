@@ -1,12 +1,10 @@
 # Resolve Entity Names to DBPedia References
 
-As a personal research project, I have collected a large set of mapping of entity names (e.g., people's names, city names, names of music groups, company names, etc.) to the DBPedia URI for that entity. I have developed libraries to use this data in [Common Lisp](https://leanpub.com/lovinglisp), [Haskell](https://leanpub.com/haskell-cookbook), and Java. Here we use the Java version of this library.
+As a personal research project I have collected a large set of mapping of entity names (e.g., people's names, city names, names of music groups, company names, etc.) along with a mapping to the DBPedia URI for each entity. I have developed libraries to use this data in [Common Lisp](https://leanpub.com/lovinglisp), [Haskell](https://leanpub.com/haskell-cookbook), and Java. Here we use the Java version of this library.
 
 The Java library is found in the directory **ner_dbpedia*. The raw data for these entity to URI mappings are found in the directory **ner_dbpedia/dbpedia_as_text**.
 
 This example shows the use of a standard Java and Maven packaging technique: building a JAR file that contains resource files. The example code will read the required data resources from the JAR file (or the temporary **target** directory during development). This will make the JAR file self contained when we use this example in later chapters.
-
-![Overview of Java Class UML Diagram for this Example](images/nerdbpedia-uml.png)
 
 
 ## DBPedia Entities
@@ -39,7 +37,14 @@ ner_dbpedia: $ wc -l ./src/main/resources/*.txt
 
 ## Library Implementation
 
-As you see in the following figure there are two classes in the package **com.markwatson.ner_dbpedia** for this example: **NerMaps** and **TextToDbpediaUris**.
+The following UML class diagram shows the APIs and fields for the two classes in the package **com.markwatson.ner_dbpedia** for this example: **NerMaps** and **TextToDbpediaUris**:
+
+![Overview of Java Class UML Diagram for this Example](images/nerdbpedia-uml.png)
+
+As you see in the following figure of the project for this example opened in the free Community Edition of IntelliJ there are nine text files, one for each entity type, in the directory **src/main/resources**. Later we will look at the code required to read these files in two cases:
+
+- During development these files are read from **target/classes**.
+- During client application use of the JAR file (created using *mvn install*) these files are read as resources from the Java class loader.
 
 ![IDE View of Project](images/nerdbpedia-ide.png)
 
@@ -90,15 +95,24 @@ public class NerMaps {
     return ret;
   }
 
-  static public final Map<String, String> broadcastNetworks = textFileToMap("BroadcastNetworkNamesDbPedia.txt");
-  static public final Map<String, String> cityNames = textFileToMap("CityNamesDbpedia.txt");
-  static public final Map<String, String> companyames = textFileToMap("CompanyNamesDbPedia.txt");
-  static public final Map<String, String> countryNames = textFileToMap("CountryNamesDbpedia.txt");
-  static public final Map<String, String> musicGroupNames = textFileToMap("MusicGroupNamesDbPedia.txt");
-  static public final Map<String, String> personNames = textFileToMap("PeopleDbPedia.txt");
-  static public final Map<String, String> politicalPartyNames = textFileToMap("PoliticalPartyNamesDbPedia.txt");
-  static public final Map<String, String> tradeUnionNames = textFileToMap("TradeUnionNamesDbPedia.txt");
-  static public final Map<String, String> universityNames = textFileToMap("UniversityNamesDbPedia.txt");
+  static public final Map<String, String> broadcastNetworks = 
+    textFileToMap("BroadcastNetworkNamesDbPedia.txt");
+  static public final Map<String, String> cityNames = 
+    textFileToMap("CityNamesDbpedia.txt");
+  static public final Map<String, String> companyames = 
+    textFileToMap("CompanyNamesDbPedia.txt");
+  static public final Map<String, String> countryNames = 
+    textFileToMap("CountryNamesDbpedia.txt");
+  static public final Map<String, String> musicGroupNames = 
+    textFileToMap("MusicGroupNamesDbPedia.txt");
+  static public final Map<String, String> personNames = 
+    textFileToMap("PeopleDbPedia.txt");
+  static public final Map<String, String> politicalPartyNames = 
+    textFileToMap("PoliticalPartyNamesDbPedia.txt");
+  static public final Map<String, String> tradeUnionNames = 
+    textFileToMap("TradeUnionNamesDbPedia.txt");
+  static public final Map<String, String> universityNames = 
+    textFileToMap("UniversityNamesDbPedia.txt");
 }
 ~~~~~~~~
 
@@ -126,9 +140,9 @@ public class TextToDbpediaUris {
 
 The empty constructor is private since it makes no sense to great an instance of **TextToDbpediaUris** with text input. The code supports nine entity types. Here we show the definition of public output fields for just two entity types (people and companies).
 
-As a matter of programming style I usually no longer use getter and setter methods, preferring a more concise coding style. I usually make output fields package default visibility (i.e., no **private** or **public** specification so the fields are public within a package and private from other packages). Here I make them public because the simple package developed here is meant to be used by other packages. If you prefer using getter and setter methods, modern IDEs like IntelliJ and Eclipse can generate those for you for the example code in this book.
+As a matter of programming style I usually no longer use getter and setter methods, preferring a more concise coding style. I usually make output fields package default visibility (i.e., no **private** or **public** specification so the fields are public within a package and private from other packages). Here I make them public because the package **nerdbpedia** developed here is meant to be used by other packages. If you prefer using getter and setter methods, modern IDEs like IntelliJ and Eclipse can generate those for you for the example code in this book.
 
-We will handle entity names comprised one, two, and three word sequences. We check for longer word sequences before short sequences:
+We will handle entity names comprised one, two, and three word sequences. We check for longer word sequences before shorter sequences:
  
 {lang="java",linenos=on}
 ~~~~~~~~
@@ -146,7 +160,7 @@ We will handle entity names comprised one, two, and three word sequences. We che
       }
  ~~~~~~~~
 
-We will look at the class **NerMaps** later, but for now it is enough to know that it converts text entity to DBPedia URIs mapping files to Java hash maps. The method **log** does two things:
+The class **NerMaps** that we previously saw listed converts text entity to DBPedia URIs mapping files to Java hash maps. The method **log** does two things:
 
 - Prints out the entity type, the word indices from the original tokenized text, the entity name as a single string (combine tokens for an entity to a string), and the DBPedia URI.
 - Saves entity mapping in the public fields **personUris**, **personNames**, etc.
@@ -163,7 +177,7 @@ After we check for three word entity names, we process two word names, and one w
       }
 ~~~~~~~~
 
-The following listing shows the **log** method that write descriptive output and saves entity mappings:
+The following listing shows the **log** method that write descriptive output and saves entity mappings. We only show the code for the entity type *person*:
 
 {lang="java",linenos=off}
 ~~~~~~~~
@@ -203,7 +217,8 @@ package com.markwatson.ner_dbpedia;
    * Test that is just for side effect printouts:
    */
   public void test1() throws Exception {
-    String s = "PTL Satellite Network covered President Bill Clinton going to Guatemala and visiting the Coca Cola Company.";
+    String s = "PTL Satellite Network covered President Bill Clinton going to "   
+      + " Guatemala and visiting the Coca Cola Company.";
     TextToDbpediaUris test = new TextToDbpediaUris(s);
   }
 }
