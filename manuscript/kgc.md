@@ -146,7 +146,7 @@ public class KgcTest extends TestCase {
     return new TestSuite(KgcTest.class);
   }
 
-  public void testMicrosoftEntities() throws Exception {
+  public void testKGC() throws Exception {
     assertTrue(true);
     KGC client = new KGC("test_data/", "output_with_duplicates.rdf");
   }
