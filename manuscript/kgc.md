@@ -1,6 +1,6 @@
 # Automatically Generating Data for Knowledge Graphs {#kgcreator}
 
-Here we develop a complete application. The Knowledge Graph Creator (KGcreator) is a tool for automating the generation of data for Knowledge Graphs from raw text data. We will see how to create a single standalone executable file using SBCL Common Lisp. The application can also be run during development from a repl. This application also implements a web application interface.
+Here we develop a complete application. The Knowledge Graph Creator (KGcreator) is a tool for automating the generation of data for Knowledge Graphs from raw text data. Here we generate RDF data for a Knowledge Graph. You might also be interested in the Knowledge Graph Creator implementation in [my Common Lisp book](https://leanpub.com/lovinglisp) that also generates data for the Neo4J open source graph database.
 
 Data created by KGcreator generates data in RDF triples suitable for loading into any linked data/semantic web data store.
 
@@ -8,15 +8,14 @@ This example application works by identifying entities in text. Example entity t
 
 When I originally wrote KGCreator as two research prototypes, one in Common Lisp (the example in this chapter) and one in Haskell (which I also use as an example in my book [Haskell Tutorial and Cookbook](https://leanpub.com/haskell-cookbook/). The example in this chapter is a port of these systems to Java.
 
-![Part of a Knowledge Graph shown in Neo4j web application console](images/neo4j.jpg)
-
-![Detail of Neo4j console](images/neo4j_ex1.jpg)
-
-
 ## Implementation Notes
 
+![Overview of Java Class UML Diagram for the Knowledge Graph Creator](images/kgc-uml.png)
 
 TBD
+
+
+![IDE View of Project](images/kgc-ide.png)
 
 TBD
 
@@ -35,61 +34,141 @@ RDF data is comprised of triples, where the value for each triple are a subject,
   <http://dbpedia.org/resource/Canada> .
 ~~~~~~~~
 
-
-The following listing of the file **  TBD   TBD  TBD  ** generates RDF data:
-
-{lang="java",linenos=on}
-~~~~~~~~
-~~~~~~~~
-
-
-This code works on a list of paired files for text data and the meta data for each text file. As an example, if there is an input text file test123.txt then there would be a matching meta file test123.meta that contains the source of the data in the file test123.txt. This data source will be a URI on the web or a local file URI. The top level function ** TBD  TBD rename: rdf-from-files** takes an output file path for writing the generated RDF data and a list of pairs of text and meta file paths.
-
-A global variable **  TBD  TBD rename:  \*rdf-nodes-hash\*** will be used to remember the nodes in the RDF graph as it is generated. Please note that the function **rdf-from-files** is not re-entrant: it uses the global **  TBD  TBD rename:  \*rdf-nodes-hash\*** so if you are writing multi-threaded applications it will not work to execute the function **  TBD  TBD rename: rdf-from-files** simultaneously in multiple threads of execution.
-
-The function **  TBD  TBD rename: rdf-from-files** (and the nested functions) are straightforward. I left a few debug printout statements in the code and when you run the test code that I left in the bottom of the file, hopefully it will be clear what rdf.lisp is doing. 
-
-TBD
-
-
-## Generating Data for the Neo4j Graph Database
-
-Now we will generate Neo4J Cypher data. In order to keep the implementation simple, both the RDF and Cypher generation code starts with raw text and performs the NLP analysis to find entities. This example could be refactored to perform the NLP analysis just one time but in practice you will likely be working with either RDF or NEO4J and so you will probably extract just the code you need from this example (i.e., either the RDF or Cypher generation code).
-
-Before we look at the code, let's start with a few lines of generated Neo4J Cypher import data:
-
-{linenos=off}
-~~~~~~~~
-CREATE (newsshop_com_june_z902_html_news)-[:ContainsCompanyDbPediaLink]->(Wall_Street_Journal)
-CREATE (Canada:Entity {name:"Canada", uri:"<http://dbpedia.org/resource/Canada>"})
-CREATE (newsshop_com_june_z902_html_news)-[:ContainsCountryDbPediaLink]->(Canada)
-CREATE (summary_of_abcnews_go_com_US_violent_long_lasting_tornadoes_threaten_oklahoma_texas_storyid63146361:Summary {name:"summary_of_abcnews_go_com_US_violent_long_lasting_tornadoes_threaten_oklahoma_texas_storyid63146361", uri:"<https://abcnews.go.com/US/violent-long-lasting-tornadoes-threaten-oklahoma-texas/story?id=63146361>", summary:"Part of the system that delivered severe weather to the central U.S. over the weekend is moving into the Northeast today, producing strong to severe storms -- damaging winds, hail or isolated tornadoes can't be ruled out. Severe weather is forecast to continue on Tuesday, with the western storm moving east into the Midwest and parts of the mid-Mississippi Valley."})
-~~~~~~~~
-
-
-The following listing of file ** TBD  TBD rename:  src/kgcreator/neo4j.lisp** is similar to the code that generated RDF in the last section:
+The following listing of the file **KGC.java** that contains the parts of the implementation of our example for generating RDF data. Code for different entity types is similar so the following listing only shows the code for handling entity types for people and companies. The following is reformatted to fit the page width:
 
 {lang="java",linenos=on}
 ~~~~~~~~
+package com.knowledgegraphcreator;
 
+import com.markwatson.ner_dbpedia.TextToDbpediaUris;
+
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+/**
+ * Java implementation of Knowledge Graph Creator.
+ *
+ * Copyright 2020 Mark Watson. All Rights Reserved. Apache 2 license.
+ *
+ * For documentation see my book "Practical Artificial Intelligence Programming
+ * With Java", chapter "Automatically Generating Data for Knowledge Graphs"
+ * at https://leanpub.com/javaai that can be read for free online.
+ *
+ */
+
+public class KGC  {
+
+	static String subjectUri = 
+	  "<http://www.w3.org/1999/02/22-rdf-syntax-ns#/subject>";
+	static String labelUri = 
+	  "<http://www.w3.org/1999/02/22-rdf-syntax-ns#/label>";
+	static String personTypeUri = 
+	  "<http://www.w3.org/2000/01/rdf-schema#person>";
+	static String companyTypeUri = 
+	  "<http://www.w3.org/2000/01/rdf-schema#company>";
+
+	static String typeOfUri = 
+	  "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>";
+
+	private KGC() { }
+	
+	public KGC(String directoryPath, String outputRdfPath) throws IOException {
+		System.out.println("KGN");
+		PrintStream out = new PrintStream(outputRdfPath);
+		File dir = new File(directoryPath);
+		File[] directoryListing = dir.listFiles();
+		if (directoryListing != null) {
+			for (File child : directoryListing) {
+				System.out.println("child:" + child);
+				if (child.toString().endsWith(".txt")) {
+					// try to open the meta file with the same extension:
+					String metaAbsolutePath = child.getAbsolutePath();
+					File meta = 
+					  new File(metaAbsolutePath.substring(0, metaAbsolutePath.length() - 4) + ".meta");
+					System.out.println("meta:" + meta);
+					String [] text_and_meta = readData(child.getAbsolutePath(), meta.getAbsolutePath());
+					String metaData = "<" + text_and_meta[1].strip() + ">";
+					TextToDbpediaUris kt = 
+					  new TextToDbpediaUris(text_and_meta[0]);
+					for (int i=0; i<kt.personNames.size(); i++) {
+						out.println(metaData + " " + subjectUri + " " + 
+						            kt.personUris.get(i) + " .");
+						out.println(kt.personUris.get(i) + " " + labelUri + 
+						            " \"" + kt.personNames.get(i) + "\" .");
+						out.println(kt.personUris.get(i) + " " + typeOfUri + 
+						            " " + personTypeUri + " .");
+					}
+					for (int i=0; i<kt.companyNames.size(); i++) {
+						out.println(metaData + " " + subjectUri + " " + 
+						            kt.companyUris.get(i) + " .");
+						out.println(kt.companyUris.get(i) + " " + labelUri + " \"" +
+						           kt.companyNames.get(i) + "\" .");
+						out.println(kt.companyUris.get(i) + " " + typeOfUri + 
+						            " " + companyTypeUri + " .");
+					}
+				}
+			}
+		}
+		out.close();
+	}
+
+	private String [] readData(String textPath, String metaPath) throws IOException {
+		String text = Files.readString(Paths.get(textPath), StandardCharsets.UTF_8);
+		String meta = Files.readString(Paths.get(metaPath), StandardCharsets.UTF_8);
+		System.out.println("\n\n** text:\n\n" + text);
+		return new String[] { text, meta };
+	}
+}
 ~~~~~~~~
 
-You can load all of KGCreator but just execute the test function at the end of this file using:
+
+This code works on a list of paired files for text data and the meta data for each text file. As an example, if there is an input text file test123.txt then there would be a matching meta file test123.meta that contains the source of the data in the file test123.txt. This data source will be a URI on the web or a local file URI. The class contractor for **KGC** takes an output file path for writing the generated RDF data and a list of pairs of text and meta file paths.
+
+The **junit** test class **KgcTest** will process the local directory **test_data** and generate an RDF output file:
 
 {lang="java",linenos=on}
 ~~~~~~~~
+package com.knowledgegraphcreator;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+public class KgcTest extends TestCase {
+
+  public KgcTest(String testName) {
+    super(testName);
+  }
+
+  public static Test suite() {
+    return new TestSuite(KgcTest.class);
+  }
+
+  public void testMicrosoftEntities() throws Exception {
+    assertTrue(true);
+    KGC client = new KGC("test_data/", "output_with_duplicates.rdf");
+  }
+  private static void pause() {
+    try { Thread.sleep(2000);
+    } catch (Exception ignore) { }
+  }
+}
 ~~~~~~~~
 
-## Implementing the Top Level Application APIs
+If specific entity names occur in multiple input files there will be a few duplicated RDF statements generated. The simplest way to deal with this is to add a one line call to the **awk** utility to efficiently remove duplicate lines in the RDF output file. Here is a listing of the **Makefile** for this example:
 
-TBD
-
-
-{lang="java",linenos=on}
+{lang="bash",linenos=off}
+~~~~~~~~
+create_data_and_remove_duplicates:
+	mvn test
+	echo "Removing duplicate Cypher statements"
+	awk '!visited[$$0]++' output_with_duplicates.rdf > output.rdf
+	rm -f output_with_duplicates.rdf
 ~~~~~~~~
 
-~~~~~~~~
-
+If you are not familiar with **awk** and want to learn the basic then I recommend [this short tutorial](http://www.hcs.harvard.edu/~dholland/computers/awk.html).
 
 ## KGCreator Wrap Up
 

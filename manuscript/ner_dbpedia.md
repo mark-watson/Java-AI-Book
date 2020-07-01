@@ -11,12 +11,35 @@ This example shows the use of a standard Java and Maven packaging technique: bui
 
 ## DBPedia Entities
 
-TBD
+The raw data for these entity to URI mappings are found in the directory **ner_dbpedia/dbpedia_as_text** files have the format (for people in this case:
+
+{linenos=off}
+~~~~~~~~
+Al Stewart      <http://dbpedia.org/resource/Al_Stewart>
+Alan Watts      <http://dbpedia.org/resource/Alan_Watts>
+~~~~~~~~
+
+There are 58953 entities defined with their DBPedia URI and the following listing shows the breakdown of number of entities by entity type:
+
+{linenos=off}
+~~~~~~~~
+ner_dbpedia: $ wc -l ./src/main/resources/*.txt
+     108 ./src/main/resources/BroadcastNetworkNamesDbPedia.txt
+    2580 ./src/main/resources/CityNamesDbpedia.txt
+    1786 ./src/main/resources/CompanyNamesDbPedia.txt
+     167 ./src/main/resources/CountryNamesDbpedia.txt
+   14315 ./src/main/resources/MusicGroupNamesDbPedia.txt
+   35606 ./src/main/resources/PeopleDbPedia.txt
+     555 ./src/main/resources/PoliticalPartyNamesDbPedia.txt
+     351 ./src/main/resources/TradeUnionNamesDbPedia.txt
+    3485 ./src/main/resources/UniversityNamesDbPedia.txt
+   58953 total
+~~~~~~~~
+
 
 ## Library Implementation
 
-TBD
-
+As you see in the following figure there are two classes in the package **com.markwatson.ner_dbpedia** for this example: **NerMaps** and **TextToDbpediaUris**.
 
 ![IDE View of Project](images/nerdbpedia-ide.png)
 
@@ -76,10 +99,6 @@ public class NerMaps {
   static public final Map<String, String> politicalPartyNames = textFileToMap("PoliticalPartyNamesDbPedia.txt");
   static public final Map<String, String> tradeUnionNames = textFileToMap("TradeUnionNamesDbPedia.txt");
   static public final Map<String, String> universityNames = textFileToMap("UniversityNamesDbPedia.txt");
-
-  public static void main(String[] args) throws IOException {
-    new NerMaps().textFileToMap("CityNamesDbpedia.txt");
-  }
 }
 ~~~~~~~~
 
