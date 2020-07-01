@@ -4,7 +4,7 @@ As a personal research project, I have collected a large set of mapping of entit
 
 The Java library is found in the directory **ner_dbpedia*. The raw data for these entity to URI mappings are found in the directory **ner_dbpedia/dbpedia_as_text**.
 
-TBD
+This example shows the use of a standard Java and Maven packaging technique: building a JAR file that contains resource files. The example code will read the required data resources from the JAR file (or the temporary **target** directory during development). This will make the JAR file self contained when we use this example in later chapters.
 
 ![Overview of Java Class UML Diagram for this Example](images/nerdbpedia-uml.png)
 
@@ -26,12 +26,12 @@ The class **com.markwatson.ner_dbpedia.NerMaps** is a utility for reading the ra
 ~~~~~~~~
 package com.markwatson.ner_dbpedia;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -40,11 +40,6 @@ import java.util.stream.Stream;
  */
 public class NerMaps {
 
-  private static String theModelPath = null;
-  static {
-    theModelPath = getModelPath();
-  }
-
   private static String enforceAngleBrackets(String s) {
     if (s.startsWith("<")) return s;
     return "<" + s + ">";
@@ -52,15 +47,20 @@ public class NerMaps {
   private static Map<String, String> textFileToMap(String nerFileName) {
     Map<String, String> ret = new HashMap<String, String>();
     try {
-      Stream<String> lines =
-          Files.lines(Paths.get(theModelPath, nerFileName));
+      InputStream in = ClassLoader.getSystemResourceAsStream(nerFileName);
+      BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+      List<String> lines = new ArrayList<String>();
+      String line2;
+      while((line2 = reader.readLine()) != null) {
+        lines.add(line2);
+      }
+      reader.close();
       lines.forEach(line -> {
         String[] tokens = line.split("\t");
         if (tokens.length > 1) {
           ret.put(tokens[0], enforceAngleBrackets(tokens[1]));
         }
       });
-      lines.close();
     } catch (Exception ex) {
       ex.printStackTrace();
     }
@@ -76,22 +76,6 @@ public class NerMaps {
   static public final Map<String, String> politicalPartyNames = textFileToMap("PoliticalPartyNamesDbPedia.txt");
   static public final Map<String, String> tradeUnionNames = textFileToMap("TradeUnionNamesDbPedia.txt");
   static public final Map<String, String> universityNames = textFileToMap("UniversityNamesDbPedia.txt");
-
-  private static String getModelPath() {
-    String ret = "dbpedia_as_text/";
-
-    try {
-      new FileInputStream("dbpedia_as_text/PeopleDbPedia.txt");
-    } catch (FileNotFoundException var4) {
-      try {
-        new FileInputStream("../ner_dbpedia/dbpedia_as_text/PeopleDbPedia.txt");
-        ret = "../ner_dbpedia/dbpedia_as_text/";
-      } catch (FileNotFoundException var3) {
-        System.err.println("Error: can not find named entity files model files, looking in dbpedia_as_text/ and ../ner_dbpedia/dbpedia_as_text/");
-      }
-    }
-    return ret;
-  }
 
   public static void main(String[] args) throws IOException {
     new NerMaps().textFileToMap("CityNamesDbpedia.txt");
