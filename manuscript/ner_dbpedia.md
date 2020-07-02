@@ -119,7 +119,7 @@ public class NerMaps {
 
 The class **com.markwatson.ner_dbpedia.TextToDbpediaUris** processes an input string and uses public fields to output found entity names and matching DBPedia URIs. We will use this code later in the chapter *Automatically Generating Data for Knowledge Graphs*.
 
-The code in the class **TextToDbpediaUris** is simple and repeats two common patterns for each entity type. We will only look at some of the code here.
+The code in the class **TextToDbpediaUris** is simple and repeats two common patterns for each entity type. We will look at some of the code here.
 
 {lang="java",linenos=off}
 ~~~~~~~~
@@ -138,9 +138,9 @@ public class TextToDbpediaUris {
   public List<String> companyNames = new ArrayList<>();
 ~~~~~~~~
 
-The empty constructor is private since it makes no sense to great an instance of **TextToDbpediaUris** with text input. The code supports nine entity types. Here we show the definition of public output fields for just two entity types (people and companies).
+The empty constructor is private since it makes no sense to create an instance of **TextToDbpediaUris** without text input. The code supports nine entity types. Here we show the definition of public output fields for just two entity types (people and companies).
 
-As a matter of programming style I usually no longer use getter and setter methods, preferring a more concise coding style. I usually make output fields package default visibility (i.e., no **private** or **public** specification so the fields are public within a package and private from other packages). Here I make them public because the package **nerdbpedia** developed here is meant to be used by other packages. If you prefer using getter and setter methods, modern IDEs like IntelliJ and Eclipse can generate those for you for the example code in this book.
+As a matter of programming style I generally no longer use getter and setter methods, preferring a more concise coding style. I usually make output fields package default visibility (i.e., no **private** or **public** specification so the fields are public within a package and private from other packages). Here I make them public because the package **nerdbpedia** developed here is meant to be used by other packages. If you prefer using getter and setter methods, modern IDEs like IntelliJ and Eclipse can generate those for you for the example code in this book.
 
 We will handle entity names comprised one, two, and three word sequences. We check for longer word sequences before shorter sequences:
  

@@ -15,7 +15,7 @@ use RDF and RDFS to define relationships between data represented as unique URIs
 ![Semantic Web Data Models](images/semantic_web_data.png)
 
 I wrote a separate book *Practical Semantic Web Programming in Java* that goes into much more detail on the use of Sesame, Jena, Protege, OwlApis, RDF/RDFS/OWL modeling, and Descriptive
-Logic Reasoners. This chapter is meant to get you interested in this technology but is not intended as a detailed guide. You can get a free PDF of *Practical Semantic Web Programming in Java* on my web site. There is also a version for the Common Lisp language that is also available as a free PDF file.
+Logic Reasoners. This chapter is meant to get you interested in this technology but is not intended as a detailed guide. I am not covering RDFS/OWL modeling, and Descriptive Logic Reasoners which are important topics for more advanced semantic web projects, but the material here will be a good start.
 
 ## Available Tools
 
@@ -117,10 +117,9 @@ Furthermore, if we do not have dates for all news articles that is often accepta
 
 ## Extending RDF with RDF Schema {#rdfs}
 
-RDFS supports the definition of classes and properties based on set inclusion. In RDFS classes and properties are orthogonal. We will not simply be using properties to define data attributes for classes – this is different than object modeling and object oriented programming languages like Java. RDFS is encoded as RDF – the same syntax.
+RDFS supports the definition of classes and properties based on set inclusion. In RDFS classes and properties are orthogonal. We will not simply be using properties to define data attributes for classes – this is different from object modeling and object oriented programming languages like Java. RDFS is encoded in RDF – the same syntax.
 
-Because the Semantic Web is intended to be processed automatically by software systems it is encoded as RDF. There is a problem that must be solved in implementing and using the Semantic Web: everyone who publishes Semantic Web data is free to create their own RDF schemas for
-storing data; for example, there is usually no single standard RDF schema definition for topics like news stories and stock market data. Understanding the difficulty of integrating different data sources in different formats helps to understand the design decisions behind the Semantic Web.
+Because the Semantic Web is intended to be processed automatically by software systems it is encoded as RDF. There is a problem that must be solved in implementing and using the Semantic Web: everyone who publishes Semantic Web data is free to create their own RDF schemas for storing data; for example, there is usually no single standard RDF schema definition for topics like news stories and stock market data. Understanding the difficulty of integrating different data sources in different formats helps to understand the design decisions behind the Semantic Web.
 
 We will start with an example that is an extension of the example in the last section that also uses RDFS. We add a few additional RDF statements (that are RDFS):
 
@@ -362,13 +361,9 @@ chapter:
 -   DESCRIBE – returns a new RDF graph containing matched resources
 
 
-## Using Sesame
+## Using Jena
 
-
-Sesame is a complete Java library for developing RDF/RDFS applications
-and we will use it in this chapter. Currently Sesame’s support for OWL
-(see Section [section:owl]) is limited. Other Java libraries I have used
-that more fully support OWL are Jena, OWLAPI, and the Protege library.
+Apache Jena is a complete Java library for developing RDF/RDFS applications and we will use it in this chapter. Other available libraries that we don't use here are RDF4J (used to be Sesame), OWLAPI, AllegroGraph, and the Protege library.
 
 Figure [fig:SPARQL-util-UML] shows a UML diagram for the wrapper
 classes and interface that I wrote for Sesame to make it easier for you
@@ -386,73 +381,19 @@ RDF triple store. I will not cover the internal implementation of the
 classes and interface seen in Figure [fig:SPARQL-util-UML] but you can
 read the source code in the subdirectory src-semantic-web.
 
-
+TBD: replace:
 {#SPARQL-util-UML}
 ![UML Class Diagram for Sesame Wrapper Classes](images/SPARQL_util_UML.png)
 
-We will look in some detail at an example program that uses Sesame and
-my wrapper library for Sesame. The source code for this example is in
-the file ExampleSparqlQueries.java. This example class implements the
-$ISparqlProcessResults$ interface:
+We will look in some detail at an example program that uses Jena. To improve portability to alternative RDF libraries, I wrote two wrapper classes for Jena, one class to represent query results and the other to wrap the Jena APIs that I use.
 
-~~~~~~~~
-    public class ExampleSparqlQueries
-           implements ISparqlProcessResults {
-~~~~~~~~
 
-and does this by defining the method:
+TBD
 
-~~~~~~~~
-        public void processResult(List<String> data) {
-           System.out.print("next result: "); 
-           for (String s : data)
-               System.out.print("|"+s+"|" + "\t  ");
-           System.out.println(" . ");
-        }
-~~~~~~~~
 
-that simply prints out the subject, predicate, and object of each
-matched triple. The class $TripleStoreSesameManager$ method
+![Exaple query in the unit test class](images/jena-ide-sparql-example.png)
 
-~~~~~~~~
-       public String doSparqlQuery(String sparql_query,
-                                   ISparqlProcessResults
-                                   handler) {
-~~~~~~~~
-
-calls a defined $processResult$ method once for each triple that matches
-a query. The $ExampleSparqlQueries$ class makes several SPARQL queries
-and prints the results. These queries are the example queries from the
-last section. Here is an example query with the program output:
-
-~~~~~~~~
-    TripleStoreSesameManager ts =
-            new TripleStoreSesameManager();
-    ts.loadRDF("test_data/news.n3");
-    sparql_query =
-      "PREFIX kb: <http://knowledgebooks.com/ontology#>" +
-      "SELECT ?subject "+
-      "WHERE { ?subject kb:containsState \"Maryland\" . }";
-    ts.doSparqlQuery(sparql_query, this);
-~~~~~~~~
-
-Here is the single line of output (Sesame debug printout is not shown
-and the long line is split into two lines to fit the page width):
-
-~~~~~~~~
-    next result: |http://news.yahoo.com/s/nm/ \\
-                  20080616/ts_nm/worldleaders_trust_dc_1 /|
-~~~~~~~~
-
-Other queries in the last section return two or three values per result;
-this example only returns the subject (article URL). You can run the
-text program implemented in the class $ExampleSparqlQueries$ to see all
-of the query results for the examples in the last section.
-
-There is a lot more to RDFS than what I have covered so far in this
-chapter but I believe you have a sufficient introduction in order to use
-the example programs to experiment with using RDF and RDFS to define
-data and use Sesame in an imbedded mode in your java applications.
+TBD
 
 
 ## OWL: The Web Ontology Language  {#owl}

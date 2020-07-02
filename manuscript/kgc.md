@@ -1,12 +1,12 @@
 # Automatically Generating Data for Knowledge Graphs {#kgcreator}
 
-Here we develop a complete application using the package developed in the earlier chapter *Resolve Entity Names to DBPedia References*. The Knowledge Graph Creator (KGcreator) is a tool for automating the generation of data for Knowledge Graphs from raw text data. Here we generate RDF data for a Knowledge Graph. You might also be interested in the Knowledge Graph Creator implementation in [my Common Lisp book](https://leanpub.com/lovinglisp) that also generates data for the Neo4J open source graph database.
+Here we develop a complete application using the package developed in the earlier chapter *Resolve Entity Names to DBPedia References*. The Knowledge Graph Creator (KGcreator) is a tool for automating the generation of data for Knowledge Graphs from raw text data. Here we generate RDF data for a Knowledge Graph. You might also be interested in the Knowledge Graph Creator implementation in [my Common Lisp book](https://leanpub.com/lovinglisp) that generates data for the Neo4J open source graph database in addition to generating RDF data.
 
 Data created by KGcreator generates data in RDF triples suitable for loading into any linked data/semantic web data store.
 
 This example application works by identifying entities in text. Example entity types are people, companies, country names, city names, broadcast network names, political party names, and university names. We saw earlier code for detecting entities in the chapter on making named entities to DBPedia URIs and we will reuse this code.
 
-When I originally wrote KGCreator as two research prototypes, one in Common Lisp (the example in this chapter) and one in [Haskell](https://leanpub.com/haskell-cookbook/). The example in this chapter is a port of these systems to Java.
+I originally wrote KGCreator as two research prototypes, one in Common Lisp (the example in this chapter) and one in [Haskell](https://leanpub.com/haskell-cookbook/). The example in this chapter is a port of these systems to Java.
 
 ## Implementation Notes
 
@@ -37,7 +37,7 @@ RDF data is comprised of triples, where the value for each triple are a subject,
   <http://dbpedia.org/resource/Canada> .
 ~~~~~~~~
 
-The following listing of the file **KGC.java** that contains the parts of the implementation of our example for generating RDF data. Code for different entity types is similar so the following listing only shows the code for handling entity types for people and companies. The following is reformatted to fit the page width:
+The following listing of the file **KGC.java** contains the the implementation the main Java class for generating RDF data. Code for different entity types is similar so the following listing only shows the code for handling entity types for people and companies. The following is reformatted to fit the page width:
 
 {lang="java",linenos=on}
 ~~~~~~~~
@@ -57,7 +57,7 @@ import java.nio.file.Paths;
  *
  * For documentation see my book "Practical Artificial Intelligence Programming
  * With Java", chapter "Automatically Generating Data for Knowledge Graphs"
- * at https://leanpub.com/javaai that can be read for free online.
+ * at https://leanpub.com/javaai that can be read free online.
  *
  */
 

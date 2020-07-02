@@ -6,7 +6,7 @@ anomaly_detection.md
 genetic_algorithms.md
 machine_learning_neural_networks.md
 deeplearning.md
-statistical_nlp.md
+nlp.md
 opennlp.md
 wordnet.md
 ner_dbpedia.md
