@@ -85,7 +85,7 @@ My preference is to use N-Triple format files as output from programs that I wri
 ~~~~~~~~
 @prefix kb:  <http://knowledgebooks.com/ontology#> .
 
-<http://news.com/201234 /> kb:containsCountry "China"  .
+<http://news.com/201234/> kb:containsCountry "China"  .
 ~~~~~~~~
 
 The Turtle format adds abbreviations to the N-Triple format.
@@ -99,8 +99,8 @@ This was a very simple N3 example which we will expand to show additional featur
 ~~~~~~~~
 @prefix kb:  <http://knowledgebooks.com/ontology#> .
 
-<http://news.com/201234 /> kb:containsCountry "China"  .
-<http://news.com/201234 /> kb:containsCountry "USA"  .
+<http://news.com/201234/> kb:containsCountry "China"  .
+<http://news.com/201234/> kb:containsCountry "USA"  .
 ~~~~~~~~
 
 We can collapse multiple RDF statements that share the same subject and optionally the same predicate:
@@ -109,7 +109,7 @@ We can collapse multiple RDF statements that share the same subject and optional
 ~~~~~~~~
 @prefix kb:  <http://knowledgebooks.com/ontology#> .
 
-<http://news.com/201234 /> kb:containsCountry "China" ,
+<http://news.com/201234/> kb:containsCountry "China" ,
                                               "USA" .
 ~~~~~~~~
 
@@ -119,7 +119,7 @@ We can also add in additional predicates that use the same subject:
 ~~~~~~~~
 @prefix kb:  <http://knowledgebooks.com/ontology#> .
 
-<http://news.com/201234 /> kb:containsCountry "China" ,
+<http://news.com/201234/> kb:containsCountry "China" ,
                                               "USA" .
         kb:containsOrganization "United Nations" ;
         kb:containsPerson "Ban Ki-moon" , "Gordon Brown" ,
@@ -135,8 +135,7 @@ I promised you that the data in RDF data stores was easy to extend. As an exampl
 
 {lang="sparql",linenos=off}
 ~~~~~~~~
-<http://news.com/201234 /> kb:datePublished
-                               "2008-05-11" .
+<http://news.com/201234/> kb:datePublished "2008-05-11" .
 ~~~~~~~~
 
 Furthermore, if we do not have dates for all news articles that is often acceptable depending on the application.
@@ -179,7 +178,7 @@ In addition to providing a vocabulary for describing properties and class member
 SPARQL is a query language used to query RDF data stores. While SPARQL may initially look like SQL, we will see that there are some important differences like support for RDFS and OWL inferencing (see Section [section:owl]) and graph-based instead of relational matching operations. We will cover the basics of SPARQL in this section and then see more examples in Section [section:sesame] when we learn how to embed Sesame in Java applications.
 
 We will use the N3 format RDF file test\_data/news.n3 for the examples in this section and in Section [section:sesame]. This file was created
-automatically by spidering Reuters news stories on the news.yahoo.com web site and automatically extracting named entities from the text of the articles. We will see techniques for extracting named entities from text in the Chapter on Natural Language Processing and the Chapter on Information Gathering. In this chapter we use these sample RDF files that I have created as input from another source.
+automatically by the process of spidering Reuters news stories on the news.yahoo.com web site and automatically extracting named entities from the text of the articles. We will see techniques for extracting named entities from text in the chapter on Natural Language Processing and the chapter on Information Gathering. In this chapter we use these sample RDF files that I have created as input from another source.
 
 You have already seen snippets of this file and I list the entire file here for reference (edited to fit line width: you may find the file news.n3 easier to read if you are at your computer
 and open the file in a text editor so you will not be limited to what fits on a book page):
@@ -195,7 +194,7 @@ kb:containsCountry rdfs:subPropertyOf kb:containsPlace .
 
 kb:containsState rdfs:subPropertyOf kb:containsPlace .
 
-<http://yahoo.com/20080616/usa_flooding_dc_16 />
+<http://yahoo.com/20080616/usa_flooding_dc_16/>
         kb:containsCity "Burlington" , "Denver" ,
                         "St. Paul" ," Chicago" ,
                         "Quincy" , "CHICAGO" ,
@@ -218,7 +217,7 @@ kb:containsState rdfs:subPropertyOf kb:containsPlace .
                                 "finance ministers" ,
                                 "oil" .
 
-<http://yahoo.com/78325/ts_nm/usa_politics_dc_2 />
+<http://yahoo.com/78325/ts_nm/usa_politics_dc_2/>
         kb:containsCity "Washington" , "Baghdad" ,
                         "Arlington" , "Flint" ;
         kb:containsCountry "United States" ,
@@ -237,7 +236,7 @@ kb:containsState rdfs:subPropertyOf kb:containsPlace .
                           "Carly Fiorina" ;
         kb:containsIndustryTerm "oil prices" .
 
-<http://yahoo.com/10944/ts_nm/worldleaders_dc_1 />
+<http://yahoo.com/10944/ts_nm/worldleaders_dc_1/>
         kb:containsCity "WASHINGTON" ;
         kb:containsCountry "United States" , "Pakistan" ,
                            "Islamic Republic of Iran" ;
@@ -251,7 +250,7 @@ kb:containsState rdfs:subPropertyOf kb:containsPlace .
                           "Steven Kull" ,
                           "Mahmoud Ahmadinejad" .
 
-<http://yahoo.com/10622/global_economy_dc_4 />
+<http://yahoo.com/10622/global_economy_dc_4/>
         kb:containsCity "Sao Paulo" , "Kuala Lumpur" ;
         kb:containsRegion "Midwest" ;
         kb:containsCountry "United States" , "Britain" ,
@@ -281,16 +280,16 @@ kb:containsState rdfs:subPropertyOf kb:containsPlace .
                                 "Oil prices" , "oil" .
 ~~~~~~~~
 
-In the following examples, we will look at queries but not the results. Please be patient: these same queries are used in the embedded Java examples in the next section so it makes sense to only list the query return values in one place. Besides that, you will enjoy running the example programs yourself and experiment with modifying the queries.
+In the following examples, we will use the main method in the class **JenaApi** that allows us to load multiple RDF input files and then to interactively enter SPARQL queries.
 
-We will start with a simple SPARQL query for subjects (news article URLs) and objects (matching countries) with the value for the predicate equal to $containsCountry$:
+We will start with a simple SPARQL query for subjects (news article URLs) and objects (matching countries) with the value for the predicate equal to **containsCountry**:
 
 {lang="sparql",linenos=off}
 ~~~~~~~~
 SELECT ?subject ?object
       WHERE {
         ?subject
-        http://knowledgebooks.com/ontology#containsCountry>
+        <http://knowledgebooks.com/ontology#containsCountry>
         ?object .
 }
 ~~~~~~~~
@@ -299,62 +298,167 @@ Variables in queries start with a question mark character and can have any names
 
 {lang="sparql",linenos=off}
 ~~~~~~~~
-    PREFIX kb:  <http://knowledgebooks.com/ontology#>
-    SELECT ?subject ?object
-      WHERE {
-          ?subject kb:containsCountry ?object .
-      }
+PREFIX kb:  <http://knowledgebooks.com/ontology#>
+SELECT ?subject ?object
+  WHERE {
+      ?subject kb:containsCountry ?object .
+  }
 ~~~~~~~~
 
-We could have filtered on any other predicate, for instance $containsPlace$. Here is another example using a match against a string literal to find all articles exactly matching the text “Maryland.” The
-following queries were copied from Java source files and were embedded as string literals so you will see quotation marks backslash escaped in these examples. If you were entering these queries into a query form you would not escape the quotation marks.
+**Using the command line option in the Jena wrapper example**
+
+We will later implement the Java class **JenaApis**. You can run the method **main** in the Java class **JenaApis** using the following to load RDF input files and interactively make SPARQL queries against the RDF data in the input files:
+
+{lang="bash",linenos=on}
+~~~~~~~~
+$ mvn exec:java -Dexec.mainClass="com.markwatson.semanticweb.JenaApis" \
+               -Dexec.args="data/news.n3 data/sample_news.nt"
+~~~~~~~~
+
+The command line argument in line 3 starting with **-Dexec.args=** is one way to pass command line arguments to the method **main**. The backslash character at the end of line 2 is the way to continue a long command line request in bash or zsh.
+
+Here is an interactive example of the last SPARQL example:
+
+{lang="bash",linenos=off}
+~~~~~~~~
+$ mvn exec:java -Dexec.mainClass="com.markwatson.semanticweb.JenaApis" \
+               -Dexec.args="data/news.n3"
+
+Multiple queries are OK.
+Enter a blank line to process query.
+Enter a SPARQL query:
+PREFIX kb:  <http://knowledgebooks.com/ontology#>
+SELECT ?subject ?object
+  WHERE {
+      ?subject kb:containsCountry ?object .
+  }
+
+[QueryResult vars:[subject, object]
+Rows:
+	[http://news.yahoo.com/s/nm/20080616/bs_nm/global_economy_dc_4/, Russia]
+	[http://news.yahoo.com/s/nm/20080616/ts_nm/usa_flooding_dc_16/, Japan]
+	[http://news.yahoo.com/s/nm/20080616/bs_nm/global_economy_dc_4/, India]
+	[http://news.yahoo.com/s/nm/20080616/ts_nm/worldleaders_trust_dc_1/, United States]
+	[http://news.yahoo.com/s/nm/20080616/ts_nm/usa_politics_dc_2/, Afghanistan]
+	[http://news.yahoo.com/s/nm/20080616/bs_nm/global_economy_dc_4/, Saudi Arabia]
+	[http://news.yahoo.com/s/nm/20080616/bs_nm/global_economy_dc_4/, United States]
+	[http://news.yahoo.com/s/nm/20080616/bs_nm/global_economy_dc_4/, France]
+	[http://news.yahoo.com/s/nm/20080616/ts_nm/usa_politics_dc_2/, Iraq]
+	[http://news.yahoo.com/s/nm/20080616/ts_nm/worldleaders_trust_dc_1/, Pakistan]
+	[http://news.yahoo.com/s/nm/20080616/bs_nm/global_economy_dc_4/, Spain]
+	[http://news.yahoo.com/s/nm/20080616/bs_nm/global_economy_dc_4/, Italy]
+	[http://news.yahoo.com/s/nm/20080616/ts_nm/worldleaders_trust_dc_1/, Islamic Republic of Iran]
+	[http://news.yahoo.com/s/nm/20080616/bs_nm/global_economy_dc_4/, Canada]
+	[http://news.yahoo.com/s/nm/20080616/bs_nm/global_economy_dc_4/, Britain]
+	[http://news.yahoo.com/s/nm/20080616/ts_nm/usa_politics_dc_2/, United States]
+	[http://news.yahoo.com/s/nm/20080616/bs_nm/global_economy_dc_4/, South Korea]
+	[http://news.yahoo.com/s/nm/20080616/bs_nm/global_economy_dc_4/, Germany]
+	[http://news.yahoo.com/s/nm/20080616/ts_nm/usa_flooding_dc_16/, United States]
+	[http://news.yahoo.com/s/nm/20080616/bs_nm/global_economy_dc_4/, China]
+	[http://news.yahoo.com/s/nm/20080616/bs_nm/global_economy_dc_4/, Japan]
+
+Enter a SPARQL query:
+~~~~~~~~
+
+We could have filtered on any other predicate, for instance **containsPlace**. Here is another example using a match against a string literal to find all articles exactly matching the text “Maryland.”
 
 {lang="sparql",linenos=off}
 ~~~~~~~~
-PREFIX kb: <http://knowledgebooks.com/ontology#>
+PREFIX kb:  <http://knowledgebooks.com/ontology#>
+SELECT ?subject WHERE { ?subject kb:containsState "Maryland" . }
+~~~~~~~~
 
-SELECT ?subject WHERE { ?subject kb:containsState \"Maryland\" . }
+The output is:
+
+{lang="bash",linenos=off}
+~~~~~~~~
+Enter a SPARQL query:
+PREFIX kb:  <http://knowledgebooks.com/ontology#>
+SELECT ?subject WHERE { ?subject kb:containsState "Maryland" . }
+
+[QueryResult vars:[subject]
+Rows:
+	[http://news.yahoo.com/s/nm/20080616/ts_nm/worldleaders_trust_dc_1/]
 ~~~~~~~~
 
 We can also match partial string literals against regular expressions:
 
 {lang="sparql",linenos=off}
 ~~~~~~~~
-PREFIX kb:  
-
+PREFIX kb: <http://knowledgebooks.com/ontology#>
 SELECT ?subject ?object
        WHERE {
          ?subject
          kb:containsOrganization
-         ?object FILTER regex(?object, \"University\") .
+         ?object FILTER regex(?object, "University") .
        }
 ~~~~~~~~
 
-Prior to this last example query we only requested that the query return
-values for subject and predicate for triples that matched the query.
-However, we might want to return all triples whose subject (in this case
-a news article URI) is in one of the matched triples. Note that there
-are two matching triples, each terminated with a period:
+The output is:
+
+{lang="bash",linenos=off}
+~~~~~~~~
+Enter a SPARQL query:
+PREFIX kb: <http://knowledgebooks.com/ontology#>
+SELECT ?subject ?object
+       WHERE {
+         ?subject
+         kb:containsOrganization
+         ?object FILTER regex(?object, "University") .
+       }
+
+[QueryResult vars:[subject, object]
+Rows:
+	[http://news.yahoo.com/s/nm/20080616/ts_nm/worldleaders_trust_dc_1/, University of Maryland]
+~~~~~~~~
+
+Prior to this last example query we only requested that the query returnvalues for subject and predicate for triples that matched the query.
+However, we might want to return all triples whose subject (in this case a news article URI) is in one of the matched triples. Note that there are two matching triples, each terminated with a period:
 
 {lang="sparql",linenos=off}
 ~~~~~~~~
 PREFIX kb: <http://knowledgebooks.com/ontology#>
-
-SELECT ?subject ?a_predicate ?an_object
-       WHERE {
-        ?subject
-        kb:containsOrganization
-        ?object FILTER regex(?object, \"University\") .
-
-        ?subject ?a_predicate ?an_object .
-       }
-       DISTINCT
-       ORDER BY ?a_predicate  ?an_object
-       LIMIT 10
-       OFFSET 5
+SELECT DISTINCT ?subject ?a_predicate ?an_object
+ WHERE {
+    ?subject kb:containsOrganization ?object FILTER regex(?object,"University") .
+    ?subject ?a_predicate ?an_object .
+}
+ORDER BY ?a_predicate ?an_object
+LIMIT 10
+OFFSET 5
 ~~~~~~~~
 
 When WHERE clauses contain more than one triple pattern to match, this is equivalent to a Boolean “and” operation. The DISTINCT clause removes duplicate results. The ORDER BY clause sorts the output in alphabetical order: in this case first by predicate (containsCity, containsCountry, etc.) and then by object. The LIMIT modifier limits the number of results returned and the OFFSET modifier sets the number of matching results to skip.
+
+The output is:
+
+{lang="bash",linenos=off}
+~~~~~~~~
+Enter a SPARQL query:
+PREFIX kb: <http://knowledgebooks.com/ontology#>
+SELECT DISTINCT ?subject ?a_predicate ?an_object
+ WHERE {
+    ?subject kb:containsOrganization ?object FILTER regex(?object,"University") .
+    ?subject ?a_predicate ?an_object .
+}
+ORDER BY ?a_predicate ?an_object
+LIMIT 10
+OFFSET 5
+
+[QueryResult vars:[subject, a_predicate, an_object]
+Rows:
+	[http://news.yahoo.com/s/nm/20080616/ts_nm/worldleaders_trust_dc_1/, http://knowledgebooks.com/ontology#containsOrganization, University of Maryland]
+	[http://news.yahoo.com/s/nm/20080616/ts_nm/worldleaders_trust_dc_1/, http://knowledgebooks.com/ontology#containsPerson, Ban Ki-moon]
+	[http://news.yahoo.com/s/nm/20080616/ts_nm/worldleaders_trust_dc_1/, http://knowledgebooks.com/ontology#containsPerson, George W. Bush]
+	[http://news.yahoo.com/s/nm/20080616/ts_nm/worldleaders_trust_dc_1/, http://knowledgebooks.com/ontology#containsPerson, Gordon Brown]
+	[http://news.yahoo.com/s/nm/20080616/ts_nm/worldleaders_trust_dc_1/, http://knowledgebooks.com/ontology#containsPerson, Hu Jintao]
+	[http://news.yahoo.com/s/nm/20080616/ts_nm/worldleaders_trust_dc_1/, http://knowledgebooks.com/ontology#containsPerson, Mahmoud Ahmadinejad]
+	[http://news.yahoo.com/s/nm/20080616/ts_nm/worldleaders_trust_dc_1/, http://knowledgebooks.com/ontology#containsPerson, Pervez Musharraf]
+	[http://news.yahoo.com/s/nm/20080616/ts_nm/worldleaders_trust_dc_1/, http://knowledgebooks.com/ontology#containsPerson, Steven Kull]
+	[http://news.yahoo.com/s/nm/20080616/ts_nm/worldleaders_trust_dc_1/, http://knowledgebooks.com/ontology#containsPerson, Vladimir Putin]
+	[http://news.yahoo.com/s/nm/20080616/ts_nm/worldleaders_trust_dc_1/, http://knowledgebooks.com/ontology#containsState, Maryland]
+~~~~~~~~
+
 
 We are finished with our quick tutorial on using the SELECT query form. There are three other query forms that I am not covering in this chapter:
 
@@ -372,7 +476,7 @@ Apache Jena is a complete Java library for developing RDF/RDFS applications and 
 
 The following figure shows a UML diagram for the wrapper classes and interface that I wrote for Jena to make it easier for you to get started. My wrapper uses an in-memory RDF repository that supports inference, loading RDF/RDFS/OWL files, and performing queries. If you decide to use Semantic Web technologies in your development you will eventually want to use the full Sesame APIs for programmatically creating new RDF triples, finer control of the type of repository (options are in-memory, disk based, and database) and inferencing, and programmatically using query results. That said, using my wrapper library is a good place for you to start to start experimenting.
 
-The class constructor $$JenaApis$$ opens a new in-memory RDF triple store.
+The class constructor **JenaApis** opens a new in-memory RDF triple store.
 
 ![UML Class Diagram for Apache Jena Wrapper Classes](images/jenaapis-uml.png)
 
@@ -405,7 +509,8 @@ public class QueryResult {
   public List<String> variableList;
   public List<List<String>> rows = new ArrayList();
   public String toString() {
-    StringBuilder sb = new StringBuilder("[QueryResult vars:" + variableList + "\nRows:\n");
+    StringBuilder sb = new StringBuilder("[QueryResult vars:" + variableList +
+                  "\nRows:\n");
     for (List<String> row : rows) {
       sb.append("\t" + row + "\n");
     }
@@ -477,7 +582,37 @@ public class JenaApis {
   private Model model;
 
   public static void main(String[] args) {
-
+    /*
+    Execute using, for example:
+         mvn exec:java -Dexec.mainClass="com.markwatson.semanticweb.JenaApis" -Dexec.args="data/news.n3"
+     */
+    JenaApis ja = new JenaApis();
+    System.out.println(args.length);
+    if (args.length == 0) {
+      // no RDF input file names on command line so use a default file:
+      ja.loadRdfFile("data/news.n3");
+    } else {
+      for (String fpath : args) {
+        ja.loadRdfFile(fpath);
+      }
+    }
+    System.out.println("Multiple queries are OK.");
+    System.out.println("Enter a blank line to process query.");
+    while (true) {
+      System.out.println("Enter a SPARQL query:");
+      Scanner sc = new Scanner(System.in);
+      StringBuilder sb = new StringBuilder();
+      while (sc.hasNextLine()) {  //until no other inputs to proceed
+        String s = sc.nextLine();
+        if (s.equals("quit") || s.equals("QUIT") || s.equals("exit") || s.equals("EXIT"))
+          System.exit(0);
+        if (s.length() < 1) break;
+        sb.append(s);
+        sb.append("\n");
+      }
+      QueryResult qr = ja.query(sb.toString());
+      System.out.println(qr);
+    }
   }
 }
 ~~~~~~~~
