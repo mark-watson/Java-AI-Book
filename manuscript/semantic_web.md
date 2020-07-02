@@ -556,7 +556,7 @@ We saw an example of expressing transitive relationships when we were using Powe
 
 We have been using the RDF file news.n3 in previous examples and we will layer new examples by adding new triples that represent RDF, RDFS, and OWL. We saw in news.n3 the definition of three triples using rdfs:subPropertyOf properties to create a more general kb:containsPlace property:
 
-{lang="rdf",linenos=off}
+{lang="sparql",linenos=off}
 ~~~~~~~~
 kb:containsCity rdfs:subPropertyOf kb:containsPlace .
 kb:containsCountry rdfs:subPropertyOf kb:containsPlace .
@@ -570,7 +570,7 @@ kbplace:Illinois kb:containsCity kbplace:Chicago .
 
 We can also infer that:
 
-{lang="rdf",linenos=off}
+{lang="sparql",linenos=off}
 ~~~~~~~~
 kbplace:UnitedStates kb:containsPlace kbplace:Chicago .
 ~~~~~~~~
@@ -579,7 +579,7 @@ We can also model inverse properties in OWL. For example, here we add an
 inverse property kb:containedIn, adding it to the example in the last
 listing:
 
-{lang="rdf",linenos=off}
+{lang="sparql",linenos=off}
 ~~~~~~~~
 kb:containedIn owl:inverseOf kb:containsPlace .
 ~~~~~~~~
