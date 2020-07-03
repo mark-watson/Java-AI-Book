@@ -504,10 +504,11 @@ For portability to other RDF and semantic web libraries, when we wrap the Jena A
 ~~~~~~~~
 package com.markwatson.semanticweb;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class QueryResult {
+public class QueryResult implements Serializable {
   private QueryResult() { }
   public QueryResult(List<String> variableList) {
     this.variableList = variableList;
@@ -533,6 +534,7 @@ The following listing shows the wrapper class **JenaApis**:
 ~~~~~~~~
 package com.markwatson.semanticweb;
 
+import org.apache.commons.lang3.SerializationUtils;
 import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.*;
 import org.apache.jena.riot.RDFDataMgr;
@@ -541,8 +543,11 @@ import org.apache.jena.riot.RDFFormat;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.sql.Blob;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 public class JenaApis {
 
@@ -585,6 +590,33 @@ public class JenaApis {
     return qr;
   }
 
+  public QueryResult queryRemote(String service, String sparqlQuery) throws SQLException, ClassNotFoundException {
+    if (cache == null) cache = new Cache();
+    byte [] b = cache.fetchResultFromCache(sparqlQuery);
+    if (b != null) {
+      System.out.println("Found query in cache.");
+      QueryResult l = SerializationUtils.deserialize(b);
+      return l;
+    }
+    Query query = QueryFactory.create(sparqlQuery);
+    QueryExecution qexec = QueryExecutionFactory.sparqlService(service, sparqlQuery);
+    ResultSet results = qexec.execSelect();
+    QueryResult qr = new QueryResult(results.getResultVars());
+    for (; results.hasNext(); ) {
+      QuerySolution solution = results.nextSolution();
+      List<String> newResultRow = new ArrayList();
+      for (String var : qr.variableList) {
+        newResultRow.add(solution.get(var).toString());
+      }
+      qr.rows.add(newResultRow);
+    }
+    byte [] b3 = SerializationUtils.serialize(qr);
+    //System.out.println("b3=" + b3);
+    cache.saveQueryResultInCache(sparqlQuery, b3);
+    return qr;
+  }
+
+  private Cache cache = null;
   private Model model;
 
   public static void main(String[] args) {
