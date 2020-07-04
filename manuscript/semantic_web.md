@@ -526,7 +526,7 @@ public class QueryResult implements Serializable {
 }
 ~~~~~~~~
 
-I defined a **toString** method so when you print an instance of the class QueryResult** you see the contained data.
+I defined a **toString** method so when you print an instance of the class **QueryResult** you see the contained data.
 
 The following listing shows the wrapper class **JenaApis**:
 
@@ -552,8 +552,9 @@ import java.util.Scanner;
 public class JenaApis {
 
   public JenaApis() {
-    model = ModelFactory.createDefaultModel();
-  }
+     //model = ModelFactory.createDefaultModel(); // use if OWL reasoning not required
+    model = ModelFactory.createOntologyModel(); // use OWL reasoner
+ }
 
   public Model model() {
     return model;
@@ -611,7 +612,6 @@ public class JenaApis {
       qr.rows.add(newResultRow);
     }
     byte [] b3 = SerializationUtils.serialize(qr);
-    //System.out.println("b3=" + b3);
     cache.saveQueryResultInCache(sparqlQuery, b3);
     return qr;
   }
@@ -622,10 +622,10 @@ public class JenaApis {
   public static void main(String[] args) {
     /*
     Execute using, for example:
-         mvn exec:java -Dexec.mainClass="com.markwatson.semanticweb.JenaApis" -Dexec.args="data/news.n3"
+         mvn exec:java -Dexec.mainClass="com.markwatson.semanticweb.JenaApis" \
+              -Dexec.args="data/news.n3"
      */
     JenaApis ja = new JenaApis();
-    System.out.println(args.length);
     if (args.length == 0) {
       // no RDF input file names on command line so use a default file:
       ja.loadRdfFile("data/news.n3");
@@ -634,7 +634,7 @@ public class JenaApis {
         ja.loadRdfFile(fpath);
       }
     }
-    System.out.println("Multiple queries are OK.");
+    System.out.println("Multi-line queries are OK but don't use blank lines.");
     System.out.println("Enter a blank line to process query.");
     while (true) {
       System.out.println("Enter a SPARQL query:");
@@ -642,7 +642,8 @@ public class JenaApis {
       StringBuilder sb = new StringBuilder();
       while (sc.hasNextLine()) {  //until no other inputs to proceed
         String s = sc.nextLine();
-        if (s.equals("quit") || s.equals("QUIT") || s.equals("exit") || s.equals("EXIT"))
+        if (s.equals("quit") || s.equals("QUIT") || 
+            s.equals("exit") || s.equals("EXIT"))
           System.exit(0);
         if (s.length() < 1) break;
         sb.append(s);
@@ -657,7 +658,14 @@ public class JenaApis {
 
 TBD
 
-The following class shows the unit test class **JenaApisTest**:
+The following class shows the unit test class **JenaApisTest** that provides examples for:
+
+- Create an instance of **JenaApis**.
+- Run a SPARQL query against the remote public DBPedia service endpoint.
+- Repeat the remote SPARQL query to show query caching using the Apache Derby relational database.
+- Load three input data files in N-Triple and N3 format.
+- Run a SPARQL query against the RDF data that we just loaded.
+- Save the current model as RDF text files in both N-Triple and N3 format.
 
 {lang="java",linenos=on}
 ~~~~~~~~
@@ -691,6 +699,17 @@ public class JenaApisTest extends TestCase {
    */
   public void test1() throws Exception {
     JenaApis jenaApis = new JenaApis();
+    // test remote SPARQL queries against DBPedia SPARQL endpoint
+    QueryResult qrRemote = jenaApis.queryRemote(
+        "https://dbpedia.org/sparql",
+        "select distinct ?s { ?s ?p <http://dbpedia.org/resource/Parks> } LIMIT 10");
+    System.out.println("qrRemote:" + qrRemote);
+    System.out.println("Repeat query to test caching:");
+    qrRemote = jenaApis.queryRemote(
+        "https://dbpedia.org/sparql",
+        "select distinct ?s { ?s ?p <http://dbpedia.org/resource/Parks> } LIMIT 10");
+    System.out.println("qrRemote (hopefully from cache):" + qrRemote);
+
     jenaApis.loadRdfFile("data/rdfs_business.nt");
     jenaApis.loadRdfFile("data/sample_news.nt");
     jenaApis.loadRdfFile("data/sample_news.n3");
@@ -703,6 +722,29 @@ public class JenaApisTest extends TestCase {
     jenaApis.saveModelToN3Format("model_save.n3");
   }
 
+  /**
+   * Test that is just for side effect printouts:
+   */
+  public void testOwlReasoning() throws Exception {
+    JenaApis jenaApis = new JenaApis();
+    jenaApis.loadRdfFile("data/news.n3");
+
+    QueryResult qr = jenaApis.query(
+        "prefix kb:  <http://knowledgebooks.com/ontology#> \n" +
+        "select ?s ?o where { ?s kb:containsCity ?o } ");
+    System.out.println("qr:" + qr);
+
+    qr = jenaApis.query(
+        "prefix kb:  <http://knowledgebooks.com/ontology#> \n" +
+            "select ?s ?o where { ?s kb:containsPlace ?o }");
+    System.out.println("qr:" + qr);
+
+    qr = jenaApis.query(   // count for each place name
+        "prefix kb:  <http://knowledgebooks.com/ontology#> \n" +
+            "select ?o (count(*) as ?count) where { ?s kb:containsPlace ?o } " +
+            "group by ?o");
+    System.out.println("qr:" + qr);
+  }
 }
 ~~~~~~~~
 
@@ -712,7 +754,7 @@ TBD
 
 
 We have already seen a few examples of using RDFS to define
-sub-properties in the this chapter. The Web Ontology Language (OWL) extends the expressive power of RDFS. We will not cover OWL programming examples in this book but this section will provide some background material. The following RDF data stores support at lease some level of OWL reasoning:
+sub-properties in the this chapter. The Web Ontology Language (OWL) extends the expressive power of RDFS. We now look at a few OWL examples and then look at the Java unit test showing three SPARQL queries that use OWL reasoning. The following RDF data stores support at lease some level of OWL reasoning:
 
 -   ProtegeOwlApis – compatible with the Protege Ontology editor
 -   Pellet – DL reasoner
@@ -727,7 +769,7 @@ OWL is more expressive than RDFS in that it supports cardinality, richer class r
 
 We saw an example of expressing transitive relationships when we were using PowerLoom in the chapter on *Reasoning* where we defined a PowerLoom rule to express that the relation “contains” is transitive. We will now look at a similar example using OWL.
 
-We have been using the RDF file news.n3 in previous examples and we will layer new examples by adding new triples that represent RDF, RDFS, and OWL. We saw in news.n3 the definition of three triples using rdfs:subPropertyOf properties to create a more general kb:containsPlace property:
+We have been using the RDF file news.n3 in previous examples and we will layer new examples by adding new triples that represent RDF, RDFS, and OWL. We saw in news.n3 the definition of three triples using **rdfs:subPropertyOf** properties to create a more general kb:containsPlace property:
 
 {lang="sparql",linenos=off}
 ~~~~~~~~
@@ -762,6 +804,93 @@ Given an RDF container that supported extended OWL DL SPARQL queries, we can now
 OWL DL is a very large subject and OWL is an even larger subject. From reading chapter on Reasoning and the very light coverage of OWL in this section, you should understand the concept of class membership not by explicitly stating that an object (or individual) is a member of a class, but rather because an individual has properties that can be used to infer class membership.
 
 The World Wide Web Consortium has defined three versions of the OWL language that are in increasing order of complexity: OWL Lite, OWL DL, and OWL Full. OWL DL (supports Description Logic) is the most widely used (and recommended) version of OWL. OWL Full is not computationally decidable since it supports full logic, multiple class inheritance, and other things that probably make it computationally intractable for all but small problems.
+
+We will know look at some Java code (from the unit test class **JenaApisTest** TBD
+
+The following is not affected by using an OWL reasoner because the property **kb:containsCity** occurs directly in the input RDF data:
+
+{lang="java",linenos=off}
+~~~~~~~~
+    JenaApis jenaApis = new JenaApis();
+    jenaApis.loadRdfFile("data/news.n3");
+
+    QueryResult qr = jenaApis.query(
+        "prefix kb:  <http://knowledgebooks.com/ontology#> \n" +
+        "select ?s ?o where { ?s kb:containsCity ?o } ");
+    System.out.println("qr:" + qr);
+~~~~~~~~
+
+The following has been edited to just keep a few output lines per result set:
+
+{lang="sparql",linenos=off}
+~~~~~~~~
+qr:[QueryResult vars:[s, o]
+Rows:
+	[http://news.yahoo.com/s/nm/20080616/ts_nm/usa_flooding_dc_16/, St. Paul]
+	[http://news.yahoo.com/s/nm/20080616/ts_nm/usa_politics_dc_2/, FLINT]
+	[http://news.yahoo.com/s/nm/20080616/ts_nm/usa_flooding_dc_16/, CHICAGO]
+	
+	  ... output removed. note: there were 15 results for query
+	  
+  	[http://news.yahoo.com/s/nm/20080616/ts_nm/usa_flooding_dc_16/, Quincy]
+	[http://news.yahoo.com/s/nm/20080616/ts_nm/usa_flooding_dc_16/, Iowa City]
+~~~~~~~~
+
+Here we use a query that is affected by using an OWL reasoner:
+
+{lang="java",linenos=off}
+~~~~~~~~
+    qr = jenaApis.query(
+        "prefix kb:  <http://knowledgebooks.com/ontology#> \n" +
+            "select ?s ?o where { ?s kb:containsPlace ?o }");
+    System.out.println("qr:" + qr);
+~~~~~~~~
+
+The following has been edited to just keep a few output lines per result set:
+
+{lang="sparql",linenos=off}
+~~~~~~~~
+qr:[QueryResult vars:[s, o]
+Rows:
+	[http://news.yahoo.com/s/nm/20080616/ts_nm/usa_flooding_dc_16/, St. Paul]
+	[http://news.yahoo.com/s/nm/20080616/ts_nm/usa_politics_dc_2/, FLINT]
+	[http://news.yahoo.com/s/nm/20080616/ts_nm/usa_flooding_dc_16/, CHICAGO]
+	[http://news.yahoo.com/s/nm/20080616/bs_nm/global_economy_dc_4/, Kuala Lumpur]
+	
+	  ... output removed. note: there were 46 results for query
+	  
+	global_economy_dc_4/, United States]
+	[http://news.yahoo.com/s/nm/20080616/bs_nmglobal_economy_dc_4/, Germany]
+	[http://news.yahoo.com/s/nm/20080616/ts_nm/usa_flooding_dc_16/, United States]
+~~~~~~~~
+	
+We now group (aggregate) query results and count the number of times each place name has occurred in the result (this query requires an OWL reasoner):
+
+{lang="java",linenos=off}
+~~~~~~~~
+    qr = jenaApis.query(   // count for each place name
+        "prefix kb:  <http://knowledgebooks.com/ontology#> \n" +
+            "select ?o (count(*) as ?count) where { ?s kb:containsPlace ?o } " +
+            "group by ?o");
+    System.out.println("qr:" + qr);
+~~~~~~~~
+
+{lang="sparql",linenos=off}
+~~~~~~~~
+qr:[QueryResult vars:[o, count]
+Rows:
+	[Chicago, 1^^http://www.w3.org/2001/XMLSchema#integer]
+	[Illinois, 2^^http://www.w3.org/2001/XMLSchema#integer]
+	[Arizona, 1^^http://www.w3.org/2001/XMLSchema#integer]
+	
+	  ... output removed. note: there were 40 results for query
+	
+	[United States, 4^^http://www.w3.org/2001/XMLSchema#integer]
+	[Iowa, 1^^http://www.w3.org/2001/XMLSchema#integer]
+	[Japan, 2^^http://www.w3.org/2001/XMLSchema#integer]
+	[Spain, 1^^http://www.w3.org/2001/XMLSchema#integer]
+~~~~~~~~
+
 
 ## Semantic Web Wrap-up
 
