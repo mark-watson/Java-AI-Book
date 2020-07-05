@@ -18,7 +18,7 @@ I cover the semantic web in this book because I believe that semantic web techno
 
 There are several very good semantic web toolkits for the Java language and platform. Here we use Apache Jena because it is what I often use in my own work and I believe that it is a good starting technology for your first experiments with semantic web technologies. This chapter provides an incomplete coverage of semantic web technologies and is intended as a gentle introduction to a few useful techniques and how to implement those techniques in Java. This chapter is the start of a journey in the technology that I think is as important as technologies like deep learning that get more public mindshare.
 
-The following figure shows a layered hierarchy of data models that are used to implement semantic web applications. To design and implement these applications we need to think in terms of physical models (storage and access of RDF, RDFS, and perhaps OWL data), logical models (how we use RDF and RDFS to define relationships between data represented as unique URIs and string literals and how we logically combine data from different sources) and conceptual modeling (higher level knowledge representation using OWL). Originally RDF data was serialized as XML data but other formats have become much more popular because they are easier to read and manually create. The top three layers in the figurmight be represented as XML, as LD-JSON (linked data JSON) or formats like N-Triples and N3 that we will use later.
+The following figure shows a layered hierarchy of data models that are used to implement semantic web applications. To design and implement these applications we need to think in terms of physical models (storage and access of RDF, RDFS, and perhaps OWL data), logical models (how we use RDF and RDFS to define relationships between data represented as unique URIs and string literals and how we logically combine data from different sources) and conceptual modeling (higher level knowledge representation and reasoning using OWL). Originally RDF data was serialized as XML data but other formats have become much more popular because they are easier to read and manually create. The top three layers in the figure might be represented as XML, or as LD-JSON (linked data JSON) or formats like N-Triples and N3 that we will use later.
 
 {#semantic-web-data-models}
 ![Semantic Web Data Models](images/semantic_web_data.png)
@@ -29,50 +29,51 @@ This chapter is meant to get you interested in this technology but is not intend
 
 In the previous edition of this book I used the open source Sesame library for the material on RDF. Sesame is now called RDF4J and is part of the Eclipse organization's projects.
 
-I decided to use the Apache Jena project in this new edition because I think Jena is slightly easier to set up a light weight development environment. If you need to set up an RDF server I strongly recommend using the [Fuseki](https://jena.apache.org/documentation/fuseki2/) server which is part of the Apache Jena project. For client applications we will use the Jena library for working with RDF and performing SPARQL queries using the example classss **JenaApis** that we implement later and also remote SPARQL endpoints (i.e., public RDF data sources with SPARQL query interfaces) like DBPedia and WikiData.
+I decided to use the Apache Jena project in this new edition because I think Jena is slightly easier to set up a light weight development environment. If you need to set up an RDF server I recommend using the [Fuseki](https://jena.apache.org/documentation/fuseki2/) server which is part of the Apache Jena project. For client applications we will use the Jena library for working with RDF and performing SPARQL queries using the example classss **JenaApis** that we implement later and also for querying remote SPARQL endpoints (i.e., public RDF data sources with SPARQL query interfaces) like DBPedia and WikiData.
 
 ## Relational Database Model Has Problems Dealing with Rapidly Changing Data Requirements  {#rdms-problems}
 
 When people are first introduced to semantic web technologies their first reaction is often something like, “I can just do that with a database.” The relational database model is an efficient way to express and work with slowly changing data schemas. There are some clever tools for dealing with data change requirements in the database world (ActiveRecord and migrations being a good example) but it is awkward to have end users and even developers tagging on new data attributes to relational database tables.
 
-This same limitation also applies to object oriented programming and object modeling. Even with dynamic languages that facilitate modifying classes at runtime, the options for adding attributes to existing models is just too limiting. The same argument can be made against the use of XML constrained by conformance to either DTDs or XML Schemas. It is true that RDF and RDFS can be serialized to XML using many pre existing XML namespaces for different knowledge sources and schemas but it turns out that this is done in a way that does not reduce the flexibility for extending data models. XML storage is really only a serialization of RDF and many developers who are just starting to use semantic web technologies initially get confused trying to read XML serialization of RDF – almost like trying to read a PDF file with a plain text editor and something to be avoided. We will use the N-Triple and N3 formats that are simpler to read and understand.
+This same limitation also applies to object oriented programming and object modeling. Even with dynamic languages that facilitate modifying classes at runtime, the options for adding attributes to existing models are just too limiting. The same argument can be made against the use of XML constrained by conformance to either DTDs or XML Schemas. It is true that RDF and RDFS can be serialized to XML using many pre existing XML namespaces for different knowledge sources and schemas but it turns out that this is done in a way that does not reduce the flexibility for extending data models. XML storage is really only a serialization of RDF and many developers who are just starting to use semantic web technologies initially get confused trying to read XML serialization of RDF – almost like trying to read a PDF file with a plain text editor and something to be avoided. We will use the N-Triple and N3 formats that are simpler to read and understand.
 
 One goal for the rest of this chapter is convincing you that modeling data with RDF and RDFS facilitates freely extending data models and also allows fairly easy integration of data from different sources using different schemas without explicitly converting data from one schema to another for reuse. You are free to add new data properties and add information to existing graphs (which we refer to a *models*).
 
 ## RDF: The Universal Data Format
 
-The Resource Description Framework (RDF) is used to encode information and the RDF Schema (RDFS) facilitates using data with different RDF encodings without the need to one set of schemas to another. Later, using OWL we can simply declare that one property is the same as another, that one property is a sub-property of another (e.g., a property **containsCity** can be declared to be a sub-property of **containsPlace** so if something contains a city then it also contains a place), etc.
+The Resource Description Framework (RDF) is used to encode information and the RDF Schema (RDFS) facilitates using data with different RDF encodings without the need to convert one set of schemas to another. Later, using OWL we can simply declare that one predicate is the same as another, that is, one predicate is a sub-predicate of another (e.g., a property **containsCity** can be declared to be a sub-property of **containsPlace** so if something contains a city then it also contains a place), etc. The predicate part of an RDF statement often refers to a property.
 
-RDF data was originally encoded as XML and intended for automated processing. In this chapter we will use two simple to read formats called "N-Triples" and "N3." Sesame can be used to convert between all RDF formats so we might as well use formats that are easier to read and understand. RDF data consists of a set of triple values:
+RDF data was originally encoded as XML and intended for automated processing. In this chapter we will use two simple to read formats called "N-Triples" and "N3." Apache Jena can be used to convert between all RDF formats so we might as well use formats that are easier to read and understand. RDF data consists of a set of triple values:
 
 -   subject
 -   predicate
 -   object
 
-Some of my work with semantic web technologies deals with processing news stories, extracting semantic information from the text, and storing it in RDF. I will use this application domain for the examples in this chapter. I deal with triples like:
+Some of my work with semantic web technologies deals with processing news stories, extracting semantic information from the text, and storing it in RDF. I will use this application domain for the examples in this chapter and the next chapter when we implement code to automatically generate RDF for Knowledge Graphs. I deal with triples like:
 
--   subject: a URL (or URI) of a news article
--   predicate: a relation like "containsPerson"
--   object: a value like "Bill Clinton"
+-   subject: a URL (or URI) of a news article.
+-   predicate: a relation like "containsPerson".
+-   object: a literal value like "Bill Clinton" or a URI representing Bill Clinton.
 
 In the next chapter we will use the entity recognition library we developed in an earlier chapter to create RDF from text input.
 
-We will use either URIs or string literals as values for subjects and objects. We will always use URIs for representing subjects and predicates. In any case URIs are usually preferred to string literals. We will see an example of this preferred use but first we need to learn the N-Triple and N3 RDF formats.
+We will use either URIs or string literals as values for objects. We will always use URIs for representing subjects and predicates. In any case URIs are usually preferred to string literals. We will see an example of this preferred use but first we need to learn the N-Triple and N3 RDF formats.
 
-I proposed the idea that RDF was more flexible than Object Modeling in programming languages, relational databases, and XML with schemas. If we can tag new attributes on the fly to existing data, how do we prevent what I might call “data chaos” as we modify existing data sources? It turns out that the solution to this problem is also the solution for encoding real semantics (or meaning) with data: we usually use unique URIs for RDF subjects, predicates, and objects, and usually with a preference for not using string literals. I will try to make this idea more clear with some examples.
+I proposed the idea that RDF was more flexible than Object Modeling in programming languages, relational databases, and XML with schemas. If we can tag new attributes on the fly to existing data, how do we prevent what I might call “data chaos” as we modify existing data sources? It turns out that the solution to this problem is also the solution for encoding real semantics (or meaning) with data: we usually use unique URIs for RDF subjects, predicates, and objects, and usually with a preference for not using string literals. The definitions of predicates are tied to a namespace and later with OWL we will state the equivalence of predicates in different name spaces with the same semantic meaning. I will try to make this idea more clear with some examples and [Wikipedia has a good writeup on RDF](https://en.wikipedia.org/wiki/Resource_Description_Framework).
 
-Any part of a triple (subject, predicate, or object) is either a URI or a string literal. URIs encode namespaces. For example, the containsCity predicate in the last example could properly be written as:
+Any part of a triple (subject, predicate, or object) is either a URI or a string literal. URIs encode namespaces. For example, the containsPerson predicate in the last example could be written as:
 
 {lang="sparql",linenos=off}
 ~~~~~~~~
-http://knowledgebooks.com/ontology/#containsCity
+http://knowledgebooks.com/ontology/#containsPerson
 ~~~~~~~~
 
-The first part of this URI is considered to be the namespace for this predicate “containsPerson.” When different RDF triples use this same predicate, this is some assurance to us that all users of this predicate understand to the same meaning. Furthermore, we will see later that we can use RDFS to state equivalency between this predicate (in the namespace http://knowledgebooks.com/ontology/) with predicates represented by different URIs used in other data sources. In an “artificial intelligence” sense, software that we write does not understand a predicate like "containsCity" in the way that a human reader can by combining understood common meanings for the words "contains" and "city" but for many interesting and useful types of applications that is fine as long as the predicate is used consistently. We will see shortly that we can define abbreviation prefixes for namespaces which makes RDF and RDFS files shorter and easier to read.
+The first part of this URI is considered to be the namespace for this predicate “containsPerson.” When different RDF triples use this same predicate, this is some assurance to us that all users of this predicate understand to the same meaning. Furthermore, we will see later that we can use RDFS to state equivalency between this predicate (in the namespace http://knowledgebooks.com/ontology/) with predicates represented by different URIs used in other data sources. In an “artificial intelligence” sense, software that we write does not understand a predicates like "containsCity",  "containsPerson", or "isLocation" in the way that a human reader can by combining understood common meanings for the words "contains", "city", "is", "person", and "location" but for many interesting and useful types of applications that is fine as long as the predicate is used consistently. We will see shortly that we can define abbreviation prefixes for namespaces which makes RDF and RDFS files shorter and easier to read.
 
 The Jena library supports most serialization formats for RDF:
 
 - Turtle
+- N3
 - N-Triples
 - NQuads
 - TriG
@@ -84,16 +85,16 @@ The Jena library supports most serialization formats for RDF:
 
 A statement in N-Triple format consists of three URIs (two URIs and a string literals for the object) followed by a period to end the statement. While statements are often written one per line in a source file they can be broken across lines; it is the ending period which marks the end of a statement. The standard file extension for N-Triple format files is \*.nt and the standard format for N3 format files is \*.n3.
 
-My preference is to use N-Triple format files as output from programs that I write to save data as RDF. N-Triple files don't use any abbreviations but each RDF statement is self-contained. I often use tools like the command line commands in Jena or RDF4J to convert N-Triple files to N3 if I will be reading them or even hand editing them. Here is an example using the N3 syntax:
+My preference is to use N-Triple format files as output from programs that I write to save data as RDF. N-Triple files don't use any abbreviations and each RDF statement is self-contained. I often use tools like the command line commands in Jena or RDF4J to convert N-Triple files to N3 or other formats if I will be reading them or even hand editing them. Here is an example using the N3 syntax:
 
 {lang="sparql",linenos=off}
 ~~~~~~~~
-@prefix kb:  <http://knowledgebooks.com/ontology#> .
+@prefix kb:  <http://knowledgebooks.com/ontology#>
 
 <http://news.com/201234/> kb:containsCountry "China" .
 ~~~~~~~~
 
-The N3 format adds abbreviations to the N-Triple format.
+The N3 format adds prefixes (abbreviations) to the N-Triple format.
 
 Here we see the use of an abbreviation prefix “kb:” for the namespace for my company KnowledgeBooks.com ontologies. The first term in the RDF statement (the subject) is the URI of a news article. The second term (the predicate) is “containsCountry” in the “kb:” namespace. The last item in the statement (the object) is a string literal “China.” I would describe this RDF statement in English as, “The news article at URI http://news.com/201234 mentions the country China.”
 
@@ -134,7 +135,7 @@ We can also add in additional predicates that use the same subject:
                           "Mahmoud Ahmadinejad" .
 ~~~~~~~~
 
-This single N3 statement represents ten individual RDF triples. Each section defining triples with the same subject and predicate have objects separated by commas and ending with a period. Please note that whatever RDF storage system we use (we will be using Jena) it makes no difference if we load RDF as XML, N-Triple, of N3 format files: internally subject, predicate, and object triples are stored in the same way and are used in the same way. RDF triples in a data store represent directed graphs that may not all be connected.
+This single N3 statement represents ten individual RDF triples. Each section defining triples with the same subject and predicate have objects separated by commas and ending with a period. Please note that whatever RDF storage system you use (we will be using Jena) it makes no difference if we load RDF as XML, N-Triple, of N3 format files: internally subject, predicate, and object triples are stored in the same way and are used in the same way. RDF triples in a data store represent directed graphs that may not all be connected.
 
 I promised you that the data in RDF data stores was easy to extend. As an example, let us assume that we have written software that is able to read online news articles and create RDF data that captures some of the semantics in the articles. If we extend our program to also recognize dates when the articles are published, we can simply reprocess articles and for each article add a triple to our RDF data store using a form like:
 
@@ -143,13 +144,13 @@ I promised you that the data in RDF data stores was easy to extend. As an exampl
 <http://news.com/201234/> kb:datePublished "2008-05-11" .
 ~~~~~~~~
 
-Furthermore, if we do not have dates for all news articles that is often acceptable depending on the application. In practice RDF supports types and we would use a date type, not a string. However, in designing the example programs for this chapter I decided to simplify our representation of URIs and string literals as simple Java strings. For many applications this is not a real limitation.
+Furthermore, if we do not have dates for all news articles that is often acceptable because when constructing SPARQL queries you can match optional patterns so if for example you are looking up articles on a specific subject then some results may have a publication date attached to the results for that article and some might not. In practice RDF supports types and we would use a date type, not a string. However, in designing the example programs for this chapter I decided to simplify our representation of URIs and string literals as simple Java strings. For many applications this is not a real limitation.
 
 ## Extending RDF with RDF Schema {#rdfs}
 
 RDFS supports the definition of classes and properties based on set inclusion. In RDFS classes and properties are orthogonal. We will not simply be using properties to define data attributes for classes – this is different from object modeling and object oriented programming languages like Java. RDFS is encoded in RDF using the same syntax.
 
-Because the semantic web is intended to be processed automatically by software systems it is encoded as RDF. There is a problem that must be solved in implementing and using the semantic web: everyone who publishes semantic web data is free to create their own RDF schemas for storing data; for example, there is usually no single standard RDF schema definition for topics like news stories and stock market data. Understanding the difficulty of integrating different data sources in different formats helps to understand the design decisions behind the semantic web.
+Because the semantic web is intended to be processed automatically by software systems it is encoded as RDF. There is a problem that must be solved in implementing and using the semantic web: everyone who publishes semantic web data is free to create their own RDF schemas for storing data; for example, there is usually no single standard RDF schema definition for topics like news stories and stock market data. The [SKOS](https://www.w3.org/2009/08/skos-reference/skos.html) is a namespace containing standard schemas and the most widely used standard is [schema.org](https://schema.org/docs/schemas.html). Understanding the ways of integrating different data sources using different schemas helps to understand the design decisions behind the semantic web applications. In this chapter I use my own schemas in the knowledgebooks.com namespace for the simple examples you see here. When you build your own production systems part of the work if searching through **schema.org** and **SKOS** to use standard name spaces and schemas. The use of standard schemas helps when you link internal proprietary Knowledge Graphs used in organization with public open data from sources like [WikiData](https://www.wikidata.org/wiki/Wikidata:Main_Page) and [DBPedia](https://wiki.dbpedia.org/about).
 
 We will start with an example that is an extension of the example in the last section that also uses RDFS. We add a few additional RDF statements (that are RDFS):
 
@@ -172,7 +173,7 @@ The last three lines declare that:
 Why is this useful? For at least two reasons:
 
 -   You can query an RDF data store for all triples that use property containsPlace and also match triples with properties equal to containsCity, containsCountry, or containsState. There may not even be any triples that explicitly use the property containsPlace.
--   Consider a hypothetical case where you are using two different RDF data stores that use different properties for naming cities: **cityName** and **city**. You can define **cityName** to be a sub-property of **city** and then write all queries against the single property name **city**. This removes the necessity to convert data from different sources to use the same Schema.
+-   Consider a hypothetical case where you are using two different RDF data stores that use different properties for naming cities: **cityName** and **city**. You can define **cityName** to be a sub-property of **city** and then write all queries against the single property name **city**. This removes the necessity to convert data from different sources to use the same Schema. You can also use OWL to state property and class equivalency.
 
 In addition to providing a vocabulary for describing properties and class membership by properties, RDFS is also used for logical inference to infer new triples, combine data from different RDF data sources, and to allow effective querying of RDF data stores. We will see examples of all of these features of RDFS when we later start using the Jena libraries to perform SPARQL queries.
 
@@ -282,7 +283,7 @@ kb:containsState rdfs:subPropertyOf kb:containsPlace .
                                 "Oil prices" , "oil" .
 ~~~~~~~~
 
-In the following examples, we will use the main method in the class **JenaApi** that allows us to load multiple RDF input files and then to interactively enter SPARQL queries.
+In the following examples, we will use the main method in the class **JenaApi** (developed in the next section) that allows us to load multiple RDF input files and then to interactively enter SPARQL queries.
 
 We will start with a simple SPARQL query for subjects (news article URLs) and objects (matching countries) with the value for the predicate equal to **containsCountry**:
 
@@ -326,7 +327,7 @@ Here is an interactive example of the last SPARQL example:
 $ mvn exec:java -Dexec.mainClass="com.markwatson.semanticweb.JenaApis" \
                -Dexec.args="data/news.n3"
 
-Multiple queries are OK.
+Multi-line queries are OK but don't use blank lines.
 Enter a blank line to process query.
 Enter a SPARQL query:
 PREFIX kb:  <http://knowledgebooks.com/ontology#>
@@ -349,7 +350,8 @@ Rows:
 	[http://news.yahoo.com/s/nm/20080616/ts_nm/worldleaders_trust_dc_1/, Pakistan]
 	[http://news.yahoo.com/s/nm/20080616/bs_nm/global_economy_dc_4/, Spain]
 	[http://news.yahoo.com/s/nm/20080616/bs_nm/global_economy_dc_4/, Italy]
-	[http://news.yahoo.com/s/nm/20080616/ts_nm/worldleaders_trust_dc_1/, Islamic Republic of Iran]
+	[http://news.yahoo.com/s/nm/20080616/ts_nm/worldleaders_trust_dc_1/,
+	 Islamic Republic of Iran]
 	[http://news.yahoo.com/s/nm/20080616/bs_nm/global_economy_dc_4/, Canada]
 	[http://news.yahoo.com/s/nm/20080616/bs_nm/global_economy_dc_4/, Britain]
 	[http://news.yahoo.com/s/nm/20080616/ts_nm/usa_politics_dc_2/, United States]
@@ -411,7 +413,8 @@ SELECT ?subject ?object
 
 [QueryResult vars:[subject, object]
 Rows:
-	[http://news.yahoo.com/s/nm/20080616/ts_nm/worldleaders_trust_dc_1/, University of Maryland]
+	[http://news.yahoo.com/s/nm/20080616/ts_nm/worldleaders_trust_dc_1/, 
+	 University of Maryland]
 ~~~~~~~~
 
 Prior to this last example query we only requested that the query return values for subject and predicate for triples that matched the query.
@@ -449,34 +452,46 @@ OFFSET 5
 
 [QueryResult vars:[subject, a_predicate, an_object]
 Rows:
-	[http://news.yahoo.com/s/nm/20080616/ts_nm/worldleaders_trust_dc_1/, http://knowledgebooks.com/ontology#containsOrganization, University of Maryland]
-	[http://news.yahoo.com/s/nm/20080616/ts_nm/worldleaders_trust_dc_1/, http://knowledgebooks.com/ontology#containsPerson, Ban Ki-moon]
-	[http://news.yahoo.com/s/nm/20080616/ts_nm/worldleaders_trust_dc_1/, http://knowledgebooks.com/ontology#containsPerson, George W. Bush]
-	[http://news.yahoo.com/s/nm/20080616/ts_nm/worldleaders_trust_dc_1/, http://knowledgebooks.com/ontology#containsPerson, Gordon Brown]
-	[http://news.yahoo.com/s/nm/20080616/ts_nm/worldleaders_trust_dc_1/, http://knowledgebooks.com/ontology#containsPerson, Hu Jintao]
-	[http://news.yahoo.com/s/nm/20080616/ts_nm/worldleaders_trust_dc_1/, http://knowledgebooks.com/ontology#containsPerson, Mahmoud Ahmadinejad]
-	[http://news.yahoo.com/s/nm/20080616/ts_nm/worldleaders_trust_dc_1/, http://knowledgebooks.com/ontology#containsPerson, Pervez Musharraf]
-	[http://news.yahoo.com/s/nm/20080616/ts_nm/worldleaders_trust_dc_1/, http://knowledgebooks.com/ontology#containsPerson, Steven Kull]
-	[http://news.yahoo.com/s/nm/20080616/ts_nm/worldleaders_trust_dc_1/, http://knowledgebooks.com/ontology#containsPerson, Vladimir Putin]
-	[http://news.yahoo.com/s/nm/20080616/ts_nm/worldleaders_trust_dc_1/, http://knowledgebooks.com/ontology#containsState, Maryland]
+	[http://news.yahoo.com/s/nm/20080616/ts_nm/worldleaders_trust_dc_1/,
+	 http://knowledgebooks.com/ontology#containsOrganization,
+	  University of Maryland]
+	[http://news.yahoo.com/s/nm/20080616/ts_nm/worldleaders_trust_dc_1/,
+	 http://knowledgebooks.com/ontology#containsPerson, Ban Ki-moon]
+	[http://news.yahoo.com/s/nm/20080616/ts_nm/worldleaders_trust_dc_1/,
+	 http://knowledgebooks.com/ontology#containsPerson, George W. Bush]
+	[http://news.yahoo.com/s/nm/20080616/ts_nm/worldleaders_trust_dc_1/,
+	 http://knowledgebooks.com/ontology#containsPerson, Gordon Brown]
+	[http://news.yahoo.com/s/nm/20080616/ts_nm/worldleaders_trust_dc_1/,
+	 http://knowledgebooks.com/ontology#containsPerson, Hu Jintao]
+	[http://news.yahoo.com/s/nm/20080616/ts_nm/worldleaders_trust_dc_1/,
+	 http://knowledgebooks.com/ontology#containsPerson, Mahmoud Ahmadinejad]
+	[http://news.yahoo.com/s/nm/20080616/ts_nm/worldleaders_trust_dc_1/,
+	 http://knowledgebooks.com/ontology#containsPerson, Pervez Musharraf]
+	[http://news.yahoo.com/s/nm/20080616/ts_nm/worldleaders_trust_dc_1/,
+	 http://knowledgebooks.com/ontology#containsPerson, Steven Kull]
+	[http://news.yahoo.com/s/nm/20080616/ts_nm/worldleaders_trust_dc_1/,
+	 http://knowledgebooks.com/ontology#containsPerson, Vladimir Putin]
+	[http://news.yahoo.com/s/nm/20080616/ts_nm/worldleaders_trust_dc_1/,
+	 http://knowledgebooks.com/ontology#containsState, Maryland]
 ~~~~~~~~
 
 
 We are finished with our quick tutorial on using the SELECT query form. There are three other query forms that I am not covering in this chapter:
 
--   CONSTRUCT – returns a new RDF graph of query results
--   ASK – returns Boolean true or false indicating if a query matches
+-   [CONSTRUCT](https://www.w3.org/TR/rdf-sparql-query/#construct) – returns a new RDF graph of query results
+-   [ASK](https://www.w3.org/TR/rdf-sparql-query/#ask) – returns Boolean true or false indicating if a query matches
     any triples
--   DESCRIBE – returns a new RDF graph containing matched resources
+-   [DESCRIBE](https://www.w3.org/TR/rdf-sparql-query/#describe) – returns a new RDF graph containing matched resources
 
+A common matching pattern that I don't cover here is [optional](https://www.w3.org/TR/rdf-sparql-query/#optionals).
 
 ## Using Jena
 
-Apache Jena is a complete Java library for developing RDF/RDFS/OWL applications and we will use it in this chapter. Other available libraries that we don't use here are RDF4J (used to be Sesame), OWLAPI, AllegroGraph, and the Protege library.
+Apache Jena is a complete Java library for developing RDF/RDFS/OWL applications and we will use it in this chapter. Other available libraries that we don't use here include RDF4J (used to be Sesame), OWLAPI, AllegroGraph, Protege library, etc.
 
-The following figure shows a UML diagram for the wrapper classes and interface that I wrote for Jena to make it easier for you to get started. My wrapper uses an in-memory RDF repository that supports inference, loading RDF/RDFS/OWL files, and performing queries. If you decide to use semantic web technologies in your development you will eventually want to use the full Sesame APIs for programmatically creating new RDF triples, finer control of the type of repository (options are in-memory, disk based, and database) and inferencing, and programmatically using query results. That said, using my wrapper library is a good place for you to start to start experimenting.
+The following figure shows a UML diagram for the wrapper classes and interface that I wrote for Jena to make it easier for you to get started. My wrapper uses an in-memory RDF repository that supports inference, loading RDF/RDFS/OWL files, and performing both local and remote SPARQL queries. If you decide to use semantic web technologies in your development you will eventually want to use the full Jena APIs for programmatically creating new RDF triples, finer control of the type of repository (options are in-memory, disk based, and database), [type definitions](https://www.w3.org/TR/swbp-xsch-datatypes/) and inferencing, and programmatically using query results. That said, using my wrapper library is a good place for you to start to start experimenting.
 
-The class constructor **JenaApis** opens a new in-memory RDF triple store.
+Referring to the following figure, the class constructor **JenaApis** opens a new in-memory RDF triple store and supplies the public APIs we will use later. The data class **QueryResults** has public class variables for variable names used in a query and a list or rows, one row for each query result. The class **Cache** is used internally to cache SPARQL query results for later use without having to require a remote SPARQL endpoint like DBPedia or WikiData.
 
 ![UML Class Diagram for Apache Jena Wrapper Classes](images/jenaapis-uml.png)
 
@@ -544,7 +559,7 @@ import java.util.Scanner;
 public class JenaApis {
 
   public JenaApis() {
-     //model = ModelFactory.createDefaultModel(); // use if OWL reasoning not required
+     //model = ModelFactory.createDefaultModel(); // if OWL reasoning not required
     model = ModelFactory.createOntologyModel(); // use OWL reasoner
  }
 
@@ -583,7 +598,8 @@ public class JenaApis {
     return qr;
   }
 
-  public QueryResult queryRemote(String service, String sparqlQuery) throws SQLException, ClassNotFoundException {
+  public QueryResult queryRemote(String service, String sparqlQuery)
+         throws SQLException, ClassNotFoundException {
     if (cache == null) cache = new Cache();
     byte [] b = cache.fetchResultFromCache(sparqlQuery);
     if (b != null) {
@@ -632,7 +648,7 @@ public class JenaApis {
       System.out.println("Enter a SPARQL query:");
       Scanner sc = new Scanner(System.in);
       StringBuilder sb = new StringBuilder();
-      while (sc.hasNextLine()) {  //until no other inputs to proceed
+      while (sc.hasNextLine()) {  // process all inputs
         String s = sc.nextLine();
         if (s.equals("quit") || s.equals("QUIT") || 
             s.equals("exit") || s.equals("EXIT"))
@@ -648,7 +664,9 @@ public class JenaApis {
 }
 ~~~~~~~~
 
-TBD
+This code is largely self-explanatory. One of lines 21 or 22 should be commented out, depending on whether you want to enable OWL reasoning. In method **queryRemote** on line 62 we check to see if an instance of **Cache** has been created and if not create one. The argument **service** for the method **queryRemote** is a SPARQL endpoint (e.g., "https://dbpedia.org/sparql"). The class **QueryResult** implemented **Serializable** so it can be converted and stored in the Derby cache database.
+
+The method **main** implements a command line interface for accepting multiple lines of input. When the user enters a blank line then the previously entered non-blank lines are passed as a SPARQL local query. When run from the command line, you can enter one or more RDF input files to load prior to the SPARQL query loop.
 
 The following class shows the unit test class **JenaApisTest** that provides examples for:
 
@@ -741,12 +759,12 @@ public class JenaApisTest extends TestCase {
 }
 ~~~~~~~~
 
-TBD
+To reuse the example code in this section, I recommend that you clone the entire directory **semantic_web_apache_jena** because it is set up for using Maven and and default logging. If you want to use the code in an existing Java project then copy the dependencies from the file **pom.xml** to your project. If you run **mvn install** then you will have a local copy installed on your system and can just install the dependency with Maven group ID **com.markwatson** and artifact **semanticweb**.
+
 
 ## OWL: The Web Ontology Language  {#owl}
 
-We have already seen a few examples of using RDFS to define
-sub-properties in the this chapter. The Web Ontology Language (OWL) extends the expressive power of RDFS. We now look at a few OWL examples and then look at the Java unit test showing three SPARQL queries that use OWL reasoning. The following RDF data stores support at least some level of OWL reasoning:
+We have already seen a few examples of using RDFS to define sub-properties in the this chapter. The Web Ontology Language (OWL) extends the expressive power of RDFS. We now look at a few OWL examples and then look at parts of the Java unit test showing three SPARQL queries that use OWL reasoning. The following RDF data stores support at least some level of OWL reasoning:
 
 -   ProtegeOwlApis – compatible with the Protege Ontology editor
 -   Pellet – DL reasoner
@@ -794,7 +812,7 @@ OWL DL is a very large subject and OWL is an even larger subject. From reading c
 
 The World Wide Web Consortium has defined three versions of the OWL language that are in increasing order of complexity: OWL Lite, OWL DL, and OWL Full. OWL DL (supports Description Logic) is the most widely used (and recommended) version of OWL. OWL Full is not computationally decidable since it supports full logic, multiple class inheritance, and other things that probably make it computationally intractable for all but smaller problems.
 
-We will know look at some Java code (from the unit test class **JenaApisTest** TBD
+We will know look at some Java code (from the method **testOwlReasoning** in the unit test class **JenaApisTest**.
 
 The following is not affected by using an OWL reasoner because the property **kb:containsCity** occurs directly in the input RDF data:
 
@@ -825,7 +843,7 @@ Rows:
 	[http://news.yahoo.com/s/nm/20080616/ts_nm/usa_flooding_dc_16/, Iowa City]
 ~~~~~~~~
 
-Here we use a query that is affected by using an OWL reasoner:
+Here we use a query that is affected by using an OWL reasoner (i.e., if OWL is not enabled there will be no query results):
 
 {lang="java",linenos=off}
 ~~~~~~~~
@@ -834,6 +852,8 @@ Here we use a query that is affected by using an OWL reasoner:
             "select ?s ?o where { ?s kb:containsPlace ?o }");
     System.out.println("qr:" + qr);
 ~~~~~~~~
+
+The code in the GitHub repo for this book is configured to use OWL by default. If you edited lines 21-22 in the file **JenaApis.jav** to disable OWL reasoning then revert your changes and rebuild the project.
 
 The following has been edited to just keep a few output lines per result set:
 
@@ -880,7 +900,8 @@ Rows:
 	[Spain, 1^^http://www.w3.org/2001/XMLSchema#integer]
 ~~~~~~~~
 
+Note that the integer values bound to the variable **count** are specified to be of type **http://www.w3.org/2001/XMLSchema#integer** using the **^^** notation.
 
 ## Semantic Web Wrap-up
 
-Writing semantic web applications in Java is a very large topic, worthy of an entire book. I have covered in this chapter what for my work have been the most useful semantic web techniques: storing and querying RDF and RDFS for a specific application. We will see in later chapters the use of RDF for automatically creating Knowledge Graphs and for automatic navigation of Knowledge Graphs.
+Writing semantic web applications in Java is a very large topic, worthy of an entire book. I have covered in this chapter what for my work have been the most useful semantic web techniques: storing and querying RDF and RDFS for a specific application and using OWL when required. We will see in the next two chapters the use of RDF when automatically creating Knowledge Graphs and for automatic navigation of Knowledge Graphs.
