@@ -43,7 +43,7 @@ The example application works by first having the user enter names of people and
 
 We use Andreas Wegmann's **consoleui** library for showing the user a list of entities, allowing the user to select entities (toggle with the space character), and accept the list of selected entities by entering the return key. The following figure shows a screen shot of processing a list of person entities and selecting the first two using the up/down arrow keys and the space bare to toggle selections on or off:
 
-![Using the ConsoleUI library to select list items](images/images/kgn_menu.png)
+![Using the ConsoleUI library to select list items](images/kgn_menu.png)
 
 Here is the console output for the example query *"Bill Gates, Melinda Gates and Steve Jobs at Apple Computer, IBM and Microsoft"*:
 
@@ -145,7 +145,7 @@ Since the DBPedia queries are time consuming, we use the caching layer from the 
 TBD
 
 
-![UML Class Diagram for KGN Example Application](images/images/kgn_uml.png)
+![UML Class Diagram for KGN Example Application](images/kgn_uml.png)
 
 
 ## Implementation
