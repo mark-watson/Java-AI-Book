@@ -144,6 +144,10 @@ Since the DBPedia queries are time consuming, we use the caching layer from the 
 
 TBD
 
+
+![UML Class Diagram for KGN Example Application](images/images/kgn_uml.png)
+
+
 ## Implementation
 
 
