@@ -153,13 +153,387 @@ TBD
 
 {lang="java",linenos=on}
 ~~~~~~~~
+package com.knowledgegraphnavigator;
 
+// uses https://github.com/awegmann/consoleui by Andreas Wegmann (Apache 2 license) - see pom.xml
+
+import static com.knowledgegraphnavigator.Log.out;
+
+import de.codeshelf.consoleui.elements.PromptableElementIF;
+import de.codeshelf.consoleui.elements.items.CheckboxItemIF;
+import de.codeshelf.consoleui.prompt.CheckboxResult;
+import de.codeshelf.consoleui.prompt.ConsolePrompt;
+import de.codeshelf.consoleui.prompt.PromtResultItemIF;
+import de.codeshelf.consoleui.prompt.builder.CheckboxPromptBuilder;
+import de.codeshelf.consoleui.prompt.builder.PromptBuilder;
+import jline.TerminalFactory;
+
+import java.util.*;
+
+public class ConsoleUserInterface {
+  public ConsoleUserInterface() {
+  }
+
+
+  public String getUserQueryFromConsole() {
+    out("Enter entities query:");
+    Scanner input = new Scanner(System.in);
+    String ret = "";
+    while (input.hasNext()) {
+      ret = input.nextLine();
+      break;
+    }
+    return ret;
+  }
+
+  public List<EntityAndDescription> selectUsingCheckBox(List<EntityAndDescription> items) throws Exception {
+    List<EntityAndDescription> ret = new ArrayList<>();
+    ConsolePrompt prompt = new ConsolePrompt();
+    PromptBuilder promptBuilder = prompt.getPromptBuilder();
+    List<CheckboxItemIF> list = new ArrayList<CheckboxItemIF>();
+    CheckboxPromptBuilder pp = promptBuilder.createCheckboxPrompt()
+        .name("entities")
+        //.message("Please select 1 or more:")
+        .newSeparator("entities")
+        .add();
+    int count = 0;
+    for (EntityAndDescription ead : items) {
+      int len = Math.min(70, ead.entityUri.length());
+      pp.newItem().name("" + count + " " + ead.entityName).text(ead.entityName + " || " + ead.entityUri.substring(0, len)).add();
+      count += 1;
+    }
+    pp.addPrompt();
+    List<PromptableElementIF> promptableElementList = promptBuilder.build();
+    HashMap<String, ? extends PromtResultItemIF> ret2 = prompt.prompt(promptableElementList);
+    CheckboxResult o1 = (CheckboxResult)ret2.get("entities");
+    for (String s : o1.getSelectedIds()) {
+      int index = s.indexOf(' ');
+      if (index > -1) {
+        int i = Integer.parseInt(s.substring(0, index));
+        ret.add(items.get(i));
+      }
+    }
+    TerminalFactory.get().restore();
+    for (Thread aThread : Thread.getAllStackTraces().keySet()) {
+      if (aThread.getName().startsWith("NonBlockingInputStreamThread")) {
+        aThread.stop();
+      }
+    }
+    return ret;
+  }
+
+  public static void main(String[] args) throws Exception {
+    ConsoleUserInterface console = new ConsoleUserInterface();
+    String query = console.getUserQueryFromConsole();
+    System.out.println("++ query: " + query);
+  }
+}
 ~~~~~~~~
                       
 This caching layer greatly speeds up my own personal use of KGN. Without caching, queries that contain many entity references simply take too long to run. The UI for the KGN application has a menu option for clearing the local cache but I almost never use this option because growing a large cache that is tailored for the types of information I search for makes the entire system much more responsive.
 
 
-{lang="java",linenos=off}
+{lang="java",linenos=on}
+~~~~~~~~
+package com.knowledgegraphnavigator;
+
+public class EntityAndDescription {
+  public String entityName;
+  public String entityUri;
+  public EntityAndDescription(String entityName, String entityUri) {
+    this.entityName = entityName;
+    this.entityUri = entityUri;
+  }
+  public String toString() {
+    return "[EntityAndDescription name: " + entityName +
+        " description: " + entityUri + "]";
+  }
+}
+~~~~~~~~
+
+
+
+
+
+{lang="java",linenos=on}
+~~~~~~~~
+package com.knowledgegraphnavigator;
+
+import com.markwatson.semanticweb.QueryResult;
+
+import java.sql.SQLException;
+
+import static com.knowledgegraphnavigator.Log.out;
+import static com.knowledgegraphnavigator.Log.sparql;
+
+public class EntityDetail {
+
+  static public QueryResult results(Sparql endpoint, String entityUri)
+      throws SQLException, ClassNotFoundException {
+    // note: find entity type with a SPARQL query, then  set var names ?p ?o
+    // as appropriate for entity type.  TBD
+
+    String query =
+        String.format(
+            "select distinct ?p ?o where { %s ?p ?o . FILTER (!regex(str(?p), 'wiki', 'i')) " +
+                " . FILTER (!regex(str(?p), 'wiki', 'i')) } limit 10",
+            entityUri);
+    return endpoint.query(query);
+  }
+
+  static public String asString(Sparql endpoint, String entityUri)
+      throws SQLException, ClassNotFoundException {
+    QueryResult qr = results(endpoint, entityUri);
+    return qr.toString();
+  }
+
+}
+~~~~~~~~
+
+
+
+
+
+{lang="java",linenos=on}
+~~~~~~~~
+package com.knowledgegraphnavigator;
+
+import com.markwatson.semanticweb.QueryResult;
+
+import java.sql.SQLException;
+
+public class EntityRelationships {
+
+  static public QueryResult results(Sparql endpoint,
+                                    String entity1Uri, String entity2Uri)
+      throws SQLException, ClassNotFoundException {
+    String query =
+        String.format("select ?p where { %s ?p %s . FILTER (!regex(str(?p), 'wikiPage', 'i')) } limit 10",
+            entity1Uri, entity2Uri);
+    return endpoint.query(query);
+  }
+}
+~~~~~~~~
+
+
+
+
+
+{lang="java",linenos=on}
+~~~~~~~~
+package com.knowledgegraphnavigator;
+
+public class Log {
+  static public void out(String s) { System.out.println(s); }
+  static public StringBuilder sparql  = new StringBuilder();
+  static public void clearSparql() { sparql.delete(0, sparql.length()); }
+}
+~~~~~~~~
+
+
+
+
+
+{lang="java",linenos=on}
+~~~~~~~~
+package com.knowledgegraphnavigator;
+
+import static com.knowledgegraphnavigator.Log.out;
+import static com.knowledgegraphnavigator.Utils.removeBrackets;
+
+import java.sql.SQLException;
+import java.util.List;
+
+public class PrintEntityResearchResults {
+
+  /**
+   * Note for Windows users: the Windows console may not render the following
+   * ANSI terminal escape sequences correctly. If yo have problems, just
+   * change the following to the empty string "":
+   */
+  public static final String RESET = "\u001B[0m"; // ANSI characters for styling
+  public static final String GREEN = "\u001B[32m";
+  public static final String YELLOW = "\u001B[33m";
+  public static final String PURPLE = "\u001B[35m";
+  public static final String CYAN = "\u001B[36m";
+
+  private PrintEntityResearchResults() { }
+
+  public PrintEntityResearchResults(Sparql endpoint,
+                                    List<EntityAndDescription> people,
+                                    List<EntityAndDescription> companies)
+      throws SQLException, ClassNotFoundException {
+    out("\n" + GREEN + "Individual People:\n" + RESET);
+    for (EntityAndDescription person : people) {
+      out("  " + GREEN + String.format("%-25s", person.entityName) +
+          PURPLE + " : " + removeBrackets(person.entityUri) + RESET);
+      out(EntityDetail.asString(endpoint, person.entityUri));
+    }
+    out("\n" + CYAN + "Individual Companies:\n" + RESET);
+    for (EntityAndDescription company : companies) {
+      out("  " + CYAN + String.format("%-25s", company.entityName) +
+          YELLOW + " : " + removeBrackets(company.entityUri) + RESET);
+    }
+    out("");
+  }
+}
+~~~~~~~~
+
+
+
+
+
+{lang="java",linenos=on}
+~~~~~~~~
+package com.knowledgegraphnavigator;
+
+import com.markwatson.semanticweb.QueryResult;
+import com.markwatson.semanticweb.JenaApis;
+import static com.knowledgegraphnavigator.Log.sparql;
+import static com.knowledgegraphnavigator.Log.out;
+
+import java.sql.SQLException;
+
+public class Sparql {
+  //static private String endpoint = "https://query.wikidata.org/bigdata/namespace/wdq/sparql";
+  static private String endpoint = "https://dbpedia.org/sparql";
+  public Sparql() {
+    this.jenaApis = new JenaApis();
+  }
+
+  public QueryResult query(String sparqlQuery) throws SQLException, ClassNotFoundException {
+    //out(sparqlQuery); // debug for now...
+    sparql.append(sparqlQuery);
+    sparql.append(("\n\n"));
+    return jenaApis.queryRemote(endpoint, sparqlQuery);
+  }
+  private JenaApis jenaApis;
+
+  public static void main(String[] args) throws Exception {
+    Sparql sp = new Sparql();
+    QueryResult qr = sp.query("select ?s ?p ?o where { ?s ?p ?o } limit 5");
+    out(qr.toString());
+  }
+}
+~~~~~~~~
+
+
+
+{lang="java",linenos=on}
+~~~~~~~~
+package com.knowledgegraphnavigator;
+
+public class Utils {
+  static public String removeBrackets(String s) {
+    if (s.startsWith("<")) return s.substring(1, s.length() - 1);
+    return s;
+  }
+}
+~~~~~~~~
+
+
+
+Finally we get to the main program:
+
+{lang="java",linenos=on}
+~~~~~~~~
+package com.knowledgegraphnavigator;
+
+import com.markwatson.ner_dbpedia.TextToDbpediaUris;
+import com.markwatson.semanticweb.QueryResult;
+
+import static com.knowledgegraphnavigator.Log.out;
+import static com.knowledgegraphnavigator.Log.sparql;
+import static com.knowledgegraphnavigator.Log.clearSparql;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class KGN {
+
+  public KGN() throws Exception {
+    Sparql endpoint = new Sparql();
+
+    ConsoleUserInterface console = new ConsoleUserInterface();
+
+    while (true) {
+      String query = console.getUserQueryFromConsole();
+      out("\nProcessing query:\n" + query + "\n");
+      if (query.equalsIgnoreCase("sparql")) {
+        out("Generated SPARQL used to get current results:\n");
+        out(sparql.toString());
+        out("\n");
+        clearSparql();
+      } else {
+        TextToDbpediaUris kt = new TextToDbpediaUris(query);
+        List<EntityAndDescription> userSelectedPeople = new ArrayList();
+        List<EntityAndDescription> userSelectedCompanies = new ArrayList();
+        if (kt.personNames.size() > 0) {
+          List<EntityAndDescription> entityAndDescriptionList = new ArrayList();
+          for (int i = 0; i < kt.personNames.size(); i++) {
+            entityAndDescriptionList.add(
+                new EntityAndDescription(kt.personNames.get(i), kt.personUris.get(i)));
+          }
+          userSelectedPeople = console.selectUsingCheckBox(entityAndDescriptionList);
+        }
+        if (kt.companyNames.size() > 0) {
+          List<EntityAndDescription> entityAndDescriptionList = new ArrayList();
+          for (int i = 0; i < kt.companyNames.size(); i++) {
+            entityAndDescriptionList.add(
+                new EntityAndDescription(kt.companyNames.get(i), kt.companyUris.get(i)));
+          }
+          userSelectedCompanies = console.selectUsingCheckBox(entityAndDescriptionList);
+        }
+        new PrintEntityResearchResults(endpoint, userSelectedPeople, userSelectedCompanies);
+
+        for (EntityAndDescription person1 : userSelectedPeople) {
+          for (EntityAndDescription person2 : userSelectedPeople) {
+            if (person1 != person2) {
+              QueryResult qr = EntityRelationships.results(endpoint, person1.entityUri, person2.entityUri);
+              if (qr.rows.size() > 0) {
+                out("Relationships between person " + person1.entityName +
+                    " person " + person2.entityName + ":");
+                out(qr.toString());
+              }
+            }
+          }
+        }
+        // for testing: Bill Gates, Melinda Gates and Steve Jobs at Apple Computer, IBM and Microsoft
+        for (EntityAndDescription person : userSelectedPeople) {
+          for (EntityAndDescription company : userSelectedCompanies) {
+            QueryResult qr = EntityRelationships.results(endpoint, person.entityUri, company.entityUri);
+            if (qr.rows.size() > 0) {
+              out("Relationships between person " + person.entityName +
+                  " company " + company.entityName + ":");
+              out(qr.toString());
+            }
+          }
+        }
+        for (EntityAndDescription company1 : userSelectedCompanies) {
+          for (EntityAndDescription company2 : userSelectedCompanies) {
+            if (company1 != company2) {
+              QueryResult qr = EntityRelationships.results(endpoint, company1.entityUri, company2.entityUri);
+              if (qr.rows.size() > 0) {
+                out("Relationships between company " + company1.entityName +
+                    " company " + company2.entityName + ":");
+                out(qr.toString());
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  public static void main(String[] args) throws Exception {
+    new KGN();
+  }
+}
+~~~~~~~~
+
+
+
+{lang="java",linenos=on}
 ~~~~~~~~
 ~~~~~~~~
 
