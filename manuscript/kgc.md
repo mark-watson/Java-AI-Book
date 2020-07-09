@@ -10,7 +10,7 @@ I originally wrote KGCreator as two research prototypes, one in Common Lisp (the
 
 ## Implementation Notes
 
-The implementation is contained in a single Java class **KGC** and the **jumit** test class **KgcTest** is used to process the test files included with this example.
+The implementation is contained in a single Java class **KGC** and the **junit** test class **KgcTest** is used to process the test files included with this example.
 
 As can be seen in the following figure I have defined final static strings for each type of entity type URI. For example, **personTypeUri** has the value **"<http://www.w3.org/2000/01/rdf-schema#person>"**.
 
@@ -37,7 +37,7 @@ RDF data is comprised of triples, where the value for each triple are a subject,
   <http://dbpedia.org/resource/Canada> .
 ~~~~~~~~
 
-The following listing of the file **KGC.java** contains the the implementation the main Java class for generating RDF data. Code for different entity types is similar so the following listing only shows the code for handling entity types for people and companies. The following is reformatted to fit the page width:
+The following listing of the file **KGC.java** contains the implementation the main Java class for generating RDF data. Code for different entity types is similar so the following listing only shows the code for handling entity types for people and companies. The following is reformatted to fit the page width:
 
 {lang="java",linenos=on}
 ~~~~~~~~
