@@ -3,7 +3,9 @@
 
 The Knowledge Graph Navigator (which I will often refer to as KGN) is a tool for processing a set of entity names and automatically exploring the public Knowledge Graph [DBPedia](http://dbpedia.org) using SPARQL queries. I started to write KGN for my own use, to automate some things I used to do manually when exploring Knowledge Graphs, and later thought that KGN might be useful also for educational purposes. KGN shows the user the auto-generated SPARQL queries so hopefully the user will learn by seeing examples. KGN uses NLP code developed in earlier chapters and we will reuse that code with a short review of using the APIs.
 
-I chose to use DBPedia instead of WikiData for this example because DBPedia URIs are human readable. The following URIs represent the concept of a *person*. The semantic meanings of DBPedia and FOAF (friend of a friend) URIs are self-evident to a human reader.
+I have a [web site devoted to different versions of KGN](http://www.knowledgegraphnavigator.com/) that you might find interesting. The most full featured version of KGN, including a full user interface, is featured in my book [Loving Common Lisp, or the Savvy Programmer's Secret Weapon](https://leanpub.com/lovinglisp) that you can read for free online. That version performs more speculative SPARQL queries to find information compared to the example here that I designed for ease of understanding and modification.
+
+I chose to use DBPedia instead of WikiData for this example because DBPedia URIs are human readable. The following URIs represent the concept of a *person*. The semantic meanings of DBPedia and FOAF (friend of a friend) URIs are self-evident to a human reader while the WikiData URI is not:
 
 {linenos=off}
 ~~~~~~~~
@@ -21,9 +23,9 @@ select ?p ?o where { <http://www.wikidata.org/entity/Q215627> ?p ?o  } limit 10
 
 For the rest of this chapter we will just use DBPedia.
 
-## We handle Person and Company Entity Types
+## The Scope of this Example
 
-To keep this example simple we only handle four entity types:
+To keep this example simple we only handle just four entity types:
 
 - People
 - Companies
@@ -48,7 +50,7 @@ After looking an interactive session using the example program for this chapter 
 
 The example application works by first having the user enter names of people and companies. Using libraries written in two previous chapters, we find entities in the user's input text, and generate SPARQL queries to DBPedia to find information about the entities and relationships between them.
 
-Here is the console output for the example query *"Bill Gates, Melinda Gates and Steve Jobs at Apple Computer, IBM and Microsoft"* (with some output removed for brevity):
+We will start with looking at sample output so you have some understanding on what this implementation of KGN will and will not do. Here is the console output for the example query *"Bill Gates, Melinda Gates and Steve Jobs at Apple Computer, IBM and Microsoft"* (with some output removed for brevity). As you remember from the chapter *Semantic Web*, SPAQRL query results are expressed in class **QueryResult** that contains the variables (labelled as **vars**) in a query and a list of rows (one query result per row). Starting at line 117 in the following listing we see discovered relationships between entities in the input query.
 
 {linenos=on}
 ~~~~~~~~
@@ -130,7 +132,13 @@ Rows:
   [http://dbpedia.org/ontology/occupation]
 ~~~~~~~~
 
-Since the DBPedia queries are time consuming, we use the caching layer from the earlier chapter *Resolve Entity Names to DBPedia References*. The cache is especially helpful during development when the same queries are repeatedly used for testing.
+Since the DBPedia queries are time consuming, we use the caching layer from the earlier chapter *Semantic Web*. The cache is especially helpful during development when the same queries are repeatedly used for testing.
+
+The KGN user interface loop allows you to enter queries and see the results. There are two special options that you can enter instead of a query:
+
+- sparql - this will print out all SPARQL queries used to present results. After exerting this command the buffer of previous SPARQL queries is emptied. This option is useful for learning SPARQL and you might try pasting a few into the input field for the [public DBPedia SPARQL web app](http://dbpedia.org/sparql) and modifying them.
+- demo - this will randomly choose a sample query.
+
 
 ## UML Class Diagram for Example Application
 
@@ -180,8 +188,9 @@ public class EntityDetail {
       throws SQLException, ClassNotFoundException {
     String query =
         String.format(
-            "select distinct ?p ?o where { %s ?p ?o . FILTER (!regex(str(?p), 'wiki', 'i')) " +
-                " . FILTER (!regex(str(?p), 'wiki', 'i')) } limit 10",
+            "select distinct ?p ?o where { %s ?p ?o . " +
+            "  FILTER (!regex(str(?p), 'wiki', 'i')) . " +
+            "  FILTER (!regex(str(?p), 'wiki', 'i')) } limit 10",
             entityUri);
     return endpoint.query(query);
   }
@@ -195,7 +204,8 @@ public class EntityDetail {
   static public QueryResult cityResults(Sparql endpoint, String entityUri)
       throws SQLException, ClassNotFoundException {
     String query =
-        String.format(cityTemplate, entityUri, entityUri, entityUri, entityUri, entityUri);
+        String.format(cityTemplate, entityUri, entityUri, entityUri,
+                      entityUri, entityUri);
     return endpoint.query(query);
   }
 
@@ -208,7 +218,8 @@ public class EntityDetail {
   static public QueryResult countryResults(Sparql endpoint, String entityUri)
       throws SQLException, ClassNotFoundException {
     String query =
-        String.format(countryTemplate, entityUri, entityUri, entityUri, entityUri, entityUri);
+        String.format(countryTemplate, entityUri, entityUri, entityUri,
+                      entityUri, entityUri);
     return endpoint.query(query);
   }
 
@@ -220,7 +231,8 @@ public class EntityDetail {
   static public QueryResult personResults(Sparql endpoint, String entityUri)
       throws SQLException, ClassNotFoundException {
     String query =
-        String.format(personTemplate, entityUri, entityUri, entityUri, entityUri, entityUri);
+        String.format(personTemplate, entityUri, entityUri, entityUri,
+                      entityUri, entityUri);
     return endpoint.query(query);
   }
 
@@ -232,7 +244,8 @@ public class EntityDetail {
   static public QueryResult companyResults(Sparql endpoint, String entityUri)
       throws SQLException, ClassNotFoundException {
     String query =
-        String.format(companyTemplate, entityUri, entityUri, entityUri, entityUri, entityUri);
+        String.format(companyTemplate, entityUri, entityUri, entityUri,
+                      entityUri, entityUri);
     return endpoint.query(query);
   }
 
@@ -243,66 +256,64 @@ public class EntityDetail {
   }
 
   static private String companyTemplate =
-      "SELECT DISTINCT" +
-          "    (GROUP_CONCAT (DISTINCT ?industry2; SEPARATOR=' | ') AS ?industry)\n" +
-          "    (GROUP_CONCAT (DISTINCT ?netIncome2; SEPARATOR=' | ') AS ?netIncome)\n" +
-          "    (GROUP_CONCAT (DISTINCT ?label2; SEPARATOR=' | ') AS ?label)\n" +
-          "    (GROUP_CONCAT (DISTINCT ?comment2; SEPARATOR=' | ') AS ?comment)\n" +
-          "    (GROUP_CONCAT (DISTINCT ?numberOfEmployees2; SEPARATOR=' | ') AS ?numberOfEmployees) {\n" +
-          "  %s <http://www.w3.org/2000/01/rdf-schema#comment>  ?comment2 .\n" +
-          "            FILTER  (lang(?comment2) = 'en') .\n" +
-          "  OPTIONAL { %s <http://dbpedia.org/ontology/industry> ?industry2 } .\n" +
-          "  OPTIONAL { %s <http://dbpedia.org/ontology/netIncome> ?netIncome2 } .\n" +
-          "  OPTIONAL { %s <http://dbpedia.org/ontology/numberOfEmployees> ?numberOfEmployees2 } .\n" +
-          "  OPTIONAL { %s <http://www.w3.org/2000/01/rdf-schema#label> ?label2 .\n" +
-          "            FILTER (lang(?label2) = 'en') } \n" +
-          "} LIMIT 30";
+    "SELECT DISTINCT" +
+    "    (GROUP_CONCAT (DISTINCT ?industry2; SEPARATOR=' | ') AS ?industry)\n" +
+    "    (GROUP_CONCAT (DISTINCT ?netIncome2; SEPARATOR=' | ') AS ?netIncome)\n" +
+    "    (GROUP_CONCAT (DISTINCT ?label2; SEPARATOR=' | ') AS ?label)\n" +
+    "    (GROUP_CONCAT (DISTINCT ?comment2; SEPARATOR=' | ') AS ?comment)\n" +
+    "    (GROUP_CONCAT (DISTINCT ?numberOfEmployees2; SEPARATOR=' | ') AS ?numberOfEmployees) {\n" +
+    "  %s <http://www.w3.org/2000/01/rdf-schema#comment>  ?comment2 .\n" +
+    "            FILTER  (lang(?comment2) = 'en') .\n" +
+    "  OPTIONAL { %s <http://dbpedia.org/ontology/industry> ?industry2 } .\n" +
+    "  OPTIONAL { %s <http://dbpedia.org/ontology/netIncome> ?netIncome2 } .\n" +
+    "  OPTIONAL { %s <http://dbpedia.org/ontology/numberOfEmployees> ?numberOfEmployees2 } .\n" +
+    "  OPTIONAL { %s <http://www.w3.org/2000/01/rdf-schema#label> ?label2 .\n" +
+    "            FILTER (lang(?label2) = 'en') } \n" +
+    "} LIMIT 30";
   
   static private String personTemplate =
-      "SELECT DISTINCT\n" +
-          "    (GROUP_CONCAT (DISTINCT ?birthplace2; SEPARATOR=' | ') AS ?birthplace)  \n" +
-          "    (GROUP_CONCAT (DISTINCT ?label2; SEPARATOR=' | ') AS ?label)  \n" +
-          "    (GROUP_CONCAT (DISTINCT ?comment2; SEPARATOR=' | ') AS ?comment)  \n" +
-          "    (GROUP_CONCAT (DISTINCT ?almamater2; SEPARATOR=' | ') AS ?almamater)  \n" +
-          "    (GROUP_CONCAT (DISTINCT ?spouse2; SEPARATOR=' | ') AS ?spouse) {  \n" +
-          " %s <http://www.w3.org/2000/01/rdf-schema#comment>  ?comment2 .\n" +
-          " FILTER  (lang(?comment2) = 'en') .  \n" +
-          " OPTIONAL { %s <http://dbpedia.org/ontology/birthPlace> ?birthplace2 } .  \n" +
-          " OPTIONAL { %s <http://dbpedia.org/ontology/almaMater> ?almamater2 } .  \n" +
-          " OPTIONAL { %s <http://dbpedia.org/ontology/spouse> ?spouse2 } .  \n" +
-          " OPTIONAL { %s  <http://www.w3.org/2000/01/rdf-schema#label> ?label2 . \n" +
-          "    FILTER  (lang(?label2) = 'en') }  \n" +
-          " } LIMIT 10";
+    "SELECT DISTINCT\n" +
+    "    (GROUP_CONCAT (DISTINCT ?birthplace2; SEPARATOR=' | ') AS ?birthplace)  \n" +
+    "    (GROUP_CONCAT (DISTINCT ?label2; SEPARATOR=' | ') AS ?label)  \n" +
+    "    (GROUP_CONCAT (DISTINCT ?comment2; SEPARATOR=' | ') AS ?comment)  \n" +
+    "    (GROUP_CONCAT (DISTINCT ?almamater2; SEPARATOR=' | ') AS ?almamater)  \n" +
+    "    (GROUP_CONCAT (DISTINCT ?spouse2; SEPARATOR=' | ') AS ?spouse) {  \n" +
+    " %s <http://www.w3.org/2000/01/rdf-schema#comment>  ?comment2 .\n" +
+    " FILTER  (lang(?comment2) = 'en') .  \n" +
+    " OPTIONAL { %s <http://dbpedia.org/ontology/birthPlace> ?birthplace2 } .  \n" +
+    " OPTIONAL { %s <http://dbpedia.org/ontology/almaMater> ?almamater2 } .  \n" +
+    " OPTIONAL { %s <http://dbpedia.org/ontology/spouse> ?spouse2 } .  \n" +
+    " OPTIONAL { %s  <http://www.w3.org/2000/01/rdf-schema#label> ?label2 . \n" +
+    "    FILTER  (lang(?label2) = 'en') }  \n" +
+    " } LIMIT 10";
 
   static private String countryTemplate =
-      "SELECT DISTINCT" +
-          "   (GROUP_CONCAT (DISTINCT ?areaTotal2; SEPARATOR=' | ') AS ?areaTotal)\n" +
-          "   (GROUP_CONCAT (DISTINCT ?label2; SEPARATOR=' | ') AS ?label)\n" +
-          "   (GROUP_CONCAT (DISTINCT ?comment2; SEPARATOR=' | ') AS ?comment)\n" +
-          "   (GROUP_CONCAT (DISTINCT ?populationDensity2; SEPARATOR=' | ') AS ?populationDensity) {\n" +
-          "  %s <http://www.w3.org/2000/01/rdf-schema#comment>  ?comment2 .\n" +
-          "                           FILTER  (lang(?comment2) = 'en') .\n" +
-          "                     OPTIONAL { %s <http://dbpedia.org/ontology/areaTotal> ?areaTotal2 } .\n" +
-          "                     OPTIONAL { %s <http://dbpedia.org/ontology/populationDensity> ?populationDensity2 } .\n" +
-          "                     OPTIONAL { %s <http://www.w3.org/2000/01/rdf-schema#label> ?label2 . }\n" +
-          "                   } LIMIT 30";
+   "SELECT DISTINCT" +
+   "   (GROUP_CONCAT (DISTINCT ?areaTotal2; SEPARATOR=' | ') AS ?areaTotal)\n" +
+   "   (GROUP_CONCAT (DISTINCT ?label2; SEPARATOR=' | ') AS ?label)\n" +
+   "   (GROUP_CONCAT (DISTINCT ?comment2; SEPARATOR=' | ') AS ?comment)\n" +
+   "   (GROUP_CONCAT (DISTINCT ?populationDensity2; SEPARATOR=' | ') AS ?populationDensity) {\n" +
+   "  %s <http://www.w3.org/2000/01/rdf-schema#comment>  ?comment2 .\n" +
+   "                           FILTER  (lang(?comment2) = 'en') .\n" +
+   "             OPTIONAL { %s <http://dbpedia.org/ontology/areaTotal> ?areaTotal2 } .\n" +
+   "             OPTIONAL { %s <http://dbpedia.org/ontology/populationDensity> ?populationDensity2 } .\n" +
+   "             OPTIONAL { %s <http://www.w3.org/2000/01/rdf-schema#label> ?label2 . }\n" +
+   "} LIMIT 30";
 
   static private String cityTemplate =
-      "SELECT DISTINCT\n" +
-          "          (GROUP_CONCAT (DISTINCT ?latitude_longitude2; SEPARATOR=' | ') \n" +
-          "              AS ?latitude_longitude) \n" +
-          "          (GROUP_CONCAT (DISTINCT ?populationDensity2; SEPARATOR=' | ') AS ?populationDensity) \n" +
-          "          (GROUP_CONCAT (DISTINCT ?label2; SEPARATOR=' | ') AS ?label) \n" +
-          "          (GROUP_CONCAT (DISTINCT ?comment2; SEPARATOR=' | ') AS ?comment) \n" +
-          "          (GROUP_CONCAT (DISTINCT ?country2; SEPARATOR=' | ') AS ?country) { \n" +
-          " %s <http://www.w3.org/2000/01/rdf-schema#comment>  ?comment2 . FILTER  (lang(?comment2) = 'en') . \n" +
-          " OPTIONAL { %s <http://www.w3.org/2003/01/geo/wgs84_pos#geometry> ?latitude_longitude2 } . \n" +
-          " OPTIONAL { %s <http://dbpedia.org/ontology/PopulatedPlace/populationDensity> ?populationDensity2 } . \n" +
-          " OPTIONAL { %s <http://dbpedia.org/ontology/country> ?country2 } . \n" +
-          " OPTIONAL { %s <http://www.w3.org/2000/01/rdf-schema#label> ?label2 . } \n" +
-          " } LIMIT 30\n";
-
-
+    "SELECT DISTINCT\n" +
+    "    (GROUP_CONCAT (DISTINCT ?latitude_longitude2; SEPARATOR=' | ') \n" +
+    "              AS ?latitude_longitude) \n" +
+    "    (GROUP_CONCAT (DISTINCT ?populationDensity2; SEPARATOR=' | ') AS ?populationDensity) \n" +
+    "    (GROUP_CONCAT (DISTINCT ?label2; SEPARATOR=' | ') AS ?label) \n" +
+    "    (GROUP_CONCAT (DISTINCT ?comment2; SEPARATOR=' | ') AS ?comment) \n" +
+    "    (GROUP_CONCAT (DISTINCT ?country2; SEPARATOR=' | ') AS ?country) { \n" +
+    " %s <http://www.w3.org/2000/01/rdf-schema#comment>  ?comment2 . FILTER  (lang(?comment2) = 'en') . \n" +
+    " OPTIONAL { %s <http://www.w3.org/2003/01/geo/wgs84_pos#geometry> ?latitude_longitude2 } . \n" +
+    " OPTIONAL { %s <http://dbpedia.org/ontology/PopulatedPlace/populationDensity> ?populationDensity2 } . \n" +
+    " OPTIONAL { %s <http://dbpedia.org/ontology/country> ?country2 } . \n" +
+    " OPTIONAL { %s <http://www.w3.org/2000/01/rdf-schema#label> ?label2 . } \n" +
+    "} LIMIT 30\n";
 }
 ~~~~~~~~
 
@@ -324,7 +335,9 @@ public class EntityRelationships {
                                     String entity1Uri, String entity2Uri)
       throws SQLException, ClassNotFoundException {
     String query =
-        String.format("select ?p where { %s ?p %s . FILTER (!regex(str(?p), 'wikiPage', 'i')) } limit 10",
+        String.format(
+         "select ?p where { %s ?p %s . "  +
+         "   FILTER (!regex(str(?p), 'wikiPage', 'i')) } limit 10",
             entity1Uri, entity2Uri);
     return endpoint.query(query);
   }
@@ -367,11 +380,11 @@ public class PrintEntityResearchResults {
    * ANSI terminal escape sequences correctly. If yo have problems, just
    * change the following to the empty string "":
    */
-  public static final String RESET = "\u001B[0m"; // ANSI characters for styling
-  public static final String GREEN = "\u001B[32m";
+  public static final String RESET  = "\u001B[0m"; // ANSI characters for styling
+  public static final String GREEN  = "\u001B[32m";
   public static final String YELLOW = "\u001B[33m";
   public static final String PURPLE = "\u001B[35m";
-  public static final String CYAN = "\u001B[36m";
+  public static final String CYAN   = "\u001B[36m";
 
   private PrintEntityResearchResults() { }
 
@@ -426,13 +439,15 @@ import static com.knowledgegraphnavigator.Log.out;
 import java.sql.SQLException;
 
 public class Sparql {
-  //static private String endpoint = "https://query.wikidata.org/bigdata/namespace/wdq/sparql";
+  //static private String endpoint =
+  //      "https://query.wikidata.org/bigdata/namespace/wdq/sparql";
   static private String endpoint = "https://dbpedia.org/sparql";
   public Sparql() {
     this.jenaApis = new JenaApis();
   }
 
-  public QueryResult query(String sparqlQuery) throws SQLException, ClassNotFoundException {
+  public QueryResult query(String sparqlQuery)
+         throws SQLException, ClassNotFoundException {
     //out(sparqlQuery); // debug for now...
     sparql.append(sparqlQuery);
     sparql.append(("\n\n"));
@@ -485,10 +500,10 @@ import java.util.Scanner;
 public class KGN {
 
   private static List<String> demosList =
-      Arrays.asList(
-          "Bill Gates and Melinda Gates worked at Microsoft",
-          "IBM opened an office in Canada",
-          "Steve Jobs worked at Apple Computer and visited IBM and Microsoft in Seattle");
+   Arrays.asList(
+    "Bill Gates and Melinda Gates worked at Microsoft",
+    "IBM opened an office in Canada",
+    "Steve Jobs worked at Apple Computer and visited IBM and Microsoft in Seattle");
 
   public KGN() throws Exception {
     Sparql endpoint = new Sparql();
@@ -510,14 +525,16 @@ public class KGN {
         if (kt.personNames.size() > 0) {
           for (int i = 0; i < kt.personNames.size(); i++) {
             userSelectedPeople.add(
-                new EntityAndDescription(kt.personNames.get(i), kt.personUris.get(i)));
+                new EntityAndDescription(kt.personNames.get(i),
+                                     kt.personUris.get(i)));
           }
         }
         List<EntityAndDescription> userSelectedCompanies = new ArrayList();
         if (kt.companyNames.size() > 0) {
           for (int i = 0; i < kt.companyNames.size(); i++) {
             userSelectedCompanies.add(
-                new EntityAndDescription(kt.companyNames.get(i), kt.companyUris.get(i)));
+                new EntityAndDescription(kt.companyNames.get(i),
+                                     kt.companyUris.get(i)));
           }
         }
         List<EntityAndDescription> userSelectedCities = new ArrayList();
@@ -533,7 +550,8 @@ public class KGN {
           out("+++++ kt.countryNames:" + kt.countryNames.toString());
           for (int i = 0; i < kt.countryNames.size(); i++) {
             userSelectedCountries.add(
-                new EntityAndDescription(kt.countryNames.get(i), kt.countryUris.get(i)));
+                new EntityAndDescription(kt.countryNames.get(i),
+                                     kt.countryUris.get(i)));
           }
         }
         new PrintEntityResearchResults(endpoint,
@@ -545,7 +563,9 @@ public class KGN {
         for (EntityAndDescription person1 : userSelectedPeople) {
           for (EntityAndDescription person2 : userSelectedPeople) {
             if (person1 != person2) {
-              QueryResult qr = EntityRelationships.results(endpoint, person1.entityUri, person2.entityUri);
+              QueryResult qr = 
+                EntityRelationships.results(endpoint, person1.entityUri,
+                                            person2.entityUri);
               if (qr.rows.size() > 0) {
                 out("Relationships between person " + person1.entityName +
                     " person " + person2.entityName + ":");
@@ -554,10 +574,12 @@ public class KGN {
             }
           }
         }
-        //  Bill Gates, Melinda Gates and Steve Jobs at Apple Computer, IBM and Microsoft in Seattle
+
         for (EntityAndDescription person : userSelectedPeople) {
           for (EntityAndDescription company : userSelectedCompanies) {
-            QueryResult qr = EntityRelationships.results(endpoint, person.entityUri, company.entityUri);
+            QueryResult qr = 
+              EntityRelationships.results(endpoint, person.entityUri,
+                                          company.entityUri);
             if (qr.rows.size() > 0) {
               out("Relationships between person " + person.entityName +
                   " company " + company.entityName + ":");
@@ -568,7 +590,9 @@ public class KGN {
         for (EntityAndDescription company1 : userSelectedCompanies) {
           for (EntityAndDescription company2 : userSelectedCompanies) {
             if (company1 != company2) {
-              QueryResult qr = EntityRelationships.results(endpoint, company1.entityUri, company2.entityUri);
+              QueryResult qr = 
+                EntityRelationships.results(endpoint, company1.entityUri, 
+                                            company2.entityUri);
               if (qr.rows.size() > 0) {
                 out("Relationships between company " + company1.entityName +
                     " company " + company2.entityName + ":");
@@ -608,7 +632,7 @@ If you enjoy running and experimenting with this example and want to modify it f
 I suggest further projects that you might want to try implementing with this example:
 
 - TBD
-- - TBD
+- TBD
 - TBD
 
 
