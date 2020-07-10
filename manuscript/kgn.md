@@ -23,15 +23,22 @@ For the rest of this chapter we will just use DBPedia.
 
 ## We handle Person and Company Entity Types
 
-To keep this example simple we only handle two entity types. However, the entity detection library that we use from an earlier chapter also supports, in addition to people and companies:
+To keep this example simple we only handle four entity types:
 
+- People
+- Companies
 - Cities
 - Countries
+ 
+ The entity detection library that we use from an earlier chapter also supports the following entity types that we don't use here:
+
 - Broadcast Networks
 - Music Groups
 - Political Parties
 - Trade Unions
 - Universities
+
+In addition to finding detailed information for people, companies, cities, and countries we will also search for relationships between person entities and company entities.
 
 As we look at the KGN implementation I will point out where and how you can easily add support for more entity types and in the wrap-up I will suggest further projects that you might want to try implementing with this example.
 
@@ -41,11 +48,7 @@ After looking an interactive session using the example program for this chapter 
 
 The example application works by first having the user enter names of people and companies. Using libraries written in two previous chapters, we find entities in the user's input text, and generate SPARQL queries to DBPedia to find information about the entities and relationships between them.
 
-We use Andreas Wegmann's **consoleui** library for showing the user a list of entities, allowing the user to select entities (toggle with the space character), and accept the list of selected entities by entering the return key. The following figure shows a screen shot of processing a list of person entities and selecting the first two using the up/down arrow keys and the space bare to toggle selections on or off:
-
-![Using the ConsoleUI library to select list items](images/kgn_menu.png)
-
-Here is the console output for the example query *"Bill Gates, Melinda Gates and Steve Jobs at Apple Computer, IBM and Microsoft"*:
+Here is the console output for the example query *"Bill Gates, Melinda Gates and Steve Jobs at Apple Computer, IBM and Microsoft"* (with some output removed for brevity):
 
 {linenos=on}
 ~~~~~~~~
@@ -61,59 +64,48 @@ person	7	8	Steve Jobs	<http://dbpedia.org/resource/Steve_Jobs>
 company	10	11	Apple Computer	<http://dbpedia.org/resource/Apple_Inc.>
 company	14	15	IBM	<http://dbpedia.org/resource/IBM>
 company	16	17	Microsoft	<http://dbpedia.org/resource/Microsoft>
-? entities [0 Bill Gates, 1 Melinda Gates, 2 Steve Jobs]
-? entities [0 Apple Computer, 1 IBM, 2 Microsoft]
 
 Individual People:
 
   Bill Gates                : http://dbpedia.org/resource/Bill_Gates
-[QueryResult vars:[p, o]
+[QueryResult vars:[birthplace, label, comment, almamater, spouse]
 Rows:
-  [http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/2002/07/owl#Thing]
-  [http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://xmlns.com/foaf/0.1/Person]
-  [http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://dbpedia.org/ontology/Person]
-  [http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#Agent]
-  [http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#NaturalPerson]
-  [http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.wikidata.org/entity/Q215627]
-  [http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.wikidata.org/entity/Q24229398]
-  [http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.wikidata.org/entity/Q5]
-  [http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://dbpedia.org/ontology/Agent]
-  [http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://schema.org/Person]
+  [http://dbpedia.org/resource/Seattle, Bill Gates, William Henry \"Bill\" Gates III (born October 28, 1955) is an American business magnate, investor, author and philanthropist. In 1975, Gates and Paul Allen co-founded Microsoft, which became the world's largest PC software company. During his career at Microsoft, Gates held the positions of chairman, CEO and chief software architect, and was the largest individual shareholder until May 2014. Gates has authored and co-authored several books., http://dbpedia.org/resource/Harvard_University, http://dbpedia.org/resource/Melinda_Gates]
 
   Melinda Gates             : http://dbpedia.org/resource/Melinda_Gates
-[QueryResult vars:[p, o]
+[QueryResult vars:[birthplace, label, comment, almamater, spouse]
 Rows:
-  [http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/2002/07/owl#Thing]
-  [http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://xmlns.com/foaf/0.1/Person]
-  [http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://dbpedia.org/ontology/Person]
-  [http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#Agent]
-  [http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#NaturalPerson]
-  [http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.wikidata.org/entity/Q215627]
-  [http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.wikidata.org/entity/Q24229398]
-  [http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.wikidata.org/entity/Q5]
-  [http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://dbpedia.org/ontology/Agent]
-  [http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://schema.org/Person]
+  [http://dbpedia.org/resource/Dallas | http://dbpedia.org/resource/Dallas,_Texas, Melinda Gates, Melinda Ann Gates (née French; born August 15, 1964), DBE is an American businesswoman and philanthropist. She is co-founder of the Bill & Melinda Gates Foundation. She worked at Microsoft, where she was project manager for Microsoft Bob, Microsoft Encarta and Expedia., http://dbpedia.org/resource/Duke_University, http://dbpedia.org/resource/Bill_Gates]
 
   Steve Jobs                : http://dbpedia.org/resource/Steve_Jobs
-[QueryResult vars:[p, o]
+[QueryResult vars:[birthplace, label, comment, almamater, spouse]
 Rows:
-  [http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/2002/07/owl#Thing]
-  [http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://xmlns.com/foaf/0.1/Person]
-  [http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://dbpedia.org/ontology/Person]
-  [http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#Agent]
-  [http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#NaturalPerson]
-  [http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.wikidata.org/entity/Q215627]
-  [http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.wikidata.org/entity/Q24229398]
-  [http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.wikidata.org/entity/Q5]
-  [http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://dbpedia.org/ontology/Agent]
-  [http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://schema.org/Person]
+  [http://dbpedia.org/resource/San_Francisco, Steve Jobs, Steven Paul \"Steve\" Jobs (/ˈdʒɒbz/; February 24, 1955 – October 5, 2011) was an American information technology entrepreneur and inventor. He was the co-founder, chairman, and chief executive officer (CEO) of Apple Inc.; CEO and majority shareholder of Pixar Animation Studios; a member of The Walt Disney Company's board of directors following its acquisition of Pixar; and founder, chairman, and CEO of NeXT Inc. Jobs is widely recognized as a pioneer of the microcomputer revolution of the 1970s and 1980s, along with Apple co-founder Steve Wozniak. Shortly after his death, Jobs's official biographer, Walter Isaacson, described him as a \"creative entrepreneur whose passion for perfection and ferocious drive revolutionized six industries: personal computers, animated movies, music, phones, tab, http://dbpedia.org/resource/Reed_College, http://dbpedia.org/resource/Laurene_Powell_Jobs]
 
 
 Individual Companies:
 
   Apple Computer            : http://dbpedia.org/resource/Apple_Inc.
+[QueryResult vars:[industry, netIncome, label, comment, numberOfEmployees]
+Rows:
+  [http://dbpedia.org/resource/Computer_hardware | http://dbpedia.org/resource/Computer_software | http://dbpedia.org/resource/Consumer_electronics | http://dbpedia.org/resource/Corporate_Venture_Capital | http://dbpedia.org/resource/Digital_distribution | http://dbpedia.org/resource/Fabless_manufacturing, 5.3394E10, Apple Inc., Apple Inc. is an American multinational technology company headquartered in Cupertino, California, that designs, develops, and sells consumer electronics, computer software, and online services. Its hardware products include the iPhone smartphone, the iPad tablet computer, the Mac personal computer, the iPod portable media player, the Apple Watch smartwatch, and the Apple TV digital media player. Apple's consumer software includes the macOS and iOS operating systems, the iTunes media player, the Safari web browser, and the iLife and iWork creativity and productivity suites. Its online services include the iTunes Store, the iOS App Store and Mac App Store, Apple Music, and iCloud., 115000]
+
   IBM                       : http://dbpedia.org/resource/IBM
+[QueryResult vars:[industry, netIncome, label, comment, numberOfEmployees]
+Rows:
+  [http://dbpedia.org/resource/Cloud_computing | http://dbpedia.org/resource/Cognitive_computing | http://dbpedia.org/resource/Information_technology, 1.319E10, IBM, International Business Machines Corporation (commonly referred to as IBM) is an American multinational technology company headquartered in Armonk, New York, United States, with operations in over 170 countries. The company originated in 1911 as the Computing-Tabulating-Recording Company (CTR) and was renamed \"International Business Machines\" in 1924., 377757]
+
   Microsoft                 : http://dbpedia.org/resource/Microsoft
+[QueryResult vars:[industry, netIncome, label, comment, numberOfEmployees]
+Rows:
+  [http://dbpedia.org/resource/Computer_hardware | http://dbpedia.org/resource/Consumer_electronics | http://dbpedia.org/resource/Digital_distribution | http://dbpedia.org/resource/Software, , Microsoft, Microsoft Corporation /ˈmaɪkrəˌsɒft, -roʊ-, -ˌsɔːft/ (commonly referred to as Microsoft or MS) is an American multinational technology company headquartered in Redmond, Washington, that develops, manufactures, licenses, supports and sells computer software, consumer electronics and personal computers and services. Its best known software products are the Microsoft Windows line of operating systems, Microsoft Office office suite, and Internet Explorer and Edge web browsers. Its flagship hardware products are the Xbox video game consoles and the Microsoft Surface tablet lineup. As of 2011, it was the world's largest software maker by revenue, and one of the world's most valuable companies., 114000]
+
+
+Individual Cities:
+
+
+Individual Countries:
+
 
 Relationships between person Bill Gates person Melinda Gates:
 [QueryResult vars:[p]
@@ -151,87 +143,6 @@ TBD
 ## Implementation
 
 
-{lang="java",linenos=on}
-~~~~~~~~
-package com.knowledgegraphnavigator;
-
-// uses https://github.com/awegmann/consoleui by Andreas Wegmann (Apache 2 license) - see pom.xml
-
-import static com.knowledgegraphnavigator.Log.out;
-
-import de.codeshelf.consoleui.elements.PromptableElementIF;
-import de.codeshelf.consoleui.elements.items.CheckboxItemIF;
-import de.codeshelf.consoleui.prompt.CheckboxResult;
-import de.codeshelf.consoleui.prompt.ConsolePrompt;
-import de.codeshelf.consoleui.prompt.PromtResultItemIF;
-import de.codeshelf.consoleui.prompt.builder.CheckboxPromptBuilder;
-import de.codeshelf.consoleui.prompt.builder.PromptBuilder;
-import jline.TerminalFactory;
-
-import java.util.*;
-
-public class ConsoleUserInterface {
-  public ConsoleUserInterface() {
-  }
-
-
-  public String getUserQueryFromConsole() {
-    out("Enter entities query:");
-    Scanner input = new Scanner(System.in);
-    String ret = "";
-    while (input.hasNext()) {
-      ret = input.nextLine();
-      break;
-    }
-    return ret;
-  }
-
-  public List<EntityAndDescription> selectUsingCheckBox(List<EntityAndDescription> items) throws Exception {
-    List<EntityAndDescription> ret = new ArrayList<>();
-    ConsolePrompt prompt = new ConsolePrompt();
-    PromptBuilder promptBuilder = prompt.getPromptBuilder();
-    List<CheckboxItemIF> list = new ArrayList<CheckboxItemIF>();
-    CheckboxPromptBuilder pp = promptBuilder.createCheckboxPrompt()
-        .name("entities")
-        //.message("Please select 1 or more:")
-        .newSeparator("entities")
-        .add();
-    int count = 0;
-    for (EntityAndDescription ead : items) {
-      int len = Math.min(70, ead.entityUri.length());
-      pp.newItem().name("" + count + " " + ead.entityName).text(ead.entityName + " || " + ead.entityUri.substring(0, len)).add();
-      count += 1;
-    }
-    pp.addPrompt();
-    List<PromptableElementIF> promptableElementList = promptBuilder.build();
-    HashMap<String, ? extends PromtResultItemIF> ret2 = prompt.prompt(promptableElementList);
-    CheckboxResult o1 = (CheckboxResult)ret2.get("entities");
-    for (String s : o1.getSelectedIds()) {
-      int index = s.indexOf(' ');
-      if (index > -1) {
-        int i = Integer.parseInt(s.substring(0, index));
-        ret.add(items.get(i));
-      }
-    }
-    TerminalFactory.get().restore();
-    for (Thread aThread : Thread.getAllStackTraces().keySet()) {
-      if (aThread.getName().startsWith("NonBlockingInputStreamThread")) {
-        aThread.stop();
-      }
-    }
-    return ret;
-  }
-
-  public static void main(String[] args) throws Exception {
-    ConsoleUserInterface console = new ConsoleUserInterface();
-    String query = console.getUserQueryFromConsole();
-    System.out.println("++ query: " + query);
-  }
-}
-~~~~~~~~
-                      
-This caching layer greatly speeds up my own personal use of KGN. Without caching, queries that contain many entity references simply take too long to run. The UI for the KGN application has a menu option for clearing the local cache but I almost never use this option because growing a large cache that is tailored for the types of information I search for makes the entire system much more responsive.
-
 
 {lang="java",linenos=on}
 ~~~~~~~~
@@ -261,18 +172,12 @@ package com.knowledgegraphnavigator;
 
 import com.markwatson.semanticweb.QueryResult;
 
-import java.sql.SQLException;
-
-import static com.knowledgegraphnavigator.Log.out;
-import static com.knowledgegraphnavigator.Log.sparql;
+import java.sql.SQLException; // Cache layer in JenaApis library throws this
 
 public class EntityDetail {
 
-  static public QueryResult results(Sparql endpoint, String entityUri)
+  static public QueryResult genericResults(Sparql endpoint, String entityUri)
       throws SQLException, ClassNotFoundException {
-    // note: find entity type with a SPARQL query, then  set var names ?p ?o
-    // as appropriate for entity type.  TBD
-
     String query =
         String.format(
             "select distinct ?p ?o where { %s ?p ?o . FILTER (!regex(str(?p), 'wiki', 'i')) " +
@@ -281,11 +186,122 @@ public class EntityDetail {
     return endpoint.query(query);
   }
 
-  static public String asString(Sparql endpoint, String entityUri)
+  static public String genericAsString(Sparql endpoint, String entityUri)
       throws SQLException, ClassNotFoundException {
-    QueryResult qr = results(endpoint, entityUri);
+    QueryResult qr = genericResults(endpoint, entityUri);
     return qr.toString();
   }
+
+  static public QueryResult cityResults(Sparql endpoint, String entityUri)
+      throws SQLException, ClassNotFoundException {
+    String query =
+        String.format(cityTemplate, entityUri, entityUri, entityUri, entityUri, entityUri);
+    return endpoint.query(query);
+  }
+
+  static public String cityAsString(Sparql endpoint, String entityUri)
+      throws SQLException, ClassNotFoundException {
+    QueryResult qr = cityResults(endpoint, entityUri);
+    return qr.toString();
+  }
+
+  static public QueryResult countryResults(Sparql endpoint, String entityUri)
+      throws SQLException, ClassNotFoundException {
+    String query =
+        String.format(countryTemplate, entityUri, entityUri, entityUri, entityUri, entityUri);
+    return endpoint.query(query);
+  }
+
+  static public String countryAsString(Sparql endpoint, String entityUri)
+      throws SQLException, ClassNotFoundException {
+    QueryResult qr = countryResults(endpoint, entityUri);
+    return qr.toString();
+  }
+  static public QueryResult personResults(Sparql endpoint, String entityUri)
+      throws SQLException, ClassNotFoundException {
+    String query =
+        String.format(personTemplate, entityUri, entityUri, entityUri, entityUri, entityUri);
+    return endpoint.query(query);
+  }
+
+  static public String personAsString(Sparql endpoint, String entityUri)
+      throws SQLException, ClassNotFoundException {
+    QueryResult qr = personResults(endpoint, entityUri);
+    return qr.toString();
+  }
+  static public QueryResult companyResults(Sparql endpoint, String entityUri)
+      throws SQLException, ClassNotFoundException {
+    String query =
+        String.format(companyTemplate, entityUri, entityUri, entityUri, entityUri, entityUri);
+    return endpoint.query(query);
+  }
+
+  static public String companyAsString(Sparql endpoint, String entityUri)
+      throws SQLException, ClassNotFoundException {
+    QueryResult qr = companyResults(endpoint, entityUri);
+    return qr.toString();
+  }
+
+  static private String companyTemplate =
+      "SELECT DISTINCT" +
+          "    (GROUP_CONCAT (DISTINCT ?industry2; SEPARATOR=' | ') AS ?industry)\n" +
+          "    (GROUP_CONCAT (DISTINCT ?netIncome2; SEPARATOR=' | ') AS ?netIncome)\n" +
+          "    (GROUP_CONCAT (DISTINCT ?label2; SEPARATOR=' | ') AS ?label)\n" +
+          "    (GROUP_CONCAT (DISTINCT ?comment2; SEPARATOR=' | ') AS ?comment)\n" +
+          "    (GROUP_CONCAT (DISTINCT ?numberOfEmployees2; SEPARATOR=' | ') AS ?numberOfEmployees) {\n" +
+          "  %s <http://www.w3.org/2000/01/rdf-schema#comment>  ?comment2 .\n" +
+          "            FILTER  (lang(?comment2) = 'en') .\n" +
+          "  OPTIONAL { %s <http://dbpedia.org/ontology/industry> ?industry2 } .\n" +
+          "  OPTIONAL { %s <http://dbpedia.org/ontology/netIncome> ?netIncome2 } .\n" +
+          "  OPTIONAL { %s <http://dbpedia.org/ontology/numberOfEmployees> ?numberOfEmployees2 } .\n" +
+          "  OPTIONAL { %s <http://www.w3.org/2000/01/rdf-schema#label> ?label2 .\n" +
+          "            FILTER (lang(?label2) = 'en') } \n" +
+          "} LIMIT 30";
+  
+  static private String personTemplate =
+      "SELECT DISTINCT\n" +
+          "    (GROUP_CONCAT (DISTINCT ?birthplace2; SEPARATOR=' | ') AS ?birthplace)  \n" +
+          "    (GROUP_CONCAT (DISTINCT ?label2; SEPARATOR=' | ') AS ?label)  \n" +
+          "    (GROUP_CONCAT (DISTINCT ?comment2; SEPARATOR=' | ') AS ?comment)  \n" +
+          "    (GROUP_CONCAT (DISTINCT ?almamater2; SEPARATOR=' | ') AS ?almamater)  \n" +
+          "    (GROUP_CONCAT (DISTINCT ?spouse2; SEPARATOR=' | ') AS ?spouse) {  \n" +
+          " %s <http://www.w3.org/2000/01/rdf-schema#comment>  ?comment2 .\n" +
+          " FILTER  (lang(?comment2) = 'en') .  \n" +
+          " OPTIONAL { %s <http://dbpedia.org/ontology/birthPlace> ?birthplace2 } .  \n" +
+          " OPTIONAL { %s <http://dbpedia.org/ontology/almaMater> ?almamater2 } .  \n" +
+          " OPTIONAL { %s <http://dbpedia.org/ontology/spouse> ?spouse2 } .  \n" +
+          " OPTIONAL { %s  <http://www.w3.org/2000/01/rdf-schema#label> ?label2 . \n" +
+          "    FILTER  (lang(?label2) = 'en') }  \n" +
+          " } LIMIT 10";
+
+  static private String countryTemplate =
+      "SELECT DISTINCT" +
+          "   (GROUP_CONCAT (DISTINCT ?areaTotal2; SEPARATOR=' | ') AS ?areaTotal)\n" +
+          "   (GROUP_CONCAT (DISTINCT ?label2; SEPARATOR=' | ') AS ?label)\n" +
+          "   (GROUP_CONCAT (DISTINCT ?comment2; SEPARATOR=' | ') AS ?comment)\n" +
+          "   (GROUP_CONCAT (DISTINCT ?populationDensity2; SEPARATOR=' | ') AS ?populationDensity) {\n" +
+          "  %s <http://www.w3.org/2000/01/rdf-schema#comment>  ?comment2 .\n" +
+          "                           FILTER  (lang(?comment2) = 'en') .\n" +
+          "                     OPTIONAL { %s <http://dbpedia.org/ontology/areaTotal> ?areaTotal2 } .\n" +
+          "                     OPTIONAL { %s <http://dbpedia.org/ontology/populationDensity> ?populationDensity2 } .\n" +
+          "                     OPTIONAL { %s <http://www.w3.org/2000/01/rdf-schema#label> ?label2 . }\n" +
+          "                   } LIMIT 30";
+
+  static private String cityTemplate =
+      "SELECT DISTINCT\n" +
+          "          (GROUP_CONCAT (DISTINCT ?latitude_longitude2; SEPARATOR=' | ') \n" +
+          "              AS ?latitude_longitude) \n" +
+          "          (GROUP_CONCAT (DISTINCT ?populationDensity2; SEPARATOR=' | ') AS ?populationDensity) \n" +
+          "          (GROUP_CONCAT (DISTINCT ?label2; SEPARATOR=' | ') AS ?label) \n" +
+          "          (GROUP_CONCAT (DISTINCT ?comment2; SEPARATOR=' | ') AS ?comment) \n" +
+          "          (GROUP_CONCAT (DISTINCT ?country2; SEPARATOR=' | ') AS ?country) { \n" +
+          " %s <http://www.w3.org/2000/01/rdf-schema#comment>  ?comment2 . FILTER  (lang(?comment2) = 'en') . \n" +
+          " OPTIONAL { %s <http://www.w3.org/2003/01/geo/wgs84_pos#geometry> ?latitude_longitude2 } . \n" +
+          " OPTIONAL { %s <http://dbpedia.org/ontology/PopulatedPlace/populationDensity> ?populationDensity2 } . \n" +
+          " OPTIONAL { %s <http://dbpedia.org/ontology/country> ?country2 } . \n" +
+          " OPTIONAL { %s <http://www.w3.org/2000/01/rdf-schema#label> ?label2 . } \n" +
+          " } LIMIT 30\n";
+
 
 }
 ~~~~~~~~
@@ -361,18 +377,33 @@ public class PrintEntityResearchResults {
 
   public PrintEntityResearchResults(Sparql endpoint,
                                     List<EntityAndDescription> people,
-                                    List<EntityAndDescription> companies)
+                                    List<EntityAndDescription> companies,
+                                    List<EntityAndDescription> cities,
+                                    List<EntityAndDescription> countries)
       throws SQLException, ClassNotFoundException {
     out("\n" + GREEN + "Individual People:\n" + RESET);
     for (EntityAndDescription person : people) {
       out("  " + GREEN + String.format("%-25s", person.entityName) +
           PURPLE + " : " + removeBrackets(person.entityUri) + RESET);
-      out(EntityDetail.asString(endpoint, person.entityUri));
+      out(EntityDetail.personAsString(endpoint, person.entityUri));
     }
     out("\n" + CYAN + "Individual Companies:\n" + RESET);
     for (EntityAndDescription company : companies) {
       out("  " + CYAN + String.format("%-25s", company.entityName) +
           YELLOW + " : " + removeBrackets(company.entityUri) + RESET);
+      out(EntityDetail.companyAsString(endpoint, company.entityUri));
+    }
+    out("\n" + GREEN + "Individual Cities:\n" + RESET);
+    for (EntityAndDescription city : cities) {
+      out("  " + GREEN + String.format("%-25s", city.entityName) +
+          PURPLE + " : " + removeBrackets(city.entityUri) + RESET);
+      out(EntityDetail.cityAsString(endpoint, city.entityUri));
+    }
+    out("\n" + GREEN + "Individual Countries:\n" + RESET);
+    for (EntityAndDescription country : countries) {
+      out("  " + GREEN + String.format("%-25s", country.entityName) +
+          PURPLE + " : " + removeBrackets(country.entityUri) + RESET);
+      out(EntityDetail.countryAsString(endpoint, country.entityUri));
     }
     out("");
   }
@@ -447,17 +478,23 @@ import static com.knowledgegraphnavigator.Log.sparql;
 import static com.knowledgegraphnavigator.Log.clearSparql;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Scanner;
 
 public class KGN {
+
+  private static List<String> demosList =
+      Arrays.asList(
+          "Bill Gates and Melinda Gates worked at Microsoft",
+          "IBM opened an office in Canada",
+          "Steve Jobs worked at Apple Computer and visited IBM and Microsoft in Seattle");
 
   public KGN() throws Exception {
     Sparql endpoint = new Sparql();
 
-    ConsoleUserInterface console = new ConsoleUserInterface();
-
     while (true) {
-      String query = console.getUserQueryFromConsole();
+      String query = getUserQueryFromConsole();
       out("\nProcessing query:\n" + query + "\n");
       if (query.equalsIgnoreCase("sparql")) {
         out("Generated SPARQL used to get current results:\n");
@@ -465,26 +502,45 @@ public class KGN {
         out("\n");
         clearSparql();
       } else {
+        if (query.equalsIgnoreCase("demo")) {
+          query = demosList.get((int) (Math.random() * (demosList.size() + 1)));
+        }
         TextToDbpediaUris kt = new TextToDbpediaUris(query);
         List<EntityAndDescription> userSelectedPeople = new ArrayList();
-        List<EntityAndDescription> userSelectedCompanies = new ArrayList();
         if (kt.personNames.size() > 0) {
-          List<EntityAndDescription> entityAndDescriptionList = new ArrayList();
           for (int i = 0; i < kt.personNames.size(); i++) {
-            entityAndDescriptionList.add(
+            userSelectedPeople.add(
                 new EntityAndDescription(kt.personNames.get(i), kt.personUris.get(i)));
           }
-          userSelectedPeople = console.selectUsingCheckBox(entityAndDescriptionList);
         }
+        List<EntityAndDescription> userSelectedCompanies = new ArrayList();
         if (kt.companyNames.size() > 0) {
-          List<EntityAndDescription> entityAndDescriptionList = new ArrayList();
           for (int i = 0; i < kt.companyNames.size(); i++) {
-            entityAndDescriptionList.add(
+            userSelectedCompanies.add(
                 new EntityAndDescription(kt.companyNames.get(i), kt.companyUris.get(i)));
           }
-          userSelectedCompanies = console.selectUsingCheckBox(entityAndDescriptionList);
         }
-        new PrintEntityResearchResults(endpoint, userSelectedPeople, userSelectedCompanies);
+        List<EntityAndDescription> userSelectedCities = new ArrayList();
+        if (kt.cityNames.size() > 0) {
+          out("+++++ kt.cityNames:" + kt.cityNames.toString());
+          for (int i = 0; i < kt.cityNames.size(); i++) {
+            userSelectedCities.add(
+                new EntityAndDescription(kt.cityNames.get(i), kt.cityUris.get(i)));
+          }
+        }
+        List<EntityAndDescription> userSelectedCountries = new ArrayList();
+        if (kt.countryNames.size() > 0) {
+          out("+++++ kt.countryNames:" + kt.countryNames.toString());
+          for (int i = 0; i < kt.countryNames.size(); i++) {
+            userSelectedCountries.add(
+                new EntityAndDescription(kt.countryNames.get(i), kt.countryUris.get(i)));
+          }
+        }
+        new PrintEntityResearchResults(endpoint,
+            userSelectedPeople,
+            userSelectedCompanies,
+            userSelectedCities,
+            userSelectedCountries);
 
         for (EntityAndDescription person1 : userSelectedPeople) {
           for (EntityAndDescription person2 : userSelectedPeople) {
@@ -498,7 +554,7 @@ public class KGN {
             }
           }
         }
-        // for testing: Bill Gates, Melinda Gates and Steve Jobs at Apple Computer, IBM and Microsoft
+        //  Bill Gates, Melinda Gates and Steve Jobs at Apple Computer, IBM and Microsoft in Seattle
         for (EntityAndDescription person : userSelectedPeople) {
           for (EntityAndDescription company : userSelectedCompanies) {
             QueryResult qr = EntityRelationships.results(endpoint, person.entityUri, company.entityUri);
@@ -525,17 +581,23 @@ public class KGN {
     }
   }
 
+  private String getUserQueryFromConsole() {
+    out("Enter entities query:");
+    Scanner input = new Scanner(System.in);
+    String ret = "";
+    while (input.hasNext()) {
+      ret = input.nextLine();
+      break;
+    }
+    return ret;
+  }
+
   public static void main(String[] args) throws Exception {
     new KGN();
   }
 }
 ~~~~~~~~
 
-
-
-{lang="java",linenos=on}
-~~~~~~~~
-~~~~~~~~
 
 
 
