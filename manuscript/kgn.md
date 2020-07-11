@@ -155,6 +155,8 @@ The following UML Class Diagram for KGN shows you an overview of the Java classe
 
 We will walk through the classes in the UML Class Diagram for KGN in alphabetical order except we will look at the main program in **KGN.java** last.
 
+The class **EntityAndDescription** contains two strings, a name and a URI reference. We also override the default implementation of **toString** to format and display the data in an instance of this class:
+
 {lang="java",linenos=on}
 ~~~~~~~~
 package com.knowledgegraphnavigator;
@@ -174,11 +176,11 @@ public class EntityAndDescription {
 ~~~~~~~~
 
 
-The class **EntityDetail** defines SPARQL query templates in lines ??-?? TBD that have slots for the URI of the entity URI. We use different templates for different entity types.
+The class **EntityDetail** defines SPARQL query templates in lines 80-154 that have slots (using **%s** for string replacement) for the URI of an entity. We use different templates for different entity types. Before we look at these SPARQL query templates, let's learn two additional features of the SPARQL language.
 
-We mentioned the **OPTIONAL** triple matching patterns in the chapter *Semantic Web*. Before looking at the Java code, let's first look at how optional matching works. We will run the KGN application asking for information on the city Seattle and then use the **sparql** command to print the generated SPARQL produced by the method **cityResults** (most output is not shown here for brevity). On line 2 I enter the query string "Seattle"" and on line 22 I enter the command "sparql" to print out the generated SPARQL:
+We mentioned the **OPTIONAL** triple matching patterns in the chapter *Semantic Web*. Before looking at the Java code, let's first look at how optional matching works. We will run the KGN application asking for information on the city Seattle and then use the **sparql** command to print the generated SPARQL produced by the method **cityResults** (most output is not shown here for brevity). On line 2 I enter the query string "Seattle" and on line 22 I enter the command "sparql" to print out the generated SPARQL:
 
-linenos=on}
+{linenos=on}
 ~~~~~~~~
 Enter entities query:
 Seattle
