@@ -108,7 +108,7 @@ Individual Cities:
   Seattle                   : http://dbpedia.org/resource/Seattle
 [QueryResult vars:[latitude_longitude, populationDensity, label, comment, country]
 Rows:
-  [POINT(-122.33305358887 47.609722137451), 3150.979715864901, Seattle | Сиэтл | سياتل | シアトル | 西雅圖, Seattle (/siˈætəl/) is a West Coast seaport city and the seat of King County, Washington. With an estimated 684,451 residents as of 2015, Seattle is the largest city in both the state of Washington and the Pacific Northwest region of North America. As of 2015, it is estimated to be the 18th largest city in the United States. In July 2013, it was the fastest-growing major city in the United States and remained in the Top 5 in May 2015 with an annual growth rate of 2.1%. The Seattle metropolitan area is the 15th largest metropolitan area in the United States with over 3.7 million inhabitants. The city is situated on an isthmus between Puget Sound (an inlet of the Pacific Ocean) and Lake Washington, about 100 miles (160 km) south of the Canada–United States border. A major gateway for trade w, ]
+  [POINT(-122.33305358887 47.609722137451), 3150.979715864901, Seattle, Seattle (/siˈætəl/) is a West Coast seaport city and the seat of King County, Washington. With an estimated 684,451 residents as of 2015, Seattle is the largest city in both the state of Washington and the Pacific Northwest region of North America. As of 2015, it is estimated to be the 18th largest city in the United States. In July 2013, it was the fastest-growing major city in the United States and remained in the Top 5 in May 2015 with an annual growth rate of 2.1%. The Seattle metropolitan area is the 15th largest metropolitan area in the United States with over 3.7 million inhabitants. The city is situated on an isthmus between Puget Sound (an inlet of the Pacific Ocean) and Lake Washington, about 100 miles (160 km) south of the Canada–United States border. A major gateway for trade w, ]
 
 Individual Countries:
 
@@ -190,7 +190,7 @@ Individual Cities:
   Seattle                   : http://dbpedia.org/resource/Seattle
 [QueryResult vars:[latitude_longitude, populationDensity, label, comment, country]
 Rows:
-  [POINT(-122.33305358887 47.609722137451), 3150.979715864901, Seattle | Сиэтл | سياتل | シアトル | 西雅圖, Seattle (/siˈætəl/) is a West Coast seaport city and the seat of King County, Washington. With an estimated 684,451 residents as of 2015, Seattle is the largest city in both the state of Washington and the Pacific Northwest region of North America. As of 2015, it is estimated to be the 18th largest city in the United States. In July 2013, it was the fastest-growing major city in the United States and remained in the Top 5 in May 2015 with an annual growth rate of 2.1%. The Seattle metropolitan area is the 15th largest metropolitan area in the United States with over 3.7 million inhabitants. The city is situated on an isthmus between Puget Sound (an inlet of the Pacific Ocean) and Lake Washington, about 100 miles (160 km) south of the Canada–United States border. A major gateway for trade w, ]
+  [POINT(-122.33305358887 47.609722137451), 3150.979715864901, Seattle, Seattle (/siˈætəl/) is a West Coast seaport city and the seat of King County, Washington. With an estimated 684,451 residents as of 2015, Seattle is the largest city in both the state of Washington and the Pacific Northwest region of North America. As of 2015, it is estimated to be the 18th largest city in the United States. In July 2013, it was the fastest-growing major city in the United States and remained in the Top 5 in May 2015 with an annual growth rate of 2.1%. The Seattle metropolitan area is the 15th largest metropolitan area in the United States with over 3.7 million inhabitants. The city is situated on an isthmus between Puget Sound (an inlet of the Pacific Ocean) and Lake Washington, about 100 miles (160 km) south of the Canada–United States border. A major gateway for trade w, ]
 
 Processing query:
 sparql
@@ -240,6 +240,11 @@ Notice also the syntax for **GROUP_CONCAT**, for example:
 
 This collects all values assigned to the binding variable **?country2** into a string value using the separator string " | ". Using **DISTINCT** with **GROUP_CONCAT** conveniently discards duplicate bindings for the variable **?country2**.
 
+Now that we have looked at SPARQL examples using **OPTIONAL** and **GROUP_CONCAT**, the templates at the end of the following listing should be easier to understand.
+
+The methods **genericResults** and **genericAsString** are not currently used in this example but I leave them as easy way to get information, given any entity URI.
+
+For each entity type, for example *city*, I wrote one method like **cityResults** that returns an instance of **QueryResult** calculated by using the library from the chapter *Semantic Web*. For each entity type there is another method, like **cityAsString** that converts an instance of **QueryResult** to a formatted string for display.
 
 {lang="java",linenos=on}
 ~~~~~~~~
@@ -393,14 +398,14 @@ public class EntityDetail {
     "      ?populationDensity2\n" +
     " } . \n" +
     " OPTIONAL { %s <http://dbpedia.org/ontology/country> ?country2 } . \n" +
-    " OPTIONAL { %s <http://www.w3.org/2000/01/rdf-schema#label> ?label2 . } \n" +
+    " OPTIONAL { %s <http://www.w3.org/2000/01/rdf-schema#label> ?label2 . " +
+    "             FILTER  (lang(?label2) = 'en') } \n" +
     "} LIMIT 30\n";
 }
 ~~~~~~~~
 
 
-
-
+The class **EntityRelationships** is used to find property relationships between two entity URIs. The RDF statement matching **FILTER** on line 15 prevents matching statements where the property contains the string "wiki" to avoid WikiData references. This class would need to be rewritten to handle, for example, the WikiData Knowledge Base instead of the DBPedia Knowledge Base. This class uses the **JenaApis** library developed in the chapter *Semantic Web*. The class **Sparql** that we will look at later wraps the use of the **JenaApis** library.
 
 {lang="java",linenos=on}
 ~~~~~~~~
@@ -425,9 +430,7 @@ public class EntityRelationships {
 }
 ~~~~~~~~
 
-
-
-
+The class **Log** defines an shorthand **out** for calling **System.out.println**, an instance of **StringBuilder** for storing all generated SPARQL queries made to DBPedia, and a utility method for clearing the stored SPARQL queries. We use the cache of SPARQL queries to support the interactive command "sparql" in the **KGN** application. We saw the use of this command to display all cached SPARQL queries earlier.
 
 {lang="java",linenos=on}
 ~~~~~~~~
@@ -440,9 +443,15 @@ public class Log {
 }
 ~~~~~~~~
 
+The class **PrintEntityResearchResults** takes results from multiple DBPedia queries, formats the results, and displays them. The class constructor has no use except for the side effect of displaying results to a user. The constructor requires the arguments:
 
+- Sparql endpoint - we will look at the definition of class **Sparql** in the next section.
+- List<EntityAndDescription> people - a list of person names and URIs.
+- List<EntityAndDescription> companies - a list of company names and URIs.
+- List<EntityAndDescription> cities - a list of city names and URIs.
+- List<EntityAndDescription> countries - a list of country names and URIs.
 
-
+I define static string values for a few ANSI terminal escape sequences for changing the default color of text written to a terminal. If you are running on Windows you may need to set initialization values for **RESET**, **GREEN**, **YELLOW**, **PURPLE**, and **CYAN** to empty strings "".
 
 {lang="java",linenos=on}
 ~~~~~~~~
@@ -504,9 +513,9 @@ public class PrintEntityResearchResults {
 }
 ~~~~~~~~
 
+The class **Sparql** wraps the **JenaApis** library from the chapter *Semantic Web*. I set the SPARQL endpoint for DBPedia on line 13. I set and commented out the WikiData SPARQL endpoint on lines 11-12. The KGN application will not work with WikiData without some modifications.
 
-
-
+Notice that we are importing the value of a static StringBuffer **com.knowledgegraphnavigator.Log.sparql** on line 5. We will use this for storing SPARQL queries for display to the user.
 
 {lang="java",linenos=on}
 ~~~~~~~~
@@ -535,15 +544,22 @@ public class Sparql {
     return jenaApis.queryRemote(endpoint, sparqlQuery);
   }
   private JenaApis jenaApis;
-
-  public static void main(String[] args) throws Exception {
-    Sparql sp = new Sparql();
-    QueryResult qr = sp.query("select ?s ?p ?o where { ?s ?p ?o } limit 5");
-    out(qr.toString());
-  }
 }
 ~~~~~~~~
 
+The class **Utils** contains one utility method **removeBrackets** that is used to convert a URI in SPARQL RDF statement form:
+
+{linenos=off}
+~~~~~~~~
+<http://dbpedia.org/resource/Seattle>
+~~~~~~~~
+
+to:
+
+{linenos=off}
+~~~~~~~~
+http://dbpedia.org/resource/Seattle
+~~~~~~~~
 
 
 {lang="java",linenos=on}
@@ -560,7 +576,7 @@ public class Utils {
 
 
 
-Finally we get to the main program:
+Finally we get to the main program implemented in the class **KGN**. The interactive program is implemented in the class constructor with the heart of the code being the **while** loop in lines 26-119 that accepts text input from the user, detects entity names and the corresponding entity types in the input text, and using the Java classes we just looked at to find information on DBPedia for the entities in the input text as well as finding relations between these entities.
 
 {lang="java",linenos=on}
 ~~~~~~~~
@@ -703,7 +719,7 @@ public class KGN {
 }
 ~~~~~~~~
 
-
+TBD: discuss code
 
 
 ## Wrap-up
