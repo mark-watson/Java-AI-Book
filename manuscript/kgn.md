@@ -176,9 +176,9 @@ public class EntityAndDescription {
 
 The class **EntityDetail** defines SPARQL query templates in lines ??-?? TBD that have slots for the URI of the entity URI. We use different templates for different entity types.
 
-We mentioned the **OPTIONAL** triple matching patterns in the chapter *Semantic Web*. Before looking at the Java code, let's first look at how optional matching works. We will run the KGN application asking for information on the city Seattle and then use the **sparql** command to print the generated SPARQL produced by the method **cityResults** (most output is not shown here for brevity):
+We mentioned the **OPTIONAL** triple matching patterns in the chapter *Semantic Web*. Before looking at the Java code, let's first look at how optional matching works. We will run the KGN application asking for information on the city Seattle and then use the **sparql** command to print the generated SPARQL produced by the method **cityResults** (most output is not shown here for brevity). On line 2 I enter the query string "Seattle"" and on line 22 I enter the command "sparql" to print out the generated SPARQL:
 
-{lang="sparql",linenos=on}
+linenos=on}
 ~~~~~~~~
 Enter entities query:
 Seattle
@@ -198,19 +198,31 @@ Generated SPARQL used to get current results:
 SELECT DISTINCT
     (GROUP_CONCAT (DISTINCT ?latitude_longitude2; SEPARATOR=' | ') 
         AS ?latitude_longitude) 
-    (GROUP_CONCAT (DISTINCT ?populationDensity2; SEPARATOR=' | ') AS ?populationDensity) 
+    (GROUP_CONCAT (DISTINCT ?populationDensity2; SEPARATOR=' | ')
+        AS ?populationDensity) 
     (GROUP_CONCAT (DISTINCT ?label2; SEPARATOR=' | ') AS ?label) 
     (GROUP_CONCAT (DISTINCT ?comment2; SEPARATOR=' | ') AS ?comment) 
     (GROUP_CONCAT (DISTINCT ?country2; SEPARATOR=' | ') AS ?country) { 
- <http://dbpedia.org/resource/Seattle> <http://www.w3.org/2000/01/rdf-schema#comment>  ?comment2 . FILTER  (lang(?comment2) = 'en') . 
- OPTIONAL { <http://dbpedia.org/resource/Seattle> <http://www.w3.org/2003/01/geo/wgs84_pos#geometry> ?latitude_longitude2 } . 
- OPTIONAL { <http://dbpedia.org/resource/Seattle> <http://dbpedia.org/ontology/PopulatedPlace/populationDensity> ?populationDensity2 } . 
- OPTIONAL { <http://dbpedia.org/resource/Seattle> <http://dbpedia.org/ontology/country> ?country2 } . 
- OPTIONAL { <http://dbpedia.org/resource/Seattle> <http://www.w3.org/2000/01/rdf-schema#label> ?label2 . } 
+ <http://dbpedia.org/resource/Seattle>
+   <http://www.w3.org/2000/01/rdf-schema#comment>
+   ?comment2 .
+        FILTER  (lang(?comment2) = 'en') . 
+ OPTIONAL { <http://dbpedia.org/resource/Seattle>
+            <http://www.w3.org/2003/01/geo/wgs84_pos#geometry>
+            ?latitude_longitude2 } . 
+ OPTIONAL { <http://dbpedia.org/resource/Seattle>
+            <http://dbpedia.org/ontology/PopulatedPlace/populationDensity>
+            ?populationDensity2 } . 
+ OPTIONAL { <http://dbpedia.org/resource/Seattle>
+            <http://dbpedia.org/ontology/country>
+            ?country2 } . 
+ OPTIONAL { <http://dbpedia.org/resource/Seattle>
+            <http://www.w3.org/2000/01/rdf-schema#label>
+            ?label2 . } 
  } LIMIT 30
 ~~~~~~~~
 
-In lines ?-?? TBD, we are trying to find a triple stating which country Seattle is in. There is no triple matching the following statement in the DBPedia knowledge base so the variable **country2** is not bound and the query returns no results for the variable **country**:
+This listing was manually edited to fit page width. In lines ?-?? TBD, we are trying to find a triple stating which country Seattle is in. There is no triple matching the following statement in the DBPedia knowledge base so the variable **country2** is not bound and the query returns no results for the variable **country**:
 
 {lang="sparql",linenos=off}
 ~~~~~~~~
@@ -352,11 +364,11 @@ public class EntityDetail {
    "     AS ?populationDensity) {\n" +
    "  %s <http://www.w3.org/2000/01/rdf-schema#comment>  ?comment2 .\n" +
    "                           FILTER  (lang(?comment2) = 'en') .\n" +
-   "      OPTIONAL { %s <http://dbpedia.org/ontology/areaTotal> ?areaTotal2 } .\n" +
-   "      OPTIONAL {\n" +
+   "  OPTIONAL { %s <http://dbpedia.org/ontology/areaTotal> ?areaTotal2 } .\n" +
+   "  OPTIONAL {\n" +
    "       %s <http://dbpedia.org/ontology/populationDensity> ?populationDensity2\n" +
-   "      } .\n" +
-   "      OPTIONAL { %s <http://www.w3.org/2000/01/rdf-schema#label> ?label2 . }\n" +
+   "  } .\n" +
+   "  OPTIONAL { %s <http://www.w3.org/2000/01/rdf-schema#label> ?label2 . }\n" +
    "} LIMIT 30";
 
   static private String cityTemplate =
@@ -371,10 +383,12 @@ public class EntityDetail {
     " %s <http://www.w3.org/2000/01/rdf-schema#comment>  ?comment2 .\n" +
     "       FILTER  (lang(?comment2) = 'en') . \n" +
     " OPTIONAL {\n" +
-    "   %s <http://www.w3.org/2003/01/geo/wgs84_pos#geometry> ?latitude_longitude2\n" +
+    "   %s <http://www.w3.org/2003/01/geo/wgs84_pos#geometry>\n" +
+    "      ?latitude_longitude2\n" +
     " } . \n" +
     " OPTIONAL {\n" +
-    "    %s <http://dbpedia.org/ontology/PopulatedPlace/populationDensity> ?populationDensity2\n" +
+    "    %s <http://dbpedia.org/ontology/PopulatedPlace/populationDensity>\n" +
+    "      ?populationDensity2\n" +
     " } . \n" +
     " OPTIONAL { %s <http://dbpedia.org/ontology/country> ?country2 } . \n" +
     " OPTIONAL { %s <http://www.w3.org/2000/01/rdf-schema#label> ?label2 . } \n" +
@@ -696,10 +710,7 @@ If you enjoy running and experimenting with this example and want to modify it f
 
 I suggest further projects that you might want to try implementing with this example:
 
-- TBD
-- TBD
-- TBD
+- Write a web application that processes news stories and annotates them with additional data from DBPedia and/or WikiData.
+- In a web or desktop application, detect entities in text and display additional information when the user's mouse cursor hovers over a word or phrase that is identified as an entity found in DBPedia or WikiData.
 
-
-I got the idea for the KGN application because I was spending quite a bit of time manually setting up SPARQL queries for DBPedia (and other public sources like WikiData) and I wanted to experiment with partially automating this process.
-
+I had the idea for the KGN application because I was spending quite a bit of time manually setting up SPARQL queries for DBPedia (and other public sources like WikiData) and I wanted to experiment with partially automating this process. I have experimented with versions of KGN written in Java, Hy language ([Lisp running on Python that I wrote a short book on](https://leanpub.com/hy-lisp-python/read)), Swift, and Common Lisp and they take different approaches. You might want to check out my [web site devoted to different versions of KGN](http://www.knowledgegraphnavigator.com/).
