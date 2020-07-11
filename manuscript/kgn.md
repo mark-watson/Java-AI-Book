@@ -23,7 +23,9 @@ select ?p ?o where { <http://www.wikidata.org/entity/Q215627> ?p ?o  } limit 10
 
 For the rest of this chapter we will just use DBPedia.
 
-## The Scope of this Example
+After looking an interactive session using the example program for this chapter (that also includes listing automatically generated SPARQL queries) we will look at the implementation.
+
+## Entity Types Handled by KGN
 
 To keep this example simple we only handle just four entity types:
 
@@ -44,9 +46,7 @@ In addition to finding detailed information for people, companies, cities, and c
 
 As we look at the KGN implementation I will point out where and how you can easily add support for more entity types and in the wrap-up I will suggest further projects that you might want to try implementing with this example.
 
-## General Design of the KGN Example
-
-After looking an interactive session using the example program for this chapter (that also includes listing automatically generated SPARQL queries) we will look at the implementation.
+## General Design of the KGN Example with Example Output
 
 The example application works by first having the user enter names of people and companies. Using libraries written in two previous chapters, we find entities in the user's input text, and generate SPARQL queries to DBPedia to find information about the entities and relationships between them.
 
@@ -105,6 +105,10 @@ Rows:
 
 Individual Cities:
 
+  Seattle                   : http://dbpedia.org/resource/Seattle
+[QueryResult vars:[latitude_longitude, populationDensity, label, comment, country]
+Rows:
+  [POINT(-122.33305358887 47.609722137451), 3150.979715864901, Seattle | Сиэтл | سياتل | シアトル | 西雅圖, Seattle (/siˈætəl/) is a West Coast seaport city and the seat of King County, Washington. With an estimated 684,451 residents as of 2015, Seattle is the largest city in both the state of Washington and the Pacific Northwest region of North America. As of 2015, it is estimated to be the 18th largest city in the United States. In July 2013, it was the fastest-growing major city in the United States and remained in the Top 5 in May 2015 with an annual growth rate of 2.1%. The Seattle metropolitan area is the 15th largest metropolitan area in the United States with over 3.7 million inhabitants. The city is situated on an isthmus between Puget Sound (an inlet of the Pacific Ocean) and Lake Washington, about 100 miles (160 km) south of the Canada–United States border. A major gateway for trade w, ]
 
 Individual Countries:
 
@@ -132,25 +136,24 @@ Rows:
   [http://dbpedia.org/ontology/occupation]
 ~~~~~~~~
 
-Since the DBPedia queries are time consuming, we use the caching layer from the earlier chapter *Semantic Web*. The cache is especially helpful during development when the same queries are repeatedly used for testing.
+Since the DBPedia queries are time consuming, we use the caching layer from the earlier chapter *Semantic Web* when making SPARQL queries to DBPedia. The cache is especially helpful during development when the same queries are repeatedly used for testing.
 
 The KGN user interface loop allows you to enter queries and see the results. There are two special options that you can enter instead of a query:
 
-- sparql - this will print out all SPARQL queries used to present results. After exerting this command the buffer of previous SPARQL queries is emptied. This option is useful for learning SPARQL and you might try pasting a few into the input field for the [public DBPedia SPARQL web app](http://dbpedia.org/sparql) and modifying them.
+- sparql - this will print out all SPARQL queries used to present results. After entering this command the buffer of previous SPARQL queries is emptied. This option is useful for learning SPARQL and you might try pasting a few into the input field for the [public DBPedia SPARQL web app](http://dbpedia.org/sparql) and modifying them.
 - demo - this will randomly choose a sample query.
 
 
 ## UML Class Diagram for Example Application
 
-TBD
-
+The following UML Class Diagram for KGN shows you an overview of the Java classes we use and their public methods and fields.
 
 ![UML Class Diagram for KGN Example Application](images/kgn-uml.png)
 
 
 ## Implementation
 
-
+We will walk through the classes in the UML Class Diagram for KGN in alphabetical order except we will look at the main program in **KGN.java** last.
 
 {lang="java",linenos=on}
 ~~~~~~~~
@@ -171,7 +174,57 @@ public class EntityAndDescription {
 ~~~~~~~~
 
 
+The class **EntityDetail** defines SPARQL query templates in lines ??-?? TBD that have slots for the URI of the entity URI. We use different templates for different entity types.
 
+We mentioned the **OPTIONAL** triple matching patterns in the chapter *Semantic Web*. Before looking at the Java code, let's first look at how optional matching works. We will run the KGN application asking for information on the city Seattle and then use the **sparql** command to print the generated SPARQL produced by the method **cityResults** (most output is not shown here for brevity):
+
+{lang="sparql",linenos=on}
+~~~~~~~~
+Enter entities query:
+Seattle
+
+Individual Cities:
+
+  Seattle                   : http://dbpedia.org/resource/Seattle
+[QueryResult vars:[latitude_longitude, populationDensity, label, comment, country]
+Rows:
+  [POINT(-122.33305358887 47.609722137451), 3150.979715864901, Seattle | Сиэтл | سياتل | シアトル | 西雅圖, Seattle (/siˈætəl/) is a West Coast seaport city and the seat of King County, Washington. With an estimated 684,451 residents as of 2015, Seattle is the largest city in both the state of Washington and the Pacific Northwest region of North America. As of 2015, it is estimated to be the 18th largest city in the United States. In July 2013, it was the fastest-growing major city in the United States and remained in the Top 5 in May 2015 with an annual growth rate of 2.1%. The Seattle metropolitan area is the 15th largest metropolitan area in the United States with over 3.7 million inhabitants. The city is situated on an isthmus between Puget Sound (an inlet of the Pacific Ocean) and Lake Washington, about 100 miles (160 km) south of the Canada–United States border. A major gateway for trade w, ]
+
+Processing query:
+sparql
+
+Generated SPARQL used to get current results:
+
+SELECT DISTINCT
+    (GROUP_CONCAT (DISTINCT ?latitude_longitude2; SEPARATOR=' | ') 
+        AS ?latitude_longitude) 
+    (GROUP_CONCAT (DISTINCT ?populationDensity2; SEPARATOR=' | ') AS ?populationDensity) 
+    (GROUP_CONCAT (DISTINCT ?label2; SEPARATOR=' | ') AS ?label) 
+    (GROUP_CONCAT (DISTINCT ?comment2; SEPARATOR=' | ') AS ?comment) 
+    (GROUP_CONCAT (DISTINCT ?country2; SEPARATOR=' | ') AS ?country) { 
+ <http://dbpedia.org/resource/Seattle> <http://www.w3.org/2000/01/rdf-schema#comment>  ?comment2 . FILTER  (lang(?comment2) = 'en') . 
+ OPTIONAL { <http://dbpedia.org/resource/Seattle> <http://www.w3.org/2003/01/geo/wgs84_pos#geometry> ?latitude_longitude2 } . 
+ OPTIONAL { <http://dbpedia.org/resource/Seattle> <http://dbpedia.org/ontology/PopulatedPlace/populationDensity> ?populationDensity2 } . 
+ OPTIONAL { <http://dbpedia.org/resource/Seattle> <http://dbpedia.org/ontology/country> ?country2 } . 
+ OPTIONAL { <http://dbpedia.org/resource/Seattle> <http://www.w3.org/2000/01/rdf-schema#label> ?label2 . } 
+ } LIMIT 30
+~~~~~~~~
+
+In lines ?-?? TBD, we are trying to find a triple stating which country Seattle is in. There is no triple matching the following statement in the DBPedia knowledge base so the variable **country2** is not bound and the query returns no results for the variable **country**:
+
+{lang="sparql",linenos=off}
+~~~~~~~~
+<http://dbpedia.org/resource/Seattle> <http://dbpedia.org/ontology/country> ?country2
+~~~~~~~~
+
+Notice also the syntax for **GROUP_CONCAT**, for example:
+
+{lang="sparql",linenos=off}
+~~~~~~~~
+  (GROUP_CONCAT (DISTINCT ?country2; SEPARATOR=' | ') AS ?country)
+~~~~~~~~
+
+This collects all values assigned to the binding variable **?country2** into a string value using the separator string " | ". Using **DISTINCT** with **GROUP_CONCAT** conveniently discards duplicate bindings for the variable **?country2**.
 
 
 {lang="java",linenos=on}
@@ -261,12 +314,15 @@ public class EntityDetail {
     "    (GROUP_CONCAT (DISTINCT ?netIncome2; SEPARATOR=' | ') AS ?netIncome)\n" +
     "    (GROUP_CONCAT (DISTINCT ?label2; SEPARATOR=' | ') AS ?label)\n" +
     "    (GROUP_CONCAT (DISTINCT ?comment2; SEPARATOR=' | ') AS ?comment)\n" +
-    "    (GROUP_CONCAT (DISTINCT ?numberOfEmployees2; SEPARATOR=' | ') AS ?numberOfEmployees) {\n" +
+    "    (GROUP_CONCAT (DISTINCT ?numberOfEmployees2; SEPARATOR=' | ')\n" +
+    "         AS ?numberOfEmployees) {\n" +
     "  %s <http://www.w3.org/2000/01/rdf-schema#comment>  ?comment2 .\n" +
     "            FILTER  (lang(?comment2) = 'en') .\n" +
     "  OPTIONAL { %s <http://dbpedia.org/ontology/industry> ?industry2 } .\n" +
     "  OPTIONAL { %s <http://dbpedia.org/ontology/netIncome> ?netIncome2 } .\n" +
-    "  OPTIONAL { %s <http://dbpedia.org/ontology/numberOfEmployees> ?numberOfEmployees2 } .\n" +
+    "  OPTIONAL {\n" +
+    "    %s <http://dbpedia.org/ontology/numberOfEmployees> ?numberOfEmployees2\n" +
+    "  } .\n" +
     "  OPTIONAL { %s <http://www.w3.org/2000/01/rdf-schema#label> ?label2 .\n" +
     "            FILTER (lang(?label2) = 'en') } \n" +
     "} LIMIT 30";
@@ -292,25 +348,34 @@ public class EntityDetail {
    "   (GROUP_CONCAT (DISTINCT ?areaTotal2; SEPARATOR=' | ') AS ?areaTotal)\n" +
    "   (GROUP_CONCAT (DISTINCT ?label2; SEPARATOR=' | ') AS ?label)\n" +
    "   (GROUP_CONCAT (DISTINCT ?comment2; SEPARATOR=' | ') AS ?comment)\n" +
-   "   (GROUP_CONCAT (DISTINCT ?populationDensity2; SEPARATOR=' | ') AS ?populationDensity) {\n" +
+   "   (GROUP_CONCAT (DISTINCT ?populationDensity2; SEPARATOR=' | ')\n" +
+   "     AS ?populationDensity) {\n" +
    "  %s <http://www.w3.org/2000/01/rdf-schema#comment>  ?comment2 .\n" +
    "                           FILTER  (lang(?comment2) = 'en') .\n" +
-   "             OPTIONAL { %s <http://dbpedia.org/ontology/areaTotal> ?areaTotal2 } .\n" +
-   "             OPTIONAL { %s <http://dbpedia.org/ontology/populationDensity> ?populationDensity2 } .\n" +
-   "             OPTIONAL { %s <http://www.w3.org/2000/01/rdf-schema#label> ?label2 . }\n" +
+   "      OPTIONAL { %s <http://dbpedia.org/ontology/areaTotal> ?areaTotal2 } .\n" +
+   "      OPTIONAL {\n" +
+   "       %s <http://dbpedia.org/ontology/populationDensity> ?populationDensity2\n" +
+   "      } .\n" +
+   "      OPTIONAL { %s <http://www.w3.org/2000/01/rdf-schema#label> ?label2 . }\n" +
    "} LIMIT 30";
 
   static private String cityTemplate =
     "SELECT DISTINCT\n" +
     "    (GROUP_CONCAT (DISTINCT ?latitude_longitude2; SEPARATOR=' | ') \n" +
     "              AS ?latitude_longitude) \n" +
-    "    (GROUP_CONCAT (DISTINCT ?populationDensity2; SEPARATOR=' | ') AS ?populationDensity) \n" +
+    "    (GROUP_CONCAT (DISTINCT ?populationDensity2; SEPARATOR=' | ')\n" +
+    "              AS ?populationDensity) \n" +
     "    (GROUP_CONCAT (DISTINCT ?label2; SEPARATOR=' | ') AS ?label) \n" +
     "    (GROUP_CONCAT (DISTINCT ?comment2; SEPARATOR=' | ') AS ?comment) \n" +
     "    (GROUP_CONCAT (DISTINCT ?country2; SEPARATOR=' | ') AS ?country) { \n" +
-    " %s <http://www.w3.org/2000/01/rdf-schema#comment>  ?comment2 . FILTER  (lang(?comment2) = 'en') . \n" +
-    " OPTIONAL { %s <http://www.w3.org/2003/01/geo/wgs84_pos#geometry> ?latitude_longitude2 } . \n" +
-    " OPTIONAL { %s <http://dbpedia.org/ontology/PopulatedPlace/populationDensity> ?populationDensity2 } . \n" +
+    " %s <http://www.w3.org/2000/01/rdf-schema#comment>  ?comment2 .\n" +
+    "       FILTER  (lang(?comment2) = 'en') . \n" +
+    " OPTIONAL {\n" +
+    "   %s <http://www.w3.org/2003/01/geo/wgs84_pos#geometry> ?latitude_longitude2\n" +
+    " } . \n" +
+    " OPTIONAL {\n" +
+    "    %s <http://dbpedia.org/ontology/PopulatedPlace/populationDensity> ?populationDensity2\n" +
+    " } . \n" +
     " OPTIONAL { %s <http://dbpedia.org/ontology/country> ?country2 } . \n" +
     " OPTIONAL { %s <http://www.w3.org/2000/01/rdf-schema#label> ?label2 . } \n" +
     "} LIMIT 30\n";
