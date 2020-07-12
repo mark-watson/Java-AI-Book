@@ -5,7 +5,7 @@ Early AI research emphasized the optimization of search algorithms. At this time
 
 I now consider this form of classic search to be a well understood problem but that does not mean that we will not see exciting improvements in search algorithms in the future. This book does not cover Monte Carlo Search or game search using Reinforcement Learning with Monte Carlo Search that Alpha Go uses.
 
-We will cover depth first and breadth first search. The basic implementation for depth first and breadth first search is the same with one key difference. When searching from any location in state space we start by calculating nearby locations that can be moved to in one search cycle. For depth first search we store new locations to be searched in a stack data structure and for breadth first search we store new locations to search in a queue data structure. As we will shortly see this simple change has a large impact on search quality (usually breadth first search will produce better results) and computational resources (depth first search requires less storage).
+We will cover depth-first and breadth-first search. The basic implementation for depth-first and breadth-first search is the same with one key difference. When searching from any location in state space we start by calculating nearby locations that can be moved to in one search cycle. For depth-first search we store new locations to be searched in a stack data structure and for breadth-first search we store new locations to search in a queue data structure. As we will shortly see this simple change has a large impact on search quality (usually breadth-first search will produce better results) and computational resources (depth-first search requires less storage).
 
 It is customary to cover search in AI books but to be honest I have only used search techniques in one interactive planning system in the 1980s and much later while doing the "game AI" in two Nintendo games and a PC hovercraft racing game. Still, you should understand how to optimize search.
 
@@ -98,8 +98,8 @@ and the goal node in (width - 1)-(height - 1) (lower right corner in the
 following figures).
 
 The abstract class **AbstractSearchEngine** is the base class for both the
-depth first (uses a stack to store moves) search class
-**DepthFirstSearchEngine** and the breadth first (uses a queue to store
+depth-first (uses a stack to store moves) search class
+**DepthFirstSearchEngine** and the breadth-first (uses a queue to store
 moves) search class **BreadthFirstSearchEngine**. We will start by looking
 at the common data and behavior defined in **AbstractSearchEngine**. The
 class constructor has two required arguments: the width and height of
@@ -116,7 +116,7 @@ abstract base class also defines other utility methods:
     **Dimension** objects that can be moved to from the specified
     location. This implements the movement operator.
 
-Now, we will look at the depth first search procedure. The constructor
+Now, we will look at the depth-first search procedure. The constructor
 for the derived class **DepthFirstSearchEngine** calls the base class
 constructor and then solves the search problem by calling the method
 **iterateSearch**. We will look at this method in some detail. The
@@ -181,11 +181,11 @@ If the next possible move is not the goal move, we recursively call the iterateS
       }
 ~~~~~~~~
 
-The [figure showing the depth first search in a maze](#search-depth-maze) shows how poor a path a depth first search can find between the start and goal locations in the maze. The maze is a 10-by-10 grid. The letter S marks the starting location in the upper left corner and the goal position is marked with a G in the lower right corner of the grid. Blocked grid cells are painted light gray. The basic problem with the depth first search is that the search engine will often start searching in a bad direction, but still find a path eventually, even given a poor start. The advantage of a depth-first search over a
-breadth first search is that the depth-first search requires much less memory. We will see that possible moves for depth first search are stored on a stack (last in, first out data structure) and possible moves for a breadth first search are stored in a queue (first in, first out data structure).
+The [figure showing the depth-first search in a maze](#search-depth-maze) shows how poor a path a depth-first search can find between the start and goal locations in the maze. The maze is a 10-by-10 grid. The letter S marks the starting location in the upper left corner and the goal position is marked with a G in the lower right corner of the grid. Blocked grid cells are painted light gray. The basic problem with the depth-first search is that the search engine will often start searching in a bad direction, but still find a path eventually, even given a poor start. The advantage of a depth-first search over a
+breadth-first search is that the depth-first search requires much less memory. We will see that possible moves for depth-first search are stored on a stack (last in, first out data structure) and possible moves for a breadth-first search are stored in a queue (first in, first out data structure).
 
 {#search-depth-maze}
-![Depth first search of a maze](images/search_depth.png)
+![Depth-first search of a maze](images/search_depth.png)
 
 
 The derived class **BreadthFirstSearch** is similar to the
@@ -194,14 +194,14 @@ search location we calculate all possible moves, and make one possible
 trial move at a time. We use a queue data structure for storing possible
 moves, placing possible moves on the back of the queue as they are
 calculated, and pulling test moves from the front of the queue. The
-effect of a breadth first search is that it “fans out” uniformly from
+effect of a breadth-first search is that it “fans out” uniformly from
 the starting node until the goal node is found.
 
 The class constructor for **BreadthFirstSearch** calls the super class
 constructor to initialize the maze, and then uses the auxiliary method
-**doSearchOn2Dgrid** for performing a breadth first search for the goal.
+**doSearchOn2Dgrid** for performing a breadth-first search for the goal.
 We will look at the class **BreadthFirstSearch** in some detail. Breadth
-first search uses a queue instead of a stack (depth first search) to
+first search uses a queue instead of a stack (depth-first search) to
 store possible moves. The utility class **DimensionQueue** implements a
 standard queue data structure that handles instances of the class
 **Dimension**.
@@ -314,17 +314,17 @@ array in reverse order, starting with the goal location:
         }
 ~~~~~~~~
 
-The [figure of breadth search of a maze](#search-breadth-maze) shows a good path solution between starting and goal nodes. Starting from the initial position, the breadth first search engine adds all possible moves to the back of a queue data structure. For each possible move added to this queue in one search cycle, all possible moves are added to the queue for each new move recorded. Visually, think of possible moves added to the queue as “fanning out” like a wave from the starting location. The breadth first search engine stops when this “wave” reaches the goal location. In general, I prefer breadth first search techniques to depth first search techniques when memory storage for the queue used in the search process is not an issue. In general, the memory requirements for performing depth first search is much less than breadth first search.
+The [figure of breadth search of a maze](#search-breadth-maze) shows a good path solution between starting and goal nodes. Starting from the initial position, the breadth-first search engine adds all possible moves to the back of a queue data structure. For each possible move added to this queue in one search cycle, all possible moves are added to the queue for each new move recorded. Visually, think of possible moves added to the queue as “fanning out” like a wave from the starting location. The breadth-first search engine stops when this “wave” reaches the goal location. In general, I prefer breadth-first search techniques to depth-first search techniques when memory storage for the queue used in the search process is not an issue. In general, the memory requirements for performing depth-first search is much less than breadth-first search.
 
 {#search-breadth-maze}
-![Beadth First Search of a Maze](images/search_breadth.png)
+![Beadth-first Search of a Maze](images/search_breadth.png)
 
 Note that the classes **MazeDepthFirstSearch** and
-**MazeBreadthFirstSearch** are simple Java JFC applications that produced the [figure showing the depth first search in a maze](#search-depth-maze) and  the [figure of breadth search of a maze](#search-breadth-maze). The interested reader can read through the source code for the GUI test programs, but we will only cover the core AI code in this book. If you are interested in the GUI test programs and you are not familiar with the Java JFC (or Swing) classes, there are several good tutorials on JFC programming on the web.
+**MazeBreadthFirstSearch** are simple Java JFC applications that produced the [figure showing the depth-first search in a maze](#search-depth-maze) and  the [figure of breadth search of a maze](#search-breadth-maze). The interested reader can read through the source code for the GUI test programs, but we will only cover the core AI code in this book. If you are interested in the GUI test programs and you are not familiar with the Java JFC (or Swing) classes, there are several good tutorials on JFC programming on the web.
 
 ## Finding Paths in Graphs
 
-In the last section, we used both depth first and breadth first search techniques to find a path between a starting location and a goal location in a maze. Another common type of search space is represented by a graph. A graph is a set of nodes and links. We characterize nodes as containing the following data:
+In the last section, we used both depth-first and breadth-first search techniques to find a path between a starting location and a goal location in a maze. Another common type of search space is represented by a graph. A graph is a set of nodes and links. We characterize nodes as containing the following data:
 
 -   A name and/or other data
 -   Zero or more links to other nodes
@@ -341,7 +341,7 @@ As seen in the previous figure, most of the data for the search
 operations (i.e., nodes, links, etc.) is defined in the abstract class
 **AbstractGraphSearch**. This abstract class is customized through
 inheritance to use a stack for storing possible moves (i.e., the array
-path) for depth first search and a queue for breadth first search.
+path) for depth-first search and a queue for breadth-first search.
 
 The abstract class **AbstractGraphSearch** allocates data required by both
 derived classes:
@@ -398,7 +398,7 @@ The class variable path is an array that is used for temporary storage; we set t
       }
 ~~~~~~~~
 
-The method **findPathHelper** is the interesting method in this class that actually performs the depth first search; we will look at it in some detail:
+The method **findPathHelper** is the interesting method in this class that actually performs the depth-first search; we will look at it in some detail:
 
 The path array is used as a stack to keep track of which nodes are being visited during the search. The argument **num\_path** is the number of locations in the path, which is also the search depth:
 
@@ -457,7 +457,7 @@ If we have not found the goal node, return null, instead of an array of node ind
       }
 ~~~~~~~~
 
-Derived class **BreadthFirstSearch** also must define abstract method **findPath**. This method is very similar to the breadth first search method used for finding a path in a maze: a queue is used to store possible moves. For a maze, we used a queue class that stored instances of the class Dimension, so for this problem, the queue only needs to store integer node indices. The return value of **findPath** is an array of node indices that make up the path from the starting node to the goal.
+Derived class **BreadthFirstSearch** also must define abstract method **findPath**. This method is very similar to the breadth-first search method used for finding a path in a maze: a queue is used to store possible moves. For a maze, we used a queue class that stored instances of the class Dimension, so for this problem, the queue only needs to store integer node indices. The return value of **findPath** is an array of node indices that make up the path from the starting node to the goal.
 
 {lang="java",linenos=off}
 ~~~~~~~~
@@ -469,7 +469,7 @@ We start by setting up a flag array **alreadyVisited** to prevent visiting the s
 
 {lang="java",linenos=off}
 ~~~~~~~~
-        // data structures for depth first search:
+        // data structures for depth-first search:
         boolean [] alreadyVisitedFlag =
                                new boolean[numNodes];
         int [] predecessor = new int[numNodes];
@@ -548,7 +548,7 @@ Now that the goal node has been found, we can build a new array of returned node
        }
 ~~~~~~~~
 
-In order to run both the depth first and breadth first graph search examples, change directory to src-search-maze and type the following commands:
+In order to run both the depth-first and breadth-first graph search examples, change directory to src-search-maze and type the following commands:
 
 {lang="java",linenos=off}
 ~~~~~~~~
@@ -557,20 +557,20 @@ In order to run both the depth first and breadth first graph search examples, ch
     java GraphBeadthFirstSearch
 ~~~~~~~~
 
-The following figure shows the results of finding a route from node 1 to node 9 in the small test graph. Like the depth first results seen in the maze search, this path is not optimal.
+The following figure shows the results of finding a route from node 1 to node 9 in the small test graph. Like the depth-first results seen in the maze search, this path is not optimal.
 
 {#gsearch-depth-graph}
-![Depth First Search in a Graph](images/gsearch_depth.png)
+![Depth-first Search in a Graph](images/gsearch_depth.png)
 
-The next figure shows an optimal path found using a breadth first search. As we saw in the maze search example, we find optimal solutions using breadth first search at the cost of extra memory required for the breadth first search.
+The next figure shows an optimal path found using a breadth-first search. As we saw in the maze search example, we find optimal solutions using breadth-first search at the cost of extra memory required for the breadth-first search.
 
 {#gsearch-breadth-graph}
-![Breadth First Search in a Graph](images/gsearch_breadth.png)
+![Breadth-first Search in a Graph](images/gsearch_breadth.png)
 
 
-## Adding Heuristics to Breadth First Search
+## Adding Heuristics to Breadth-first Search
 
-We can usually make breadth first search more efficient by ordering the search order for all branches from a given position in the search space. For example, when adding new nodes from a specified reference point in the search space, we might want to add nodes to the search queue first that are “in the direction” of the goal location: in a two-dimensional search like our maze search, we might want to search connected grid cells first that were closest to the goal grid space. In this case, pre-sorting nodes (in order of closest distance to the goal) added to the breadth first search queue could have a dramatic effect on search efficiency. The alpha-beta additions to breadth first search are seen in in the next section.
+We can usually make breadth-first search more efficient by ordering the search order for all branches from a given position in the search space. For example, when adding new nodes from a specified reference point in the search space, we might want to add nodes to the search queue first that are “in the direction” of the goal location: in a two-dimensional search like our maze search, we might want to search connected grid cells first that were closest to the goal grid space. In this case, pre-sorting nodes (in order of closest distance to the goal) added to the breadth-first search queue could have a dramatic effect on search efficiency. The alpha-beta additions to breadth-first search are seen in in the next section.
 
 ## Heuristic Search and Game Playing: Tic-Tac-Toe and Chess
 
