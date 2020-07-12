@@ -46,7 +46,7 @@ In addition to finding detailed information for people, companies, cities, and c
 
 As we look at the KGN implementation I will point out where and how you can easily add support for more entity types and in the wrap-up I will suggest further projects that you might want to try implementing with this example.
 
-## General Design of the KGN Example with Example Output
+## General Design of KGN with Example Output
 
 The example application works by first having the user enter names of people and companies. Using libraries written in two previous chapters, we find entities in the user's input text, and generate SPARQL queries to DBPedia to find information about the entities and relationships between them.
 
