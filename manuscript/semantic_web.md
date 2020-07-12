@@ -285,7 +285,7 @@ kb:containsState rdfs:subPropertyOf kb:containsPlace .
 
 In the following examples, we will use the main method in the class **JenaApi** (developed in the next section) that allows us to load multiple RDF input files and then to interactively enter SPARQL queries.
 
-We will start with a simple SPARQL query for subjects (news article URLs) and objects (matching countries) with the value for the predicate equal to **containsCountry**:
+We will start with a simple SPARQL query for subjects (news article URLs) and objects (matching countries) with the value for the predicate equal to **containsCountry**. Variables in queries start with a question mark character and can have any names:
 
 {lang="sparql",linenos=off}
 ~~~~~~~~
@@ -297,7 +297,13 @@ SELECT ?subject ?object
 }
 ~~~~~~~~
 
-Variables in queries start with a question mark character and can have any names. We can make this query easier and reduce the chance of misspelling errors by using a namespace prefix:
+It is important for you to understand what is happening when we apply the last SPARQL query to our sample data. Conceptually, all the triples in the sample data are scanned, keeping the ones where the predicate part of a triple is equal to **<http://knowledgebooks.com/ontology#containsCountry>**. In practice RDF data stores supporting SPARQL queries index RDF data so a complete scan of the sample data is not required. This is analogous to relational databases where indices are created to avoid needing to perform complete scans of database tables.
+
+In practice, when you are exploring a Knowledge Graph like DBPedia or WikiData (that are just very large collections of RDF triples), you might run a query and discover a useful or interesting entity URI in the triple store, then drill down to find out more about the entity. In a later chapter *Knowledge Graph Explorer* we attempt to automate this exploration process using the DBPedia Knowledge Graph.
+
+We will be using the same code to access the small example of RDF statements in our sample data as we will for accessing DBPedia or WikiData.
+
+We can make this last query easier to read and reduce the chance of misspelling errors by using a namespace prefix:
 
 {lang="sparql",linenos=off}
 ~~~~~~~~
