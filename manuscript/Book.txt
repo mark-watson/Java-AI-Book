@@ -1,5 +1,4 @@
 preface.md
-introduction.md
 search.md
 reasoning.md
 anomaly_detection.md

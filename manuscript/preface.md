@@ -1,7 +1,7 @@
 Preface
 =======
 
-The latest edition of this book is always available at [https://leanpub.com/javaai](https://leanpub.com/javaai). Currently the latest edition was released in the summer of 2020. It has been 5+ years since the last edition and this is largely a rewrite, dropping some material like Drools based expert systems, Weka for machine learning, and the implementation of a RDF server with geolocation support. I am now placing a heavier emphasis on neural networks and deep learning, a greatly expanded discussion of the semantic web and linked data including examples to generate knowledge graphs automatically from text documents and also a system to help navigate public Knowledge Graphs like DBPedia and WikiData.
+The latest edition of this book is always available at [https://leanpub.com/javaai](https://leanpub.com/javaai). Currently the latest edition was released in the summer of 2020. It has been seven years since the last edition and this is largely a rewrite, dropping some material like Drools based expert systems, Weka for machine learning, and the implementation of a RDF server with geolocation support. I am now placing a heavier emphasis on neural networks and deep learning, a greatly expanded discussion of the semantic web and linked data including examples to generate knowledge graphs automatically from text documents and also a system to help navigate public Knowledge Graphs like DBPedia and WikiData.
 
 I decided what material to keep from old editions and what new material to add based on what my estimation is of which AI technologies are most useful and interesting to Java developers.
 
@@ -11,10 +11,15 @@ I have been developing commercial Artificial Intelligence (AI) tools and applica
 
 I wrote this book for both professional programmers and home hobbyists who already know how to program in Java and who want to learn practical AI programming and information processing techniques. I have tried to make this an enjoyable book to work through. In the style of a “cook book,” the chapters can be studied in any order. Most chapters follow the same pattern: a motivation for learning a technique, some theory for the technique, and a Java example program that you can experiment with.
 
-[My Java example programs for this book can be found on github](https://github.com/mark-watson/Java-AI-Book-Code) and can be used under both the LGPL3 and Apache 2 licenses - choose whichever of these two licenses that works best for you. Git pull request with code improvements will be appreciated by me and the readers of this book.
+The code for the example programs is available on **github**:
+
+  [https://github.com/mark-watson/Java-AI-Book-Code](https://github.com/mark-watson/Java-AI-Book-Code)
+
+My Java code in this book can be used under either or both the LGPL3 and Apache 2 licenses - choose whichever of these two licenses that works best for you. Git pull request with code improvements will be appreciated by me and the readers of this book.
 
 My goal is to teach you both the theory of common AI techniques and to provide you with Java source code to save you some time and effort. Even though I have worked almost exclusively in the field of deep learning in the last six years, I urge you, dear reader, to look at the field of AI as being far broader than machine learning and deep learning in particular. Just as it is wrong to consider the higher level fields of Category Theory or Group Theory to "be" mathematics, there is far more to AI than machine learning. Here we will take a more balanced view of AI, and indeed, my own current research is in hybrid AI, that is, the fusion of deep learning with good old fashioned symbolic AI, probabilistic reasoning, and explainability. 
 
+This book has a [Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)](https://creativecommons.org/licenses/by-nc-nd/4.0/). Feel free to share copies of this book with friends and colleagues at work. This book is also available to [read for free online](https://leanpub.com/javaai) or to purchase if you want to support my writing activities.
 
 ## Personal Artificial Intelligence Journey
 
@@ -28,10 +33,10 @@ The chapter on WordNet uses the examples from the previous chapter on OpenNLP. B
 
 Additionally, the chapter Statistical Natural Language Processing is configured so the code and linguistic data can be combined with other examples.
 
-In this process, it is assumed that all sub-projects are in the same parent directory. For example, in the GitHub repo for the examples we use has subdirectories **opennlp** and **wordnet** and the relative position of these directories is required for data sharing. Code sharing is achieved by installing the code in your local maven repository, for example:
+Code sharing is achieved by installing the code in your local maven repository, for example:
 
-        cd openly
-        man install
+        cd opennlp
+        mvn install
 
 Now, the code in the OpenNLP example is installed on the system.
 
@@ -41,10 +46,11 @@ My example programs are licensed under the LGPL version 3 and the Apache 2. I us
 
 -   PowerLoom Reasoning: LGPL
 -   Jena Semantic Web: Apache 2
+-   OpenNlp: Apache 2
+-   WordNet: MIT style license ([link to license](https://wordnet.princeton.edu/license-and-commercial-use))
+-   Deep Learning for Java (DL4J): Apache 2
 
-TBD: make sure last list is complete
-
-My desire is for you too be able to use the code examples and data in your projects with no hassles.
+My desire is for you to be able to use the code examples and data in your projects with no hassles.
 
 ## Acknowledgements
 
