@@ -123,7 +123,7 @@ constructor and then solves the search problem by calling the method
 arguments to **iterateSearch** specify the current location and the
 current search depth:
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
         private void iterateSearch(Dimension loc, int depth)
 ~~~~~~~~
@@ -131,14 +131,14 @@ current search depth:
 The class variable **isSearching** is used to halt search, avoiding more
 solutions, once one path to the goal is found.
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
             if (isSearching == false) return;
 ~~~~~~~~
 
 We set the maze value to the depth for display purposes only:
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
             maze.setValue(loc.width, loc.height, (short)depth);
 ~~~~~~~~
@@ -148,7 +148,7 @@ of possible neighboring squares that we could move to; we then loop over
 the four possible moves (a null value in the array indicates an illegal
 move):
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
     Dimension [] moves = getPossibleMoves(loc);
     for (int i=0; i<4; i++) {
@@ -159,7 +159,7 @@ move):
 Record the next move in the search path array and check to see if we are
 done:
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
       searchPath[depth] = moves[i];
       if (equals(moves[i], goalLoc)) {
@@ -174,7 +174,7 @@ done:
 
 If the next possible move is not the goal move, we recursively call the iterateSearch method again, but starting from this new location and increasing the depth counter by one:
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
         iterateSearch(moves[i], depth + 1);
         if (isSearching == false) return;
@@ -213,7 +213,7 @@ two-dimensional array **allReadyVisited** keeps us from searching the same
 location twice. To calculate the shortest path after the goal is found,
 we use the predecessor array:
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
         private void doSearchOn2DGrid() {
           int width = maze.getWidth();
@@ -234,7 +234,7 @@ we use the predecessor array:
 
 We start the search by setting the already visited flag for the starting location to true value and adding the starting location to the back of the queue:
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
           alReadyVisitedFlag[startLoc.width][startLoc.height]
              = true;
@@ -245,7 +245,7 @@ We start the search by setting the already visited flag for the starting locatio
 This outer loop runs until either the queue is empty or the goal is
 found:
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
         outer:      
           while (queue.isEmpty() == false) {
@@ -255,7 +255,7 @@ We peek at the **Dimension** object at the front of the queue (but do not
 remove it) and get the adjacent locations to the current position in the
 maze:
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
             Dimension head = queue.peekAtFrontOfQueue();
             Dimension [] connected =
@@ -264,7 +264,7 @@ maze:
 
 We loop over each possible move; if the possible move is valid (i.e., not null) and if we have not already visited the possible move location, then we add the possible move to the back of the queue and set the predecessor array for the new location to the last square visited (head is the value from the front of the queue). If we find the goal, break out of the loop:
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
             for (int i=0; i<4; i++) {
               if (connected[i] == null) break;
@@ -285,7 +285,7 @@ We loop over each possible move; if the possible move is valid (i.e., not null) 
 We have processed the location at the front of the queue (in the
 variable head), so remove it:
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
             queue.removeFromFrontOfQueue();
           }
@@ -295,7 +295,7 @@ Now that we are out of the main loop, we need to use the predecessor
 array to get the shortest path. Note that we fill in the **searchPath**
 array in reverse order, starting with the goal location:
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
           maxDepth = 0;
           if (success) {
@@ -346,7 +346,7 @@ path) for depth first search and a queue for breadth first search.
 The abstract class **AbstractGraphSearch** allocates data required by both
 derived classes:
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
         final public static int MAX = 50;
         protected int [] path = 
@@ -383,7 +383,7 @@ The abstract base class also provides several common utility methods:
 
 The abstract base class defines an abstract method **findPath** that must be overridden. We will start with the derived class **DepthFirstSearch**, looking at its implementation of findPath. The **findPath** method returns an array of node indices indicating the calculated path:
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
       public int [] findPath(int start_node,
                              int goal_node) {
@@ -391,7 +391,7 @@ The abstract base class defines an abstract method **findPath** that must be ove
 
 The class variable path is an array that is used for temporary storage; we set the first element to the starting node index, and call the utility method **findPathHelper**:
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
         path[0] = start_node; // the starting node
         return findPathHelper(path, 1, goal_node);
@@ -402,7 +402,7 @@ The method **findPathHelper** is the interesting method in this class that actua
 
 The path array is used as a stack to keep track of which nodes are being visited during the search. The argument **num\_path** is the number of locations in the path, which is also the search depth:
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
       public int [] findPathHelper(int [] path,
                                    int num_path,
@@ -411,7 +411,7 @@ The path array is used as a stack to keep track of which nodes are being visited
 
 First, re-check to see if we have reached the goal node; if we have, make a new array of the current size and copy the path into it. This new array is returned as the value of the method:
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
         if (goal_node == path[num_path - 1]) {
           int [] ret = new int[num_path];
@@ -424,7 +424,7 @@ First, re-check to see if we have reached the goal node; if we have, make a new 
 
 We have not found the goal node, so call the method **connected\_nodes** to find all nodes connected to the current node that are not already on the search path (see the source code for the implementation of **connected\_nodes**):
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
         int [] new_nodes = connected_nodes(path,
                                            num_path);
@@ -432,7 +432,7 @@ We have not found the goal node, so call the method **connected\_nodes** to find
 
 If there are still connected nodes to search, add the next possible “node to visit” to the top of the stack (variable **path** in the program) and recursively call the method **findPathHelper** again:
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
         if (new_nodes != null) {
           for (int j=0; j<new_nodes.length; j++) {
@@ -451,7 +451,7 @@ If there are still connected nodes to search, add the next possible “node to v
 
 If we have not found the goal node, return null, instead of an array of node indices:
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
         return null;
       }
@@ -459,7 +459,7 @@ If we have not found the goal node, return null, instead of an array of node ind
 
 Derived class **BreadthFirstSearch** also must define abstract method **findPath**. This method is very similar to the breadth first search method used for finding a path in a maze: a queue is used to store possible moves. For a maze, we used a queue class that stored instances of the class Dimension, so for this problem, the queue only needs to store integer node indices. The return value of **findPath** is an array of node indices that make up the path from the starting node to the goal.
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
       public int [] findPath(int start_node,
                              int goal_node) {
@@ -467,7 +467,7 @@ Derived class **BreadthFirstSearch** also must define abstract method **findPath
 
 We start by setting up a flag array **alreadyVisited** to prevent visiting the same node twice, and allocating a predecessors array that we will use to find the shortest path once the goal is reached:
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
         // data structures for depth first search:
         boolean [] alreadyVisitedFlag =
@@ -477,14 +477,14 @@ We start by setting up a flag array **alreadyVisited** to prevent visiting the s
 
 The class **IntQueue** is a private class defined in the file BreadthFirstSearch.java; it implements a standard queue:
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
         IntQueue queue = new IntQueue(numNodes + 2);
 ~~~~~~~~
 
 Before the main loop, we need to initialize the already visited predecessor arrays, set the visited flag for the starting node to true, and add the starting node index to the back of the queue:
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
         for (int i=0; i<numNodes; i++) {
           alreadyVisitedFlag[i] = false;
@@ -496,7 +496,7 @@ Before the main loop, we need to initialize the already visited predecessor arra
 
 The main loop runs until we find the goal node or the search queue is empty:
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
         outer:  while (queue.isEmpty() == false) {
 ~~~~~~~~
@@ -504,7 +504,7 @@ The main loop runs until we find the goal node or the search queue is empty:
 We will read (without removing) the node index at the front of the queue and calculate the nodes that are connected to the current node (but not already on the visited list) using the **connected\_nodes** method (the
 interested reader can see the implementation in the source code for this class):
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
           int head = queue.peekAtFrontOfQueue();
           int [] connected = connected_nodes(head);
@@ -513,7 +513,7 @@ interested reader can see the implementation in the source code for this class):
 
 If each node connected by a link to the current node has not already been visited, set the predecessor array and add the new node index to the back of the search queue; we stop if the goal is found:
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
           for (int i=0; i<connected.length; i++) {
              if (alreadyVisitedFlag[connected[i]] == false) {
@@ -530,7 +530,7 @@ If each node connected by a link to the current node has not already been visite
 
 Now that the goal node has been found, we can build a new array of returned node indices for the calculated path using the predecessor array:
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
         int [] ret = new int[numNodes + 1];
         int count = 0;
@@ -550,7 +550,7 @@ Now that the goal node has been found, we can build a new array of returned node
 
 In order to run both the depth first and breadth first graph search examples, change directory to src-search-maze and type the following commands:
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
     javac *.java
     java GraphDepthFirstSearch
@@ -639,7 +639,7 @@ GameSearch contains the code for running a two-player game and
 performing an alpha-beta search. This class needs to be sub-classed to
 provide the eight methods:
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
       public abstract boolean drawnPosition(Position p)
       public abstract boolean wonPosition(Position p,
@@ -687,7 +687,7 @@ of making the example program short and easy to understand). The method
 The **GameSearch** class implements the following methods to perform game
 search:
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
       protected Vector alphaBeta(int depth, Position p,
                                  boolean player)
@@ -705,7 +705,7 @@ The method **alphaBeta** is simple; it calls the helper method
 **alphaBetaHelper** then calls itself recursively. The code for
 **alphaBeta** is:
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
       protected Vector alphaBeta(int depth,
                                  Position p,
@@ -719,7 +719,7 @@ The method **alphaBeta** is simple; it calls the helper method
 
 It is important to understand what is in the vector returned by the methods **alphaBeta** and **alphaBetaHelper**. The first element is a floating point position evaluation for the point of view of the player whose turn it is to move; the remaining values are the “best move” for each side to the last search depth. As an example, if I let the tic-tac-toe program play first, it places a marker at square index 0, then I place my marker in the center of the board an index 4. At this point, to calculate the next computer move, **alphaBeta** is called and returns the following elements in a vector:
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
      next element: 0.0
      next element: [-1,0,0,0,1,0,0,0,0,]
@@ -736,7 +736,7 @@ Here, the alpha-beta enhanced min-max search looked all the way to the end of th
 
 The same printout of the returned vector from **alphaBeta** for the chess program is:
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
     next element: 5.4
      next element:
@@ -777,7 +777,7 @@ The classes Move and Position contain no data and methods at all. The classes Mo
 
 Now that we have seen the debug printout of the contents of the vector returned from the methods **alphaBeta** and **alphaBetaHelper**, it will be easier to understand how the method **alphaBetaHelper** works. The following text shows code fragments from the **alphaBetaHelper** method interspersed with book text:
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
       protected Vector alphaBetaHelper(int depth,
                                        Position p,                
@@ -790,7 +790,7 @@ Here, we notice that the method signature is the same as for **alphaBeta**, exce
 evaluation work is done while “backing up” the search tree; that is, the search proceeds to a leaf node (a node is a leaf if the method **reachedMaxDepth** return a Boolean true value), and then a return vector for the leaf node is created by making a new vector and setting its
 first element to the position evaluation of the position at the leaf node and setting the second element of the return vector to the board position at the leaf node:
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
         if (reachedMaxDepth(p, depth)) {
           Vector v = new Vector(2);
@@ -803,7 +803,7 @@ first element to the position evaluation of the position at the leaf node and se
 
 If we have not reached the maximum search depth (i.e., we are not yet at a leaf node in the search tree), then we enumerate all possible moves from the current position using the method **possibleMoves** and recursively call **alphaBetaHelper** for each new generated board position. In terms of the [figure showing possible moves for tic-tac-toe](#alphabeta-tictactoe), at this point we are moving down to another search level (e.g., from level 1 to level 2; the level in the [figure showing possible moves for tic-tac-toe](#alphabeta-tictactoe) corresponds to depth argument in **alphaBetaHelper**):
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
       Vector best = new Vector();
       Position [] moves = possibleMoves(p, player);
@@ -840,6 +840,7 @@ If we have not reached the maximum search depth (i.e., we are not yet at a leaf 
 
 Notice that when we recursively call **alphaBetaHelper**, we are “flipping” the player argument to the opposite Boolean value. After calculating the best move at this depth (or level), we add it to the end of the return vector:
 
+{lang="java",linenos=off}
 ~~~~~~~~
         Vector v3 = new Vector();
         v3.addElement(new Float(beta));
@@ -854,7 +855,7 @@ When the recursive calls back up and the first call to **alphaBetaHelper** retur
 
 The class **GameSearch** method **playGame** is fairly simple; the following code fragment is a partial listing of playGame showing how to call **alphaBeta**, **getMove**, and **makeMove**:
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
       public void playGame(Position startingPosition,
                            boolean humanPlayFirst) {
@@ -871,7 +872,7 @@ The class **GameSearch** method **playGame** is fairly simple; the following cod
 
 The debug printout of the vector returned from the method **alphaBeta** seen earlier in this section was printed using the following code immediately after the call to the method **alphaBeta**:
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
           Enumeration enum = v.elements();
           while (enum.hasMoreElements()) {
@@ -894,7 +895,7 @@ I assume that the reader has the book example code installed and available for v
 refinements for the position and move classes. The **TicTacToeMove** class
 is trivial, adding a single integer value to record the square index for the new move:
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
     public class TicTacToeMove extends Move {
       public int moveIndex;
@@ -903,7 +904,7 @@ is trivial, adding a single integer value to record the square index for the new
 
 The board position indices are in the range of [0..8] and can be considered to be in the following order:
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
        0 1 2
        3 4 5
@@ -912,7 +913,7 @@ The board position indices are in the range of [0..8] and can be considered to b
 
 The class **TicTacToePosition** is also simple:
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
     public class TicTacToePosition extends Position {
         final static public int BLANK = 0;
@@ -933,7 +934,7 @@ This class allocates an array of nine integers to represent the board, defines c
 
 The **TicTacToe** class must define the following abstract methods from the base class **GameSearch**:
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
      public abstract boolean drawnPosition(Position p)
      public abstract boolean wonPosition(Position p,
@@ -953,7 +954,7 @@ The **TicTacToe** class must define the following abstract methods from the base
 
 The implementation of these methods uses the refined classes **TicTacToeMove** and **TicTacToePosition**. For example, consider the method **drawnPosition** that is responsible for selecting a drawn (or tied) position:
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
       public boolean drawnPosition(Position p) {
         boolean ret = true;
@@ -979,7 +980,7 @@ possible winning patterns in tic-tac-toe. The method
 
 The method **positionEvaluation** is simple, and is a good place for the interested reader to start modifying both the tic-tac-toe and chess programs:
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
         public float positionEvaluation(Position p,
                                         boolean player) {
@@ -1012,7 +1013,7 @@ The method **positionEvaluation** is simple, and is a good place for the interes
 
 The only other method that we will look at here is **possibleMoves**; the interested reader can look at the implementation of the other (very simple) methods in the source code. The method **possibleMoves** is called with a current position, and the side to move (i.e., program or human):
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
         public Position [] possibleMoves(Position p,
                                          boolean player) {
@@ -1043,7 +1044,7 @@ It is very simple to generate possible moves: every blank square is a legal move
 
 It is simple to compile and run the example tic-tac-toe program: change directory to src-search-game and type:
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
     mvn install
     mvn exec:java -Dexec.mainClass="search.game.TicTacToe"
@@ -1091,7 +1092,7 @@ implement chess specific data and behavior.
 The class ChessMove contains data for recording from and to square
 indices:
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
     public class ChessMove extends Move {
         public int from;
@@ -1105,7 +1106,7 @@ special value of 7, which indicates an “off board” square. The initial
 board setup is defined statically in the Chess class and the off-board
 squares have a value of “7”:
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
     private static int [] initialBoard = {
      7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
@@ -1140,7 +1141,7 @@ lookahead is limited to 2 moves (4 ply).
 The class **ChessPosition** contains data for this representation and
 defines constant values for playing sides and piece types:
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
       public class ChessPosition extends Position {
         final static public int BLANK = 0;
@@ -1168,7 +1169,7 @@ The class **Chess** also defines other static data. The following array is
 used to encode the values assigned to each piece type (e.g., pawns are
 worth one point, knights and bishops are worth 3 points, etc.):
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
       private static int [] value = {
         0, 1, 3, 3, 5, 9, 0, 0, 0, 12
@@ -1178,7 +1179,7 @@ worth one point, knights and bishops are worth 3 points, etc.):
 The following array is used to codify the possible incremental moves for
 pieces:
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
       private static int [] pieceMovementTable = {
         0, -1, 1, 10, -10, 0, -1, 1, 10, -10, -9, -11, 9,
@@ -1192,7 +1193,7 @@ indexing the following array with the piece type index (e.g., pawns are
 piece type 1, knights are piece type 2, bishops are piece type 3, rooks
 are piece type 4, etc.:
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
       private static int [] index = {
         0, 12, 15, 10, 1, 6, 0, 0, 0, 6
@@ -1229,7 +1230,7 @@ of the number of items placed in the static array piece\_moves. The
 method **calcPieceMoves** is called with a position and a square index;
 first, the piece type and side are determined for the square index:
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
       private int calcPieceMoves(ChessPosition pos,
                                  int square_index) {
@@ -1246,7 +1247,7 @@ first, the piece type and side are determined for the square index:
 Then, a switch statement controls move generation for each type of chess
 piece (movement generation code is not shown – see the file Chess.java):
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
         switch (piece_type) {
         case ChessPosition.PAWN:
@@ -1276,7 +1277,7 @@ the board or “runs into” a piece on the same side. Note that for kings
 and knights, the inner loop is only executed one time per iteration
 through the outer loop:
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
         move_index = piece;
         if (move_index < 0) move_index = -move_index;
@@ -1345,7 +1346,7 @@ computer’s side to move. If the position if evaluated from the human
 player’s perspective, the evaluation value is multiplied by minus one.
 The implementation of **positionEvaluation** is:
 
-{linenos=off}
+{lang="java",linenos=off}
 ~~~~~~~~
       public float positionEvaluation(Position p,
                                       boolean player) {
@@ -1446,6 +1447,4 @@ percent of the time so they print as zero values.
   Chess.calcPieceMoves         1.7                      0.8
 ~~~~~~~~
 
-The interested reader is encouraged to choose a simple two-player game,
-and using the game search class framework, implement your own
-game-playing program.
+The interested reader is encouraged to choose a simple two-player game, and using the game search class framework, implement your own game-playing program.
