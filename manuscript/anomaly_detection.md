@@ -1,8 +1,8 @@
 # Anomaly Detection Machine Learning Example
 
-Anomaly detection models are used in one very specific class of use cases: when you have many negative (non-anomaly) examples and relatively few positive (anomaly) examples. For training we will ignore positive examples, create a model of "how things should be", and hopefully be able to detect anomalies different from the original negative examples.
+Anomaly detection models are used in one very specific class of use cases: when you have many negative (non-anomaly) examples and relatively few positive (anomaly) examples. We can refer to this as an unbalanced training set. For training we will ignore positive examples, create a model of "how things should be," and hopefully be able to detect anomalies different from the original negative examples.
 
-If you have a large training set of both negative and positive examples then do not use anomaly detection models.
+If you have a large training set of both negative and positive examples then do not use anomaly detection models. If your training examples are balanced then use a classification model as we will see later in the chapter [Deep Learning Using Deeplearning4j](#dl4j).
 
 ## Motivation for Anomaly Detection
 

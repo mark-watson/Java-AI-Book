@@ -142,8 +142,7 @@ Please note that depending on what terminal you are running in, the prompt “PL
     |P|(PARENT-OF KEN MARK)
 ~~~~~~~~
 
-Now that we have entered two concepts, a test relation, and asserted a
-few facts, we can look at an example of PowerLoom’s query language:
+Now that we have entered two concepts, a test relation, and asserted a few facts, we can look at an example of PowerLoom’s query language:
 
 {linenos=off}
 ~~~~~~~~
@@ -169,20 +168,14 @@ functions, and rules into different sets and as previously mentioned
 “PL-USER” is the default module. PowerLoom modules can form a hierarchy,
 inheriting concepts, relations, and rules from parent modules.
 
-The subdirectory test\_data contains the demo file business.plm written
-by Robert MacGregor that is supplied with the full PowerLoom
-distribution. You can load his complete example using:
+The subdirectory test\_data contains the demo file business.plm written by Robert MacGregor that is supplied with the full PowerLoom distribution. You can load his complete example using:
 
 {linenos=off}
 ~~~~~~~~
-    PL-USER |= (load "../test_data/business.plm")
+    PL-USER |= (load "test_data/business.plm")
 ~~~~~~~~
 
-This is a good example because it demonstrates most of the available
-functionality of PowerLoom in a short 200 lines. When you are done
-reading this chapter, please take a few minutes to read through this
-example file since I do not list it here. There are a few things to
-notice in this example. Here we see a rule used to make the relation
+This is a good example because it demonstrates most of the available functionality of PowerLoom in a short 200 lines. When you are done reading this chapter, please take a few minutes to read through this example file since I do not list it here. There are a few things to notice in this example. Here we see a rule used to make the relation
 “contains” transitive:
 
 {linenos=off}
@@ -197,10 +190,7 @@ notice in this example. Here we see a rule used to make the relation
           (contains ?l1 ?l3)))
 ~~~~~~~~
 
-The operator =\> means that if the first clause is true then so is the
-second. In English, this rule could be stated \`\`if an instance i1
-contains i2 and if instance i2 contains i3 then we can infer that i1
-also contains i3." To see how this rule works in practice, we can switch
+The operator =\> means that if the first clause is true then so is the second. In English, this rule could be stated \`\`if an instance i1 contains i2 and if instance i2 contains i3 then we can infer that i1 also contains i3." To see how this rule works in practice, we can switch
 to the example module “BUSINESS” and find all locations contained inside another location:
 
 {linenos=off}
@@ -228,11 +218,7 @@ to the example module “BUSINESS” and find all locations contained inside ano
     BUSINESS |= 
 ~~~~~~~~
 
-Here we have fifteen solutions even though there are only seven
-“contains” relations asserted in the business.plm file - the other eight
-solutions were inferred. In addition to the “retrieve” function that
-finds solutions matching a query you can also use the “ask” function to
-determine if a specified relation is true; for example:
+Here we have fifteen solutions even though there are only seven “contains” relations asserted in the business.plm file, the other eight solutions were inferred. In addition to the “retrieve” function that finds solutions matching a query you can also use the “ask” function to determine if a specified relation is true; for example:
 
 {linenos=off}
 ~~~~~~~~
@@ -241,8 +227,7 @@ determine if a specified relation is true; for example:
     BUSINESS |= 
 ~~~~~~~~
 
-For complex queries you can use the “why” function to see how PowerLoom
-solved the last query:
+For complex queries you can use the “why” function to see how PowerLoom solved the last query:
 
 {linenos=off}
 ~~~~~~~~
@@ -263,9 +248,7 @@ solved the last query:
     BUSINESS |= 
 ~~~~~~~~
 
-By default the explanation facility is turned off because it causes
-PowerLoom to run more slowly; it was turned on in the file business.plm
-using the statement:
+By default the explanation facility is turned off because it causes PowerLoom to run more slowly; it was turned on in the file business.plm using the statement:
 
 {linenos=off}
 ~~~~~~~~
@@ -275,19 +258,17 @@ using the statement:
 
 ## Using the PowerLoom APIs in Java Programs
 
-Once you interactively develop concepts, rules and relations then it is
-likely that you may want to use them with PowerLoom in an embedded mode,
-making PowerLoom a part of your application. I will get you started with
-a few Java example programs. The source code for this chapter is in the
-subdirectory powerloom.
+Once you interactively develop concepts, rules and relations then it is likely that you may want to use them with PowerLoom in an embedded mode, making PowerLoom a part of your application. I will get you started with a few Java example programs. The source code for this chapter divide into two packages:
 
-If you download the PowerLoom manual (a PDF file) from the PowerLoom web
-site, you will have the complete Java API documentation for the Java
-version of PowerLoom (there are also C++ and Common Lisp versions with
-separate documentation). I have found that I usually use just a small
-subset of the Java PowerLoom APIs and I have “wrapped” this subset in a
-wrapper class in the file PowerLoomUtils.java. We will use my wrapper
-class for the examples in the rest of this chapter.
+- edu.isi.powerloom - source code from the PowerLoom web site.
+- com.markwatson.powerloom - book example code for utilities and two embedded examples.
+
+These packages can be seen in this screen shot:
+
+![Powerloom example in IntelliJ IDE](images/powerloom-ide1.png)
+
+
+If you download the PowerLoom manual (a PDF file) from the PowerLoom web site, you will have the complete Java API documentation for the Java version of PowerLoom (there are also C++ and Common Lisp versions with separate documentation). I have found that I usually use just a small subset of the Java PowerLoom APIs and I have “wrapped” this subset in a wrapper class in the file PowerLoomUtils.java. We will use my wrapper class for the examples in the rest of this chapter.
 
 The following UML class diagram will give you an overview before we dive into the code:
 
@@ -295,21 +276,20 @@ The following UML class diagram will give you an overview before we dive into th
 
 My wrapper class has the follow public methods:
 
--   PowerLoomUtils()  constructor initializes the Java PowerLoom runtime system.
+-   PowerLoomUtils() - constructor initializes the Java PowerLoom runtime system.
 -   load(String fpath) - load a source \*.plm file.
 -   changeModule(String workingModule) - set the current PowerLoom working module (“PL-USER” is the default module).
--   assertProposition(String proposition) - asserts a new proposition; for example: "(and (company c3) (company-name c3 \\"Moms Grocery\\"))". Note that quotation marks are escaped with a
-    backslash character. You can also use single quote characters like:
+-   assertProposition(String proposition) - asserts a new proposition; for example: "(and (company c3) (company-name c3 \\"Moms Grocery\\"))". Note that quotation marks are escaped with a backslash character. You can also use single quote characters like:
     "(and (company c3) (company-name c3 ’Moms Grocery’))" because I convert single quotes in my wrapper code.
 -   createRelation(String relation, int arity) - create a new relation with a specified arity (number of “arguments”). For example you could create a relation “owns” with arity 2 and then assert “(owns Elaine ’Moms Grocery’)” - I usually do not use this API since I prefer to place relations (with rules) in a source code file ending in the extension \*.plm.
 -   doQuery(String query) - returns a list of results from a query. Each result in the list is itself a list.
 
-You will always want to work in an interactive PowerLoom console for writing and debugging PowerLoom models. I built the model in test.plm (in the subdirectory test\_data) interactively and we will use it here in an embedded Java example:
+You will always want to work in an interactive PowerLoom console for writing and debugging PowerLoom models. I copied the model in business.plm from the PowerLoom distribution to the subdirectory test\_data. Here we use it here in an embedded Java example in the file **PowerLoomExample_1.java**:
 
 {lang="java",linenos=off}
 ~~~~~~~~
     PowerLoomUtils plu = new PowerLoomUtils();
-    plu.load("test_data/test.plm");
+    plu.load("test_data/business.plm");
     plu.changeModule("BUSINESS");
     plu.assertProposition(
          "(and (company c1)" +
@@ -345,23 +325,15 @@ You will always want to work in an interactive PowerLoom console for writing and
     // answers: [[C3, "Apple", "SteveJobs"]]
 ~~~~~~~~
 
-I have added the program output produced by printing the value of the
-list variable “answers” as comments after each System.out.println call.
-In the wrapper API calls that take a string argument, I broke long
-strings over several lines for formatting to the width of a page; you
-would not do this in your own programs because of the cost of the extra
-string concatenation.
+I have added the program output produced by printing the value of the list variable “answers” as comments after each **System.out.println** call. In the wrapper API calls that take a string argument, I broke long strings over several lines for formatting to the width of a page; you would not do this in your own programs because of the cost of the extra string concatenation.
 
-We will not look at the implementation of the **PowerLoomUtils** class -
-you can read the code if you are interested. That said, I will make a
-few commments on the Java PowerLoom APIs. The class **PLI** contains
-static methods for initializing the system, loading PowerLoom source
-files. Here are a few examples:
+We will not look at the implementation of the **PowerLoomUtils** class, you can read the code if you are interested. That said, I will make a few comments on the Java PowerLoom APIs. The class **PLI** contains
+static methods for initializing the system, loading PowerLoom source files. Here are a few examples:
 
 {lang="java",linenos=off}
 ~~~~~~~~
       PLI.initialize();
-      PLI.load("test.plm", null);
+      PLI.load("business.plm", null);
       PLI.sChangeModule("BUSINESS", null);
 ~~~~~~~~
 
@@ -369,32 +341,16 @@ files. Here are a few examples:
 ## Suggestions for Further Study
 
 
-This chapter has provided a brief introduction to PowerLoom, one of my
-favorite AI tools. I also showed you how to go about embedding the
-PowerLoom knowledge representation and reasoning systems in your Java
-programs. Assuming that you see benefit to further study I recommend
-reading through the PowerLoom manual and the presentations (PDF files)
-on the PowerLoom web site. As you read through this material it is best
-to have an interactive PowerLoom session open to try the examples as you
-read them.
+This chapter has provided a brief introduction to PowerLoom. I also showed you how to go about embedding
+PowerLoom in your Java programs to add capabilities for knowledge representation and reasoning. Assuming that you see benefit to further study I recommend reading through the PowerLoom manual and the presentations (PDF files) on the PowerLoom web site. As you read through this material it is best to have an interactive PowerLoom session open to try the examples as you read them.
 
-Knowledge Representation and Logic are huge subjects and I will close
-out this chapter by recommending a few books that have been the most
-helpful to me:
+Knowledge Representation and Logic are huge subjects and I will close out this chapter by recommending a few books that have been the most helpful to me:
 
--   *Knowledge Representation* by John Sowa. This has always been my
-    favorite reference for knowledge representation, logic, and
+-   *Knowledge Representation* by John Sowa. This has always been my favorite reference for knowledge representation, logic, and
     ontologies.
--   *Artificial Intelligence, A Modern Approach* by Stuart Russell and
-    Peter Norvig. A very good theoretical treatment of logic and
-    knowledge representation.
--   *The Art of Prolog* by Leon Sterling and Ehud Shapiro. Prolog
-    implements a form of predicate logic that is less expressive than
-    the descriptive logics supported by PowerLoom and
-    OWL ([Chapter on Semantic Web](#semantic-web)). That said, Prolog is very efficient and
-    fairly easy to learn and so is sometimes a better choice. This book
-    is one of my favorite general Prolog references.
+-   *Artificial Intelligence, A Modern Approach* by Stuart Russell and Peter Norvig. A very good theoretical treatment of logic and knowledge representation.
+-   *The Art of Prolog* by Leon Sterling and Ehud Shapiro. Prolog implements a form of predicate logic that is less expressive than the descriptive logics supported by PowerLoom and OWL ([Chapter on Semantic Web](#semantic-web)). That said, Prolog is very efficient and fairly easy to learn and so is sometimes a better choice. This book is one of my favorite general Prolog references.
 
-The Prolog language is a powerful AI development tool. Both the open source SWI-Prolog and the commercial Amzi Prolog systems have good Java interfaces. I don’t cover Prolog in this book but there are several very good tutorials on the web if you decide to experiment with Prolog.
+The Prolog language is a powerful AI development tool. Both open source, the SWI-Prolog and Amzi Prolog systems have good Java interfaces. I don’t cover Prolog in this book but there are several very good tutorials on the web if you decide to experiment with Prolog.
 
 We will continue [Chapter on Semantic Web](#semantic-web) with our study of logic-based reasoning systems in the context of the Semantic Web.
