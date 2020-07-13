@@ -3,7 +3,7 @@ search.md
 reasoning.md
 anomaly_detection.md
 genetic_algorithms.md
-machine_learning_neural_networks.md
+neural_networks.md
 deeplearning.md
 nlp.md
 opennlp.md
