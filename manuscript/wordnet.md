@@ -2,6 +2,75 @@
 
 Here we build on the material from the last chapter by using OpenNLP to process input text to identify parts of speech and then looking up words with their parts of speech in WordNet. The WordNet linguistic database is complex and you may want to review the [WordNet documentation] after working through the following example of finding synonyms and hypernyms for nouns in text input.
 
+## Using the WordNet Linguistic Database  {#stat-nlp-wordnet}
+
+The home page for the WordNet project is http://wordnet.princeton.edu
+and you will need to download version 3.0 and install it on your
+computer to use the example programs in this section and in Chapter
+[Chapter on Information Gathering](#information-gathering). As you can see on the WordNet web
+site, there are several Java libraries for accessing the WordNet data
+files; we will use the JAWS library written by Brett Spell as a student
+project at the Southern Methodist University. I include Brett’s library
+and the example programs for this section in the directory
+src-jaws-wordnet in the ZIP file for this book.
+
+### Tutorial on WordNet
+
+The WordNet lexical database is an ongoing research project that
+includes many years of effort by professional linguists. My own use
+of WordNet over the last ten years has been simple, mainly using the
+database to determine synonyms (called synsets in WordNet) and looking
+at the possible parts of speech of words. For reference (as taken from
+the Wikipedia article on WordNet), here is a small subset of the type of
+relationships contained in WordNet for verbs shown by examples (taken
+from the Wikipedia article):
+
+{linenos=off}
+~~~~~~~~
+hypernym
+:   travel (less general) is an hypernym of movement (more general)
+
+entailment
+:   to sleep is entailed by to snore because you must be asleep to snore
+
+Here are a few of the relations supported for nouns:
+
+hypernyms
+:   canine is a hypernym of dog since every dog is of type canine
+
+hyponyms
+:   dog (less general) is a hyponym of canine (more general)
+
+holonym
+:   building is a holonym of window because a window is part of a
+    building
+
+meronym
+:   window is a meronym of building because a window is part of a
+    building
+~~~~~~~~
+
+Some of the related information maintained for adjectives is:
+
+~~~~~~~~
+related nouns
+:   
+similar to
+:   
+~~~~~~~~
+
+I find the WordNet book (*WordNet: An Electronic Lexical Database
+(Language, Speech, and Communication)* by Christiane Fellbaum, 1998) to
+be a detailed reference for WordNet but there have been several new
+releases of WordNet since the book was published. The WordNet site and
+the Wikipedia article on WordNet are also good sources of information if
+you decide to make WordNet part of your toolkit:
+
+~~~~~~~~
+      http://wordnet.princeton.edu/
+      http://en.wikipedia.org/wiki/WordNet
+~~~~~~~~
+
 When you look up words in WordNet you specify one of the following parts of speech (POS):
 
 {lang="java",linenos=off}

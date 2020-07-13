@@ -40,7 +40,7 @@ The following screen show shows an IntelliJ project (you can use the free commun
 
 The Deeplearning4j library can use user-written Java classes to import training and testing data into a form that the Deeplearning4j library can use. Some of the examples at [https://github.com/eclipse/deeplearning4j-examples](https://github.com/eclipse/deeplearning4j-examples) use custom data loaders but in this simple example we use built-in utilites for read spreadsheet data.
 
-The following listing shows the definition of the class **ClassifierWisconsinData** that reads the University of Wisconsin cancer data set using the code in the last two listings, randomly selects part of it to use for training and for testing, creates a DBN, and tests it. The value of the variable **numHidden** set in line TBD TBD TBD refers to the number of neurons in each hidden layer.
+The following listing shows the definition of the class **ClassifierWisconsinData** that reads the University of Wisconsin cancer data set using the code in the last two listings, randomly selects part of it to use for training and for testing, creates a DBN, and tests it. The value of the variable **numHidden** set in line 3 refers to the number of neurons in each hidden layer.
 
 The network is configured and constructed in lines TBD through TBD. If we increased the number of hidden units (something that you might do for more complex problems) then you would repeat lines TBD through TBD to add a new hidden layer, and you would change the layer indices (first argument) as appropriate in calls to the chained method **.layer()**.
 
@@ -138,9 +138,8 @@ public class ClassifierWisconsinData {
       eval.eval(labels, predicted);
       System.out.println();
     }
-    System.out.println(eval.stats());
     System.out.println("Evaluate model....");
-    System.out.println("\n****************Example finished********************");
+    System.out.println(eval.stats());
   }
 }
 ~~~~~~~~
@@ -180,7 +179,6 @@ Precision, recall & F1: macro-averaged (equally weighted avg. of 2 classes)
 Confusion matrix format: Actual (rowClass) predicted as (columnClass) N times
 ==================================================================
 
-****************Example finished********************
 ~~~~~~~~
 
 The F1 score is calculated as twice precision times recall, all divided by precision + recall. We would like F1 to be as close to 1.0 as possible and it is common to spend a fair amount of time experimenting with meta learning parameters to increase F1.
@@ -189,12 +187,18 @@ It is also fairly common to try to learn good values of meta learning parameters
 
 ## Configuring the example using Maven
 
-TBD
+There is a Maven pom.xml configuration file that is configured for a recent version of DL4J (as I write this in July 2020). DL4J is fairly good at detecting if the Open BLAS library is available, if CUDA software support for any GPUs on your system are available, etc. If you try running the *Makefile* and get any errors, then check the [DL4J Quickstart and setup guide](https://deeplearning4j.konduit.ai/getting-started/quickstart) to see if there are any dependencies that you need on your system. The *Makefile* has a single target:
 
+{line-numbers=off}
+~~~~~~~~
+deep_wisconsin:
+  mvn install
+  mvn exec:java -Dexec.mainClass="com.markwatson.deeplearning.ClassifierWisconsinData"
+~~~~~~~~
 
 ## Documentation Other Types of Deep Learning Layers
 
-The [documentation for the built-in layer classes in DL4J](https://deeplearning4j.org/api/latest/org/deeplearning4j/nn/conf/layers/package-tree.html) is probably more than you need for now so let's review the most commonly used (at least by me). In the simple example we used in the last section we used two types of layers:
+The [documentation for the built-in layer classes in DL4J](https://deeplearning4j.org/api/latest/org/deeplearning4j/nn/conf/layers/package-tree.html) is probably more than you need for now so let's review the most commonly used layers (at least by me). In the simple example we used in the last section we used two types of layers:
 
 - [org.deeplearning4j.nn.conf.layers.DenseLayer](https://deeplearning4j.org/api/latest/org/deeplearning4j/nn/conf/layers/DenseLayer.html) - maintains connections to all neurons in the previous and next layer, or it is "fully connected."
 - [org.deeplearning4j.nn.conf.layers.OutputLayer](https://deeplearning4j.org/api/latest/org/deeplearning4j/nn/conf/layers/OutputLayer.html) - has built-in behavior for starting the back propagation calculations back through previous layers.
@@ -216,6 +220,8 @@ As you build more deep learning enabled applications, depending on what requirem
 
 ## Deep Learning Wrapup
 
-I first used complex neural network topologies in the late 1980s for phoneme (speech) recognition, specifically using time delay neural networks and I gave a talk about it at [IEEE First Annual International Conference on Neural Networks San Diego, California June 21-24, 1987](http://ieeexplore.ieee.org/xpl/articleDetails.jsp?reload=true&arnumber=4307059). Back then, neural networks were not really considered to be a great technology for this application but in the present time Google, Microsoft, and other companies are using deep (many layered) neural networks for speech and image recognition. Exciting work is also being done in the field of natural language processing. I just provided a small example in this chapter that you can experiment with easily. I wanted to introduce you to [Deeplearning4j](http://deeplearning4j.org/) because I think it is probably the easiest way for Java developers to get started working with many layered neural networks and I refer you to [the project documentation](http://deeplearning4j.org/documentation.html).
+I first used complex neural network topologies in the late 1980s for phoneme (speech) recognition, specifically using time delay neural networks and I gave a talk about it at [IEEE First Annual International Conference on Neural Networks San Diego, California June 21-24, 1987](http://ieeexplore.ieee.org/xpl/articleDetails.jsp?reload=true&arnumber=4307059). In the following year I wrote the Backpropagation neural network code that my company used in a bomb detector that we built for the FAA. Back then, neural networks were not really considered to be a great technology for this application but in the present time Google, Microsoft, and other companies are using deep (many layered) neural networks for speech and image recognition. Exciting work is also being done in the field of natural language processing. I just provided a small example in this chapter that you can experiment with easily. I wanted to introduce you to [Deeplearning4j](http://deeplearning4j.org/) because I think it is probably the easiest way for Java developers to get started working with many layered neural networks and I refer you to [the project documentation](http://deeplearning4j.org/documentation.html).
 
-I managed a deep learning team at Capital One 2018-2019 and while there much of my work involved GANs and LSTM deep models (and many of the my 55 US patents were at least partially inspired by this work). I refer you to a good GAN DL4J example on the web [https://github.com/wmeddie/dl4j-gans](https://github.com/wmeddie/dl4j-gans) and a tutorial on LSTM applications from the developers of DL4J [https://deeplearning4j.konduit.ai/getting-started/tutorials/clinical-time-series-lstm](https://deeplearning4j.konduit.ai/getting-started/tutorials/clinical-time-series-lstm).
+I managed a deep learning team at Capital One 2018-2019 and while there much of my work involved GANs and LSTM deep models (and many of my 55 US patents were at least partially inspired by this work). I refer you to a good GAN DL4J example on the web [https://github.com/wmeddie/dl4j-gans](https://github.com/wmeddie/dl4j-gans) and a tutorial on LSTM applications from the developers of DL4J [https://deeplearning4j.konduit.ai/getting-started/tutorials/clinical-time-series-lstm](https://deeplearning4j.konduit.ai/getting-started/tutorials/clinical-time-series-lstm).
+
+Deep Learning has become a standard tool for modeling data and making predictions or classifying data. Most of the online classes on Deep Learning classes use Python. DL4J can import Keras/TensorFlow models so one strategy is for you to build models using Python and importing trained models into DL4J.

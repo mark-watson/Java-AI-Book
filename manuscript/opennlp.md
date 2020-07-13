@@ -1,4 +1,4 @@
-# Natural Language Processing Using OpenNLP
+# Natural Language Processing Using OpenNLP {#opennlp}
 
 I have worked in the field of Natural Language Processing (NLP) since the early 1980s. Many more people are interested in the field of NLP and the techniques have changed drastically. NLP has usually been considered part of the field of artificial intelligence (AI) and in the 1980s and 1990s there was more interest in symbolic AI, that is the manipulation of high level symbols that are meaningful to people because of our knowledge of the real world. As an example, the symbol **car** means something to us but to AI software this symbol in itself has no meaning except for possible semantic relationships to other symbols like **driver** and **road**.
 
@@ -24,13 +24,16 @@ The following UML class diagrams will give you an overview of my wrapper for the
 
 Assuming that you have cloned the github repository for this book, you can fetch the maven dependencies, compile the code, and run the unit tests using the command:
 
-        mvn clean build test
+{linenos=off}
+~~~~~~~~
+mvn clean build test
+~~~~~~~~
 
 The model files, including the categorization model you will learn to build later in this chapter, are found in the subdirectory **models**. The unit tests in src/test/java/com/markwatson/opennlp/NLPTest.java provide examples for using the code we develop in this chapter. The Java example code for tokenization (splitting text into individual words), splitting sentences, and recognizing organizations, locations, and people in text is all in the Java class **NLP**. You can look at the source code in the repository for this book. Here I will just show a few snippets of the code to make clear how to load and use pre-trained models.
 
 I use static class initialization to load the model files:
 
-{lang="java",linenos=on}
+{lang="java",linenos=off}
 ~~~~~~~~
   static public Tokenizer tokenizer = null;
   static public SentenceDetectorME sentenceSplitter = null;
@@ -85,7 +88,7 @@ I use static class initialization to load the model files:
 
 The first operation that you will usually start with for processing natural language text is breaking input text into individual words and sentences. Here is the code for using the tokenizing code that separates text stored as a Java String into individual words:
 
-{lang="java",linenos=on}
+{lang="java",linenos=off}
 ~~~~~~~~
   public static String[] tokenize(String s) {
     return tokenizer.tokenize(s);
@@ -94,7 +97,7 @@ The first operation that you will usually start with for processing natural lang
 
 Here is the similar code for breaking text into individual sentences:
 
-{lang="java",linenos=on}
+{lang="java",linenos=off}
 ~~~~~~~~
   public static String[] sentenceSplitter(String s) {
     return sentenceSplitter.sentDetect(s);
@@ -115,6 +118,7 @@ In line 4 the static method **NLP.sentenceSplitter** returns an array of strings
 
 Here is the output of this code snippet (edited for page width and clarity):
 
+{line-numbers=off}
 ~~~~~~~~
 Sentences found:
   ["Apple Computer, Microsoft, and Google are in the tech sector.",
@@ -124,7 +128,7 @@ Sentences found:
 The code for finding organizations, locations, and people's names is almost identical so I will only show the code in the next listing for recognizing locations. Please look at the methods **companyNames** and **personNames**  in the class **com.markwatson.opennlp.NLP** to see the implementations for finding the names of companies and people.
 
 
-{lang="java",linenos=on}
+{lang="java",linenos=off}
 ~~~~~~~~
   public static Set<String> locationNames(String text) {
     return locationNames(tokenizer.tokenize(text));
@@ -151,6 +155,7 @@ In line 6 we create a **HashSet\<String\>** object that will hold the return val
 
 Here is some sample code to use **locationNames** along with the output (edited for page width and clarity):
 
+{line-numbers=off}
 ~~~~~~~~
    String sentence =
      "Apple Computer is located in Cupertino, California and Microsoft " +
@@ -331,6 +336,7 @@ In lines 33 through 42 we initialize the static data for an instance of the clas
 
 A new instance of the class **DocumentCategorizerME** is created in line 28 each time we want to classify input text. I called the one argument constructor for this class that uses the default feature detector. An alternative constructor is:
 
+{lang="java",line-numbers=off}
 ~~~~~~~~
 public DocumentCategorizerME(DoccatModel model,
                              FeatureGenerator... featureGenerators)
@@ -338,6 +344,7 @@ public DocumentCategorizerME(DoccatModel model,
 
 The default feature generator is **BagOfWordsFeatureGenerator** which just uses word frequencies for classification. This is reasonable for smaller training sets as we used in the last section but when I have a large amount of training data available I prefer to combine **BagOfWordsFeatureGenerator** with **NGramFeatureGenerator**. You would use the constructor call:
 
+{lang="java",line-numbers=off}
 ~~~~~~~~
 public DocumentCategorizerME(DoccatModel model,
            new FeatureGenerator[]{new BagOfWordsFeatureGenerator(),
@@ -508,12 +515,11 @@ public class ChunkingParserDemo {
 
 The OpenNLP parsing model is read from a file in lines 45 through 53. The static variable **parserModel** (instance of class **ParserModel**) if created in line 49 and used in lines 17 and 18 to parse input text. It is instructive to look at the intermediate calculation results. The value for variable parser defined in line 17 has a value of:
 
-![Data in the parser model as seen in IntelliJ](images/parsermodel.png)
-
-Note that the parser returned 5 results because we specified this number in line 18. For a long sentence the parser generates a very large number of possible parses for the sentence and returns, in order of probability of being correct, the number of resutls we requested.
+Note that the parser returned 5 results because we specified this number in line 18. For a long sentence the parser generates a very large number of possible parses for the sentence and returns, in order of probability of being correct, the number of results we requested.
 
 The OpenNLP chunking parser code prints out results in a flat list, one result on a line. This is difficult to read which is why I wrote the method **prettyPrint** (lines 21 through 41) to print the parse results indented. Here is the output from the last code example (the first parse shown is all on one line but line wraps in the following listing):
 
+{line-numbers=off}
 ~~~~~~~~
 parse:
 
