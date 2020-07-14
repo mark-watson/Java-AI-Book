@@ -4,26 +4,12 @@ Here we build on the material from the last chapter by using OpenNLP to process 
 
 ## Using the WordNet Linguistic Database  {#stat-nlp-wordnet}
 
-The home page for the WordNet project is http://wordnet.princeton.edu
-and you will need to download version 3.0 and install it on your
-computer to use the example programs in this section and in Chapter
-[Chapter on Information Gathering](#information-gathering). As you can see on the WordNet web
-site, there are several Java libraries for accessing the WordNet data
-files; we will use the JAWS library written by Brett Spell as a student
-project at the Southern Methodist University. I include Brett’s library
-and the example programs for this section in the directory
-src-jaws-wordnet in the ZIP file for this book.
+The Maven **pom.xml** file for this example is configured to download both the WordNet data and the **extjwnl** library. The home page for the WordNet project is [http://wordnet.princeton.edu](http://wordnet.princeton.edu).
 
 ### Tutorial on WordNet
 
-The WordNet lexical database is an ongoing research project that
-includes many years of effort by professional linguists. My own use
-of WordNet over the last ten years has been simple, mainly using the
-database to determine synonyms (called synsets in WordNet) and looking
-at the possible parts of speech of words. For reference (as taken from
-the Wikipedia article on WordNet), here is a small subset of the type of
-relationships contained in WordNet for verbs shown by examples (taken
-from the Wikipedia article):
+The WordNet lexical database is an ongoing research project that includes many years of effort by professional linguists. My own use of WordNet over the last twenty years has been simple, mainly using the database to determine synonyms (called synsets in WordNet) and looking at the possible parts of speech of words. For reference (as taken from the Wikipedia article on WordNet), here is a small subset of the type of
+relationships contained in WordNet for verbs shown by examples (taken from the [Wikipedia article on WordNet](https://en.wikipedia.org/wiki/WordNet)):
 
 {linenos=off}
 ~~~~~~~~
@@ -52,26 +38,15 @@ meronym
 
 Some of the related information maintained for adjectives is:
 
+{linenos=off}
 ~~~~~~~~
 related nouns
-:   
 similar to
-:   
 ~~~~~~~~
 
-I find the WordNet book (*WordNet: An Electronic Lexical Database
-(Language, Speech, and Communication)* by Christiane Fellbaum, 1998) to
-be a detailed reference for WordNet but there have been several new
-releases of WordNet since the book was published. The WordNet site and
-the Wikipedia article on WordNet are also good sources of information if
-you decide to make WordNet part of your toolkit:
+I find the WordNet book (*WordNet: An Electronic Lexical Database (Language, Speech, and Communication)* by Christiane Fellbaum, 1998) to be a detailed reference for WordNet but there have been several new releases of WordNet since the book was published. The WordNet site and the Wikipedia article on WordNet are also good sources of information if you decide to make WordNet part of your toolkit.
 
-~~~~~~~~
-      http://wordnet.princeton.edu/
-      http://en.wikipedia.org/wiki/WordNet
-~~~~~~~~
-
-When you look up words in WordNet you specify one of the following parts of speech (POS):
+When you look up words in WordNet you can specify one of the following parts of speech (POS):
 
 {lang="java",linenos=off}
 ~~~~~~~~
@@ -89,10 +64,11 @@ While the following example is simple, we only look up WordNet entries for nouns
 
 Before diving into the code I want to show you what the generated synonym and hypernym data looks like.
 
-The following two figures show the generated structured output data in a IntelliJ Community Edition debug session:
+The following two figures show the generated structured output data in a IntelliJ Community Edition debug session, in particular look at the structure of **synonymMap**:
 
 ![WordNet example: examining generated synonym data](images/wordnet-synonym.png)
 
+Here is a closeup showing the strife and sample data in **hypernymMap**:
 
 ![WordNet example: closeup examining generated hypernym data](images/wordnet-hypernym.png)
 
@@ -121,8 +97,9 @@ I assume that you have performed a maven install for the project in the last cha
 
 {linenos=off}
 ~~~~~~~~
-    cd ~/javaai-new-code/opennlp
-    mvn install -DskipTests
+push ~../opennlp
+mvn install -DskipTests
+popd
 ~~~~~~~~
 
 We also need the OpenNLP library and my OpenNLP wrapper library developed in the last chapter:
@@ -141,33 +118,20 @@ We also need the OpenNLP library and my OpenNLP wrapper library developed in the
         </dependency>
 ~~~~~~~~
 
-There is a **Makefile** for this example that has targets for running the example and for fetching the WordNet data:
+There is a **Makefile** for this example that has targets for running the example:
 
 {linenos=off}
 ~~~~~~~~
 example:
  mvn install
  mvn exec:java -Dexec.mainClass="com.markwatson.wordnet_example.WordNetAndOpenNlpExample"
-
-get_wordnet_data:
- wget https://wordnetcode.princeton.edu/wn3.1.dict.tar.gz
- tar xvfz wn3.1.dict.tar.gz
- rm -f wn3.1.dict.tar.gz
-~~~~~~~~
-
-If you removed the **extjwnl-data-wn31** dependency from the project **pom.xml** file, then you need to fetch the data just one time:
-
-{linenos=off}
-~~~~~~~~
-    cd ~/javaai-new-code/wordnet
-    make get_wordnet_data
 ~~~~~~~~
 
 And then run the example:
 
 {linenos=off}
 ~~~~~~~~
-    make example
+make example
 ~~~~~~~~
 
 The example identifies all nouns (in the example code they are: President, cat, Bill, Mexico, dog, and Clinton) and for each noun finds all WordNet "word senses." The noun "Mexico" only has  one word sense while the noun "cat" has eight word senses.
@@ -202,6 +166,8 @@ WordNet is a linguistic database and does not have the wide coverage of semantic
 
 Here is a small segment of the output of the example program:
 
+{linenos=off}
+~~~~~~~~
 **** Hypernyms:
 
 {President=[[an executive officer of a firm or corporation, executive, executive director, chairman of the board, chief executive officer, CEO, chief operating officer, chief financial officer, CFO, insider, president], 
@@ -211,6 +177,7 @@ Here is a small segment of the output of the example program:
 
 {President=[[an executive officer of a firm or corporation, president], [the person who holds the office of head of state of the United States government; "the President likes to jog every morning", President of the United States, United States President, President, Chief Executive], [the chief executive of a republic, president], 
  ...
+~~~~~~~~
 
 ## Implementation
 

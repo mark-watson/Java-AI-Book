@@ -2,9 +2,9 @@
 
 As a personal research project I have collected a large set of mapping of entity names (e.g., people's names, city names, names of music groups, company names, etc.) along with a mapping to the DBPedia URI for each entity. I have developed libraries to use this data in [Common Lisp](https://leanpub.com/lovinglisp), [Haskell](https://leanpub.com/haskell-cookbook), and Java. Here we use the Java version of this library.
 
-The Java library is found in the directory **ner_dbpedia*. The raw data for these entity to URI mappings are found in the directory **ner_dbpedia/dbpedia_as_text**.
+The Java library is found in the directory **ner_dbpedia** in the GitHub repository. The raw data for these entity to URI mappings are found in the directory **ner_dbpedia/dbpedia_as_text**.
 
-This example shows the use of a standard Java and Maven packaging technique: building a JAR file that contains resource files. The example code will read the required data resources from the JAR file (or the temporary **target** directory during development). This will make the JAR file self contained when we use this example in later chapters.
+This example shows the use of a standard Java and Maven packaging technique: building a JAR file that contains resource files in addition to compiled Java code. The example code will read the required data resources from the JAR file (or the temporary **target** directory during development). This will make the JAR file self contained when we use this example in later chapters.
 
 
 ## DBPedia Entities
@@ -17,7 +17,7 @@ Al Stewart      <http://dbpedia.org/resource/Al_Stewart>
 Alan Watts      <http://dbpedia.org/resource/Alan_Watts>
 ~~~~~~~~
 
-There are 58953 entities defined with their DBPedia URI and the following listing shows the breakdown of number of entities by entity type:
+There are 58953 entities defined with their DBPedia URI and the following listing shows the breakdown of number of entities by entity type by counting the number of lines in each resource file:
 
 {linenos=off}
 ~~~~~~~~
@@ -50,7 +50,7 @@ As you see in the following figure of the project for this example opened in the
 
 The class **com.markwatson.ner_dbpedia.NerMaps** is a utility for reading the raw entity mapping data files and creating hash tables for these mappings:
 
-{lang="java",linenos=on}
+{lang="java",linenos=off}
 ~~~~~~~~
 package com.markwatson.ner_dbpedia;
 
@@ -144,7 +144,7 @@ As a matter of programming style I generally no longer use getter and setter met
 
 We will handle entity names comprised one, two, and three word sequences. We check for longer word sequences before shorter sequences:
  
-{lang="java",linenos=on}
+{lang="java",linenos=off}
 ~~~~~~~~
   public TextToDbpediaUris(String text) {
     String[] tokens = tokenize(text + " . . .");
@@ -182,7 +182,8 @@ The following listing shows the **log** method that write descriptive output and
 {lang="java",linenos=off}
 ~~~~~~~~
   public void log(String nerType, int index1, int index2, String ngram, String uri) {
-    System.out.println(nerType + "\t" + index1 + "\t" + index2 + "\t" + ngram + "\t" + uri);
+    System.out.println(nerType + "\t" + index1 + "\t" + index2 + "\t" + 
+                       ngram + "\t" + uri);
     if (!uri.startsWith("<")) uri = "<" + uri + ">";
     if (nerType.equals("person")) {
       if (!personUris.contains(uri)) {
@@ -207,7 +208,7 @@ For some NLP applications I will use a standard tokenizer like the OpenNLP token
 
 Here is the code snippet from the unit test code in the class **TextToDbpediaUrisTest** that calls the **TextToDbpediaUris** constructor with a text sample (**junit** boilerplate code is not shown):
 
-{lang="java",linenos=on}
+{lang="java",linenos=off}
 ~~~~~~~~
 package com.markwatson.ner_dbpedia;
  
@@ -228,12 +229,12 @@ Here is the output from running the unit test code:
 
 {linenos=off}
 ~~~~~~~~
-broadcastNetwork 0 2	PTL Satellite Network	<http://dbpedia.org/resource/PTL_Satellite_Network>
+broadcastNetwork 0 2 PTL Satellite Network <http://dbpedia.org/resource/PTL_Satellite_Network>
 person	 5	 6	 Bill Clinton	<http://dbpedia.org/resource/Bill_Clinton>
-country	9	10	 Guatemala	 <http://dbpedia.org/resource/Guatemala>
-company	13	 14	Coca Cola	<http://dbpedia.org/resource/Coca-Cola>
+country	 9 10  Guatemala	 <http://dbpedia.org/resource/Guatemala>
+company	13	 14  Coca Cola	<http://dbpedia.org/resource/Coca-Cola>
 ~~~~~~~~
 
 ## Wrap-up for Resolving Entity Names to DBPedia References
 
-The idea behind this example is simple but useful for information processing applications using raw text input.
+The idea behind this example is simple but useful for information processing applications using raw text input. We will use this library later in two semantic web examples.

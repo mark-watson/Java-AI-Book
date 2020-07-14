@@ -684,7 +684,7 @@ The following class shows the unit test class **JenaApisTest** that provides exa
 - Save the current model as RDF text files in both N-Triple and N3 format.
 - Making SPARQL queries that require OWL reasoning.
 
-{lang="java",linenos=on}
+{lang="java",linenos=off}
 ~~~~~~~~
 package com.markwatson.semanticweb;
 
@@ -770,7 +770,7 @@ To reuse the example code in this section, I recommend that you clone the entire
 
 ## OWL: The Web Ontology Language  {#owl}
 
-We have already seen a few examples of using RDFS to define sub-properties in the this chapter. The Web Ontology Language (OWL) extends the expressive power of RDFS. We now look at a few OWL examples and then look at parts of the Java unit test showing three SPARQL queries that use OWL reasoning. The following RDF data stores support at least some level of OWL reasoning:
+We have already seen a few examples of using RDFS to define sub-properties in this chapter. The Web Ontology Language (OWL) extends the expressive power of RDFS. We now look at a few OWL examples and then look at parts of the Java unit test showing three SPARQL queries that use OWL reasoning. The following RDF data stores support at least some level of OWL reasoning:
 
 -   ProtegeOwlApis - compatible with the Protege Ontology editor
 -   Pellet - DL reasoner

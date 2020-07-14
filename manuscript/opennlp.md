@@ -1,35 +1,35 @@
 # Natural Language Processing Using OpenNLP {#opennlp}
 
-I have worked in the field of Natural Language Processing (NLP) since the early 1980s. Many more people are interested in the field of NLP and the techniques have changed drastically. NLP has usually been considered part of the field of artificial intelligence (AI) and in the 1980s and 1990s there was more interest in symbolic AI, that is the manipulation of high level symbols that are meaningful to people because of our knowledge of the real world. As an example, the symbol **car** means something to us but to AI software this symbol in itself has no meaning except for possible semantic relationships to other symbols like **driver** and **road**.
+I have worked in the field of Natural Language Processing (NLP) since the early 1980s. Many more people are now interested in the field of NLP and the techniques have changed drastically. NLP has usually been considered part of the field of artificial intelligence (AI) and in the 1980s and 1990s there was more interest in symbolic AI, that is the manipulation of high level symbols that are meaningful to people because of our knowledge of the real world. As an example, the symbol **car** means something to us but to AI software this symbol in itself has no meaning except for possible semantic relationships to other symbols like **driver** and **road**.
 
 There is still much work in NLP that deals with words as symbols: syntactic and semantic parsers being two examples. What has changed is a strong reliance on statistical and machine learning techniques. In this chapter we will use the open source (Apache 2 license) OpenNLP project that uses machine learning to create models of language. Currently, OpenNLP has support for Danish, German, English, Spanish, Portuguese, and Swedish. I include in the github repository some trained models for English that are used in the examples in this chapter. You can download models for other languages at the [web page for OpenNLP 1.5 models](http://opennlp.sourceforge.net/models-1.5/) (we are using version 1..6.0 of OpenNLP in this book which uses the version 1.5 models).
-
-I use OpenNLP for some of the NLP projects that I do for my consulting customers. I have also written my own NLP toolkit [KBSPortal.com](http://kbsportal.com) that is a commercial product. For customers who can use the GPL license I  sometimes use the [Stanford NLP libraries](http://nlp.stanford.edu/) that, like OpenNLP, are written in Java.
 
 The following figure shows the project for this chapter in the Community Edition of IntelliJ:
 
 
 ![IntelliJ project view for the examples in this chapter](images/intellij_opennlp_proj.png)
 
-We will use pre-trained models for tokenizing text, recognizing the names of organizations, people, locations, and parts of speech for words in input text. We will also train a new model (the file opennlp/models/en-newscat.bin in the github repository) for recognizing the category of input text. The section on training new maximum entropy classification models using your own training data is probably the material in this chapter that you will use the most in your own projects. We will train one model to recognize the categories of **COMPUTERS**, **ECONOMY**, **HEALTH**, and **POLITICS**. You should then have the knowledge for training your own models using your own training texts for the categories that you need for your applications. We will also use both some pre-trained models that are included with the OpenNLP distribution and the classification mode that we will soon create in the next chapter when we learn how to perform scalable machine learning algorithms using the Apache Spark platform where we look at techniques for processing very large collections of text to discover information.
+We will use pre-trained models for tokenizing text, recognizing the names of organizations, people, locations, and parts of speech for words in input text. We will also train a new model (the file **opennlp/models/en-newscat.bin** in the github repository) for recognizing the category of input text. The section on training new maximum entropy classification models using your own training data is probably the material in this chapter that you will use the most in your own projects. We will train one model to recognize the categories of **COMPUTERS**, **ECONOMY**, **HEALTH**, and **POLITICS**. You should then have the knowledge for training your own models using your own training texts for the categories that you need for your applications. We will also use both some pre-trained models that are included with the OpenNLP distribution in the next chapter when we combine using OpenNLP with the WordNet lexical database developed at Princeton University.
 
-After building a classification model we finish up this chapter with an interesting topic: statistically parsing sentences to discover the most probable linguistic structure of each sentence in input text. We will not use parsing in the rest of this book so you may skip the last section of this chapter if you are not currently interested in parsing sentences into linguistic components like noun and verp phrases, proper nouns, nouns, adjectives, etc.
+After building a classification model we finish up this chapter with an interesting topic: statistically parsing sentences to discover the most probable linguistic structure of each sentence in input text. We will not use parsing in the rest of this book so you may skip the last section of this chapter if you are not currently interested in understanding the structure of sentences by parsing sentences into connected linguistic components like noun and verb phrases, proper nouns, nouns, adjectives, etc.
 
 The following UML class diagrams will give you an overview of my wrapper for the OpenNLP library and for the unit test class:
 
-![UML class diagram for wrapper code for OpenNLP](images/opennlp-uml.png)
+![UML class diagram for wrapper code for OpenNLP examples](images/opennlp-uml.png)
 
 
 ## Using OpenNLP Pre-Trained Models
 
-Assuming that you have cloned the github repository for this book, you can fetch the maven dependencies, compile the code, and run the unit tests using the command:
+Assuming that you have cloned the github repository for this book, you can fetch the maven dependencies, compile the code, install the generated library locally, and run the unit tests using the command:
 
 {linenos=off}
 ~~~~~~~~
-mvn clean build test
+mvn install
 ~~~~~~~~
 
-The model files, including the categorization model you will learn to build later in this chapter, are found in the subdirectory **models**. The unit tests in src/test/java/com/markwatson/opennlp/NLPTest.java provide examples for using the code we develop in this chapter. The Java example code for tokenization (splitting text into individual words), splitting sentences, and recognizing organizations, locations, and people in text is all in the Java class **NLP**. You can look at the source code in the repository for this book. Here I will just show a few snippets of the code to make clear how to load and use pre-trained models.
+The model files, including the categorization model you will learn to build later in this chapter, are found in the subdirectory **models**. The unit tests in **src/test/java/com/markwatson/opennlp/NLPTest.java** provide examples for using the code we develop in this chapter. As for most examples in this book, I use unit tests as examples for using a library and not as tests that check computed values.
+
+The Java example code for tokenization (splitting text into individual words), splitting sentences, and recognizing organizations, locations, and people in text is all in the Java class **NLP**. You can look at the source code in the repository for this book. Here I will just show a few snippets of the code to make clear how to load and use pre-trained models.
 
 I use static class initialization to load the model files:
 
@@ -128,7 +128,7 @@ Sentences found:
 The code for finding organizations, locations, and people's names is almost identical so I will only show the code in the next listing for recognizing locations. Please look at the methods **companyNames** and **personNames**  in the class **com.markwatson.opennlp.NLP** to see the implementations for finding the names of companies and people.
 
 
-{lang="java",linenos=off}
+{lang="java",linenos=on}
 ~~~~~~~~
   public static Set<String> locationNames(String text) {
     return locationNames(tokenizer.tokenize(text));
@@ -151,7 +151,7 @@ The code for finding organizations, locations, and people's names is almost iden
 
 The public methods in the class **com.markwatson.opennlp.NLP** are overriden to take either a single string value which gets tokenized inside of the method and also a method that takes as input text that has already been tokenized into a **String tokens[]** object. In the last example the method starting on line 1 accepts an input string and the overriden method starting on line 5 accepts an array of strings. Often you will want to tokenize text stored in a single input string into tokens and reuse the tokens for calling several of the public methods in **com.markwatson.opennlp.NLP** that can take input that is already tokenized. In line 2 we simply tokenize the input text and call the method that accepts tokenized input text.
 
-In line 6 we create a **HashSet\<String\>** object that will hold the return value of a set of location names. The **NameFinderME** object **locationFinder** returns an array of **Span** objects. The **SPan class is used to represnt a sequence of adjacent words. The **Span** class has a public static attribute **length** and instance methods **getstart** and **getEnd** that return the indices of the beginning and ending (plus one) index of a span in the origianl input text.
+In line 6 we create a **HashSet\<String\>** object that will hold the return value of a set of location names. The **NameFinderME** object **locationFinder** returns an array of **Span** objects. The **Span** class is used to represent a sequence of adjacent words. The **Span** class has a public static attribute **length** and instance methods **getstart** and **getEnd** that return the indices of the beginning and ending (plus one) index of a span in the original input text.
 
 Here is some sample code to use **locationNames** along with the output (edited for page width and clarity):
 
@@ -166,7 +166,7 @@ Here is some sample code to use **locationNames** along with the output (edited 
 Location names found: [Oregon, Cupertino, Seattle, California, Washington]
 ~~~~~~~~
 
-Note that the pre-trained model does not recognize when city and state names are associated.
+Note that the pre-trained model does not provide information when city and state names are associated with each other in the original sentence. The maximum entropy models used in OpenNLP do use information on the context or a word in a sentence, for example, the preceeding and following word. This combination of available contextual information makes maximum entropy models more accurate than the "bag of words" technique we used in the last chapter.
 
 
 ## Training a New Categorization Model for OpenNLP
@@ -181,11 +181,11 @@ The OpenNLP class **DoccatTrainer** can process specially formatted input text f
 
 The format of the input file for training a maximum entropy classifier is simple but has to be correct: each line starts with a category name, followed by sample text for each category which must be **all** **on** **one** **line**. Please note that I have already trained the model producing the model file **models/en-newscat.bin** so you don't need to run the example in this section unless you want to regenerate this model file.
 
-The file sample_category_training_text.txt contains four lines, defining four categories. Here are two lines from this file (I edited the following to look better on the printed page, but these are just two lines in the file):
+The file **sample_category_training_text.txt** contains four lines, defining four categories. Here are two lines from this file (I edited the following to look better on the printed page, but these are just two lines in the file):
 
 {line-numbers=off}
 ~~~~~~~~
-COMPUTERS Computers are often used to access the Internet and meet basic business functions.
+COMPUTERS Computers are often used to access the Internet to meet business functions.
 ECONOMY The Austrian School (also known as the Vienna School or the Psychological School ) is a Schools of economic thought|school of economic thought that emphasizes the spontaneous organizing power of the price mechanism.
 ~~~~~~~~
 
@@ -208,7 +208,7 @@ bin/opennlp DoccatTrainer -model models/en-newscat.bin -lang en \
                           -encoding UTF-8
 ~~~~~~~~
 
-The model is written to the relative file path models/en-newscat.bin. The training file I am using is tiny so the model is trained in a few seconds. For serious applications, the more training text the better! By default the **DoccatTrainer** tool uses the default text feature generator which uses word frequencies in documents but ignores word ordering. As I mention in the next section, I sometimes like to mix word frequency feature generation with 2gram (that is, frequencies of two adjacent words). In this case you cannot simply use the **DoccatTrainer**  command line tool. You need to write a little Java code yourself that you can plug another feature generator into using the alternative API:
+The model is written to the relative file path **models/en-newscat.bin**. The training file I am using is tiny so the model is trained in a few seconds. For serious applications, the more training text the better! By default the **DoccatTrainer** tool uses the default text feature generator which uses word frequencies in documents but ignores word ordering. As I mention in the next section, I sometimes like to mix word frequency feature generation with 2gram (that is, frequencies of two adjacent words). In this case you cannot simply use the **DoccatTrainer**  command line tool. You need to write a little Java code yourself that you can plug another feature generator into using the alternative API:
 
 {line-numbers=off}
 ~~~~~~~~
@@ -218,7 +218,7 @@ public static DoccatModel train(String languageCode,
                                 FeatureGenerator... featureGenerators)
 ~~~~~~~~
 
-As I also mention in the next section, the last argument would look like:
+As I also mention in the next section, the last argument would look like where we combine two feature generators, one the uses "bag of words" and the other that uses adjacent word sequences:
 
 {line-numbers=off}
 ~~~~~~~~
@@ -228,7 +228,7 @@ public DocumentCategorizerME(DoccatModel model,
 ~~~~~~~~
 
 
-For most purposes the default word frequency (or bag of words) feature generator is probably OK so using the command line tool is a good place to start. Here is the output from running the **DoccatTrainer** command line tool:
+For some purposes the default word frequency (or bag of words) feature generator is probably OK so using the command line tool is a good place to start because models are smaller and training time is minimal. Adding the **NGramFeatureGenerator** increases both training time and model size but should produce better results. Here is the output from running the **DoccatTrainer** command line tool:
 
 {line-numbers=off}
 ~~~~~~~~
@@ -556,5 +556,5 @@ pretty printed parse:
 
 In the 1980s I spent much time on syntax level parsing. While the example in this section is a statistical parsing model I don't find these models very relevant to my own work but I wanted to include a probalistic parsing example for completeness in this chapter.
 
-OpenNLP is a great resource for Java programmers and its Apache 2 license is "business friendly." If you can use software with a GPL license then please also look at the Stanford NLP libraries.
+OpenNLP is a great resource for Java programmers and its Apache 2 license is "business friendly." If you can use software with a GPL license then please also look at the [Stanford NLP libraries](https://nlp.stanford.edu/software/).
  

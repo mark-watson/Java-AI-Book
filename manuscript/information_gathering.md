@@ -1,6 +1,6 @@
 # Information Gathering
 
-TBD: introduction...
+I often write software to automatically collect and use data from the web and other sources. In this chapter I have collected utility code that I have written over the years into a small library that I hope you also find useful.
 
 The following UML class diagram shows the public APIs the libraries developed in this chapter:
 
@@ -8,7 +8,7 @@ The following UML class diagram shows the public APIs the libraries developed in
 
 ## Web Scraping Examples
 
-As a practical matter, much of the data that many people use for machine learning either comes from the web or from internal data sources. This short chapter provides some guidance and examples for getting text data from the web.
+As a practical matter, much of the data that many people use for machine learning either comes from the web or from internal data sources. This section provides some guidance and examples for getting text data from the web.
 
 Before we start a technical discussion about web scraping I want to point out to you that much of the information on the web is copyright and the first thing that you should do is to read the terms of service for web sites to insure that your use of "scraped" or "spidered" data conforms with the wishes of the persons or organizations who own the content and pay to run scraped web sites.
 
@@ -76,97 +76,55 @@ public class MySitesExamples {
 }
 ~~~~~~~~
 
-In line ??? I am selecting the pattern that returns all P elements that are direct children of any DIV element and in lines ???? to ???? print the text inside these P elements.
+In line 18 I am selecting the pattern that returns all P elements that are direct children of any DIV element and in lines 19-21 print the text inside these P elements.
 
-For training data for machine learning it is useful to just grab all text on a web page and assume that common phrases dealing with web navigaion, etc. will be dropped from learned models because they occur in many different training examples for different classifications. In the above listing, lines ???-??? show how to fetch the plain text from an entire web page.
+For training data for machine learning it is useful to just grab all text on a web page and assume that common phrases dealing with web navigation, etc. will be dropped from learned models because they occur in many different training examples for different classifications. In the above listing, line 22 shows how to fetch the plain text from an entire web page. The code on line 24 fetched anchor elements and the loop in lines 25-29 prints out this anchor data as URI and text. The code in lines 30-35 does the same thing except we are converting relative URIs to absolute URIs.
 
-Output might look like:
+Output might look like (most of the output is not shown from running this example file **MySitesExamples.java**:
 
 {linenos=off}
 ~~~~~~~~
+ next element text: I am the author of 20+ books on Artificial Intelligence, Common Lisp, Deep Learning, Haskell, Java, Ruby, JavaScript, and the Semantic Web. I have 55 US Patents.
+ next element text: My customer list includes: Google, Capital One, CompassLabs, Disney, SAIC, Americast, PacBell, CastTV, Lutris Technology, Arctan Group, Sitescout.com, Embed.ly, and Webmind Corporation.
 All text on web page:
-Mark Watson: Consultant specializing in machine learning and artificial intelligence Toggle navigation Mark Watson Home page Consulting Free mentoring Blog Books Open Source Fun Consultant specializing in machine learning, artificial intelligence, cognitive computing, and web engineering...
+Mark Watson: consultant specializing in Common Lisp, deep learning and natural language processing
+learning Toggle navigation Mark Watson consultant and author specializing in Common Lisp development and AI 
+ ...
+ 
+ next anchor uri: #
+ next anchor text: Mark Watson consultant and author specializing in Common Lisp development and AI research projects and commercial products
+ next anchor uri: /
+ next anchor text: Home page
+ next anchor uri: /consulting
+ next anchor text: Consulting
+ next anchor uri: /blog
+ next anchor text: My Blog
+ next anchor uri: /books
+ next anchor text: My Books
+ next anchor uri: /opensource
+ next anchor text: Open Source
+   ...
+ next anchor absolute uri: https://markwatson.com#
+ next anchor absolute text: Mark Watson consultant and author specializing in Common Lisp development and AI research projects and commercial products
+ next anchor absolute uri: https://markwatson.com/
+ next anchor absolute text: Home page
+ next anchor absolute uri: https://markwatson.com/consulting
+  ...
 ~~~~~~~~
 
 The 2gram (i.e., two words in sequence) "Toggle navigation" in the last listing has nothing to do with the real content in my site and is an artifact of using the Bootstrap CSS and Javascript tools. Often "noise" like this is simply ignored by machine learning models if it appears on many different sites but beware that this might be a problem and you might need to precisely fetch text from specific DOM elements. Similarly, notice that this last listing picks up the plain text from the navigation menus.
 
-In the previous code listing, the code in lines ???-??? finds HTML anchor elements and prints the data associated with these elements.
-
-Output will look something like this:
-
-{linenos=on}
-~~~~~~~~
- next anchor uri: #
- next anchor text: Mark Watson
- next anchor uri: /
- next anchor text: Home page
- next anchor uri: /consulting/
- next anchor text: Consulting
- next anchor uri: /mentoring/
- next anchor text: Free mentoring
- next anchor uri: http://blog.markwatson.com
- next anchor text: Blog
- next anchor uri: /books/
- next anchor text: Books
- next anchor uri: /opensource/
- next anchor text: Open Source
- next anchor uri: /fun/
- next anchor text: Fun
- next anchor uri: http://www.cognition.tech
- next anchor text: www.cognition.tech
- next anchor uri: https://github.com/mark-watson
- next anchor text: GitHub
- next anchor uri: https://plus.google.com/117612439870300277560
- next anchor text: Google+
- next anchor uri: https://twitter.com/mark_l_watson
- next anchor text: Twitter
- next anchor uri: http://www.freebase.com/m/0b6_g82
- next anchor text: Freebase
- next anchor uri: https://www.wikidata.org/wiki/Q18670263
- next anchor text: WikiData
- next anchor uri: https://leanpub.com/aijavascript
- next anchor text: Build Intelligent Systems with JavaScript
- next anchor uri: https://leanpub.com/lovinglisp
- next anchor text: Loving Common Lisp, or the Savvy Programmer's Secret Weapon
- next anchor uri: https://leanpub.com/javaai
- next anchor text: Practical Artificial Intelligence Programming With Java
- next anchor uri: http://markwatson.com/index.rdf
- next anchor text: XML RDF
- next anchor uri: http://markwatson.com/index.ttl
- next anchor text: Turtle RDF
- next anchor uri: https://www.wikidata.org/wiki/Q18670263
- next anchor text: WikiData
-~~~~~~~~
-
-Notice that there are different types of URIs like #, relative, and absolute. Any characters following a # character do not affect the routing of which web page is shown (or which API is called) but the characters after the # character are available for use in specifying anchor positions on a web page or extra parameters for API calls. Relative APIs like consulting/ (as seen in line 5) are understood to be relative to the base URI of the web site.
-
+Notice that there are different types of URIs like #, relative, and absolute. Any characters following a # character do not affect the routing of which web page is shown (or which API is called) but the characters after the # character are available for use in specifying anchor positions on a web page or extra parameters for API calls. Relative APIs like consulting/ are understood to be relative to the base URI of the web site.
 
 I often require that URIs be absolute URIs (i.e., starts with a protocol like "http:" or "https:") and lines 28-33 show how to select just absolute URI anchors. In line 31 I am specifying the attribute as "abs:href" to be more selective.
- 
-The output looks like:
-
-{linenos=off}
-~~~~~~~~
- next anchor absolute text: Mark Watson
- next anchor absolute uri: http://www.markwatson.com/
- next anchor absolute text: Home page
- next anchor absolute uri: http://www.markwatson.com/consulting/
- next anchor absolute text: Consulting
- next anchor absolute uri: http://www.markwatson.com/mentoring/
- next anchor absolute text: Free mentoring
- next anchor absolute uri: http://blog.markwatson.com
- next anchor absolute text: Blog
- ...
-~~~~~~~~
-
 
 ## DBPedia Entity Lookup
 
-TBD
+DBPedia contains structured data for the WikiPedia web site. In later chapters we will learn how to use the SPARQL query language to access DBPedia. Here we use a simple lookup service for any entity name. If an entity name is found in DBPedia then information on the entity is returned as an XML payload.
 
 The implementation file is DBpediaLookupClient.java:
 
-{lang="java",linenos=on}
+{lang="java",linenos=off}
 ~~~~~~~~
 package com.markwatson.info_spiders;
 
@@ -187,7 +145,8 @@ import java.util.*;
 
 // Use Georgi Kobilarov's DBpedia lookup web service
 //    ref: http://lookup.dbpedia.org/api/search.asmx?op=KeywordSearch
-//    example: http://lookup.dbpedia.org/api/search.asmx/KeywordSearch?QueryString=Flagstaff&QueryClass=XML&MaxHits=10
+//    example:
+// http://lookup.dbpedia.org/api/search.asmx/KeywordSearch?QueryString=Flagstaff&QueryClass=XML
 
 /**
  * Searches return results that contain any of the search terms. I am going to filter
@@ -203,34 +162,22 @@ public class DBpediaLookupClient extends DefaultHandler {
 
     String query2 = query.replaceAll(" ", "+"); // URLEncoder.encode(query, "utf-8");
     //System.out.println("\n query2: " + query2);
-/*
-    HttpGet request = new HttpGet("http://lookup.dbpedia.org/api/search.asmx/KeywordSearch?QueryString=" +
-        query2);
 
-    // add request headers
-    request.addHeader("custom-key", "mkyong");
-    request.addHeader(HttpHeaders.USER_AGENT, "Googlebot");
-
-    CloseableHttpResponse response = client.execute(request);
-    HttpEntity entity = response.getEntity();
-    if (entity != null) {
-      // return it as a String
-      String result = EntityUtils.toString(entity);
-      System.out.println(result);
-    }
-*/
     SAXParserFactory factory = SAXParserFactory.newInstance();
     SAXParser sax = factory.newSAXParser();
-    sax.parse("http://lookup.dbpedia.org/api/search.asmx/KeywordSearch?QueryString=" +
-        query2, this);
+    sax.parse(
+      "http://lookup.dbpedia.org/api/search.asmx/KeywordSearch?QueryString=" +
+      query2, this);
 
   }
 
-  private List<Map<String, String>> variableBindings = new ArrayList<Map<String, String>>();
+  private List<Map<String, String>> variableBindings = 
+      new ArrayList<Map<String, String>>();
   private Map<String, String> tempBinding = null;
   private String lastElementName = null;
 
-  public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+  public void startElement(String uri, String localName, String qName,
+                           Attributes attributes) throws SAXException {
     //System.out.println("startElement " + qName);
     if (qName.equalsIgnoreCase("result")) {
       tempBinding = new HashMap<String, String>();
@@ -238,7 +185,8 @@ public class DBpediaLookupClient extends DefaultHandler {
     lastElementName = qName;
   }
 
-  public void endElement(String uri, String localName, String qName) throws SAXException {
+  public void endElement(String uri, String localName, String qName)
+         throws SAXException {
     //System.out.println("endElement " + qName);
     if (qName.equalsIgnoreCase("result")) {
       if (!variableBindings.contains(tempBinding) && containsSearchTerms(tempBinding))
@@ -248,16 +196,16 @@ public class DBpediaLookupClient extends DefaultHandler {
 
   public void characters(char[] ch, int start, int length) throws SAXException {
     String s = new String(ch, start, length).trim();
-    //System.out.println("characters (lastElementName='" + lastElementName + "'): " + s);
     if (s.length() > 0) {
       if ("Description".equals(lastElementName)) {
         if (tempBinding.get("Description") == null) {
           tempBinding.put("Description", s);
         }
-        tempBinding.put("Description", "" + tempBinding.get("Description") + " " + s);
+        tempBinding.put("Description", "" + tempBinding.get("Description") +
+                        " " + s);
       }
-      //if ("URI".equals(lastElementName)) tempBinding.put("URI", s);
-      if ("URI".equals(lastElementName) && s.indexOf("Category")==-1 && tempBinding.get("URI") == null) {
+      if ("URI".equals(lastElementName) && s.indexOf("Category")==-1 &&
+          tempBinding.get("URI") == null) {
         tempBinding.put("URI", s);
       }
       if ("Label".equals(lastElementName)) tempBinding.put("Label", s);
@@ -269,7 +217,7 @@ public class DBpediaLookupClient extends DefaultHandler {
   }
   private boolean containsSearchTerms(Map<String, String> bindings) {
     StringBuilder sb = new StringBuilder();
-    for (String value : bindings.values()) sb.append(value);  // do not need white space
+    for (String value : bindings.values()) sb.append(value);  // no white space
     String text = sb.toString().toLowerCase();
     StringTokenizer st = new StringTokenizer(this.query);
     while (st.hasMoreTokens()) {
@@ -283,17 +231,50 @@ public class DBpediaLookupClient extends DefaultHandler {
 }
 ~~~~~~~~
 
-TBD
+The unit test class **DBpediaLookupClientTest** shows how to call this library:
+
+{lang="java",linenos=off}
+~~~~~~~~
+    DBpediaLookupClient client =
+        new DBpediaLookupClient("London UK");
+    List<Map<String, String>> results = client.variableBindings();
+    System.out.println("# query results: " + results.size());
+    for (Map<String, String> map : results) {
+      for (Map.Entry<String, String> entry : map.entrySet()) {
+        System.out.println(entry.getKey() + " - " + entry.getValue());
+      }
+    }
+~~~~~~~~
+
+Here is the output from this test code (with some output not shown):
+
+{linenos=off}
+~~~~~~~~
+# query results: 2
+Description - The O2 Arena (visually typeset in branding as The O2 arena, referred to as North Greenwich Arena in context of the 2012 Summer Olympics and Paralympics) is a multi-purpose indoor arena located in the centre of The O2, a large entertainment complex on the Greenwich peninsula in London, England.
+  ...
+Label - Sports venues in London
+URI - http://dbpedia.org/resource/The_O2_Arena_(London)
+Description - The City of London was a United Kingdom Parliamentary constituency. It was a constituency of the House of Commons of the Parliament of England then of the Parliament of Great Britain from 1707 to 1800 and of the Parliament of the United Kingdom from 1801 to 1950. The City of London was a United Kingdom Parliamentary constituency.
+  ...
+Label - United Kingdom Parliamentary constituencies represented by a sitting Prime Minister
+URI - http://dbpedia.org/resource/City_of_London_(UK_Parliament_constituency)
+~~~~~~~~
 
 
 ## Client for GeoNames Service
 
-TBD
-
-
-The implementation file is GeoNamesClient.java:
+The GeoNames service looks up information about locations. You need to sign up for a free account and the access key needs to be stored in an environment variable **GEONAMES** which is accessed in Java code using:
 
 {lang="java",linenos=on}
+~~~~~~~~
+  System.getenv("GEONAMES")
+~~~~~~~~
+
+
+The implementation file is **GeoNamesClient.java** uses the utility class **GeoNameData** that we will look at later:
+
+{lang="java",linenos=off}
 ~~~~~~~~
 package com.markwatson.info_spiders;
 
@@ -332,7 +313,6 @@ public class GeoNamesClient {
     searchCriteria.setQ(name);
     ToponymSearchResult searchResult = WebService.search(searchCriteria);
     for (Toponym toponym : searchResult.getToponyms()) {
-      //System.out.println("* " + toponym.getName() + " : " +toponym.getFeatureClassName());
       if (toponym.getFeatureClassName() != null &&
         toponym.getFeatureClassName().toString().indexOf(type) > -1 &&
         toponym.getName().indexOf(name) > -1 &&
@@ -382,11 +362,9 @@ public class GeoNamesClient {
 }
 ~~~~~~~~
 
-TBD
+The class **GeoNamesClient** in the last listing uses the class **GeoNameData** which processes the structured data returned from the GeoNames service and provides public fields to access this information and an implementation of **toString** to pretty-print the data to a string:
 
-The class **GeoNamesClient** in the last listing uses the class **GeoNameData**:
-
-{lang="java",linenos=on}
+{lang="java",linenos=off}
 ~~~~~~~~
 package com.markwatson.info_spiders;
 
@@ -429,15 +407,36 @@ public class GeoNameData {
 }
 ~~~~~~~~
 
-TBD
+The test class **GeoNamesClientTest** shows how to use these two classes:
+
+{lang="java",linenos=on}
+~~~~~~~~
+    GeoNamesClient client = new GeoNamesClient();
+    System.out.println(client.getCityData("Paris"));        pause();
+    System.out.println(client.getCountryData("Canada")); pause();
+    System.out.println(client.getStateData("California")); pause();
+    System.out.println(client.getRiverData("Amazon"));     pause();
+    System.out.println(client.getMountainData("Whitney"));
+~~~~~~~~
+
+The output from this test is shown below:
+
+{linenos=on}
+~~~~~~~~
+/Library/Java/JavaVirtualMachines/adoptopenjdk-11.jdk/Contents/Home/bin/java -ea -Didea.test.cyclic.buffer.size=1048576 -javaagent:/Applications/IntelliJ IDEA CE.app/Contents/lib/idea_rt.jar=59391:/Applications/IntelliJ IDEA CE.app/Contents/bin -Dfile.encoding=UTF-8 -classpath /Applications/IntelliJ IDEA CE.app/Contents/lib/idea_rt.jar:/Applications/IntelliJ IDEA CE.app/Contents/plugins/junit/lib/junit5-rt.jar:/Applications/IntelliJ IDEA CE.app/Contents/plugins/junit/lib/junit-rt.jar:/Users/markw/GITHUB/javaai-new-code/info_gathering/target/test-classes:/Users/markw/GITHUB/javaai-new-code/info_gathering/target/classes:/Users/markw/.m2/repository/junit/junit/3.8.1/junit-3.8.1.jar:/Users/markw/.m2/repository/org/jsoup/jsoup/1.7.2/jsoup-1.7.2.jar:/Users/markw/.m2/repository/org/apache/httpcomponents/httpclient/4.5.10/httpclient-4.5.10.jar:/Users/markw/.m2/repository/org/apache/httpcomponents/httpcore/4.4.12/httpcore-4.4.12.jar:/Users/markw/.m2/repository/commons-logging/commons-logging/1.2/commons-logging-1.2.jar:/Users/markw/.m2/repository/commons-codec/commons-codec/1.11/commons-codec-1.11.jar:/Users/markw/.m2/repository/net/htmlparser/jericho/jericho-html/3.4/jericho-html-3.4.jar:/Users/markw/.m2/repository/org/jdom/jdom/1.1.3/jdom-1.1.3.jar com.intellij.rt.junit.JUnitStarter -ideVersion5 -junit4 com.markwatson.info_spiders.GeoNamesClientTest
+[[GeoNameData: Paris, type: CITY, country code: FR, ID: 2988507, latitude: 48.85341, longitude: 2.3488], [GeoNameData: Le Touquet-Paris-Plage, type: CITY, country code: FR, ID: 2999139, latitude: 50.52432, longitude: 1.58571], [GeoNameData: Paris, type: CITY, country code: US, ID: 4717560, latitude: 33.66094, longitude: -95.55551], [GeoNameData: Balneario Nuevo Paris, type: CITY, country code: UY, ID: 3441475, latitude: -34.85, longitude: -56.23333], [GeoNameData: Paris, type: CITY, country code: BY, ID: 8221628, latitude: 55.15464, longitude: 27.38456], [GeoNameData: Paris, type: CITY, country code: TG, ID: 2364431, latitude: 7.15, longitude: 1.08333]]
+[[GeoNameData: Canada, type: COUNTRY, country code: CA, ID: 6251999, latitude: 60.10867, longitude: -113.64258], [GeoNameData: Canada Bay, type: COUNTRY, country code: AU, ID: 7839706, latitude: -33.8659, longitude: 151.11591]]
+[[GeoNameData: Baja California Sur, type: STATE, country code: MX, ID: 4017698, latitude: 25.83333, longitude: -111.83333], [GeoNameData: Baja California, type: STATE, country code: MX, ID: 4017700, latitude: 30.0, longitude: -115.0], [GeoNameData: California, type: STATE, country code: US, ID: 5332921, latitude: 37.25022, longitude: -119.75126]]
+[[GeoNameData: Amazon Bay, type: RIVER, country code: PG, ID: 2133985, latitude: -10.30264, longitude: 149.36313]]
+[[GeoNameData: Mount Whitney, type: MOUNTAIN, country code: US, ID: 5409018, latitude: 36.57849, longitude: -118.29194], [GeoNameData: Whitney Peak, type: MOUNTAIN, country code: AQ, ID: 6628058, latitude: -76.43333, longitude: -126.05], [GeoNameData: Whitney Point, type: MOUNTAIN, country code: AQ, ID: 6628059, latitude: -66.25, longitude: 110.51667], [GeoNameData: Whitney Island, type: MOUNTAIN, country code: RU, ID: 1500850, latitude: 81.01149, longitude: 60.88737], [GeoNameData: Whitney Island, type: MOUNTAIN, country code: AQ, ID: 6628055, latitude: -69.66187, longitude: -68.50341], [GeoNameData: Whitney Meadow, type: MOUNTAIN, country code: US, ID: 5409010, latitude: 36.43216, longitude: -118.26648], [GeoNameData: Whitney Peak, type: MOUNTAIN, country code: US, ID: 5444110, latitude: 39.43276, longitude: -106.47309], [GeoNameData: Whitney Portal, type: MOUNTAIN, country code: US, ID: 5409011, latitude: 36.58882, longitude: -118.22592], [GeoNameData: Whitney Mountain, type: MOUNTAIN, country code: US, ID: 4136375, latitude: 36.40146, longitude: -93.91742], [GeoNameData: Whitney Bridge Dip, type: MOUNTAIN, country code: AU, ID: 11878190, latitude: -28.61241, longitude: 153.16546], [GeoNameData: Whitney Point, type: MOUNTAIN, country code: US, ID: 5815920, latitude: 47.76037, longitude: -122.85127], [GeoNameData: Whitney Pass, type: MOUNTAIN, country code: US, ID: 5409024, latitude: 36.55577, longitude: -118.2812], [GeoNameData: Whitney Island, type: MOUNTAIN, country code: CA, ID: 6181293, latitude: 58.6505, longitude: -78.71621]]
+~~~~~~~~
+
 
 ## Web Spidering
 
-TBD
-
 Here is another web spidering example that is different than the earlier example using the **jsoup** library. Here we will implement a spider using built in Java standard library network classes and also the Jericho HTML parser library.
 
-{lang="java",linenos=on}
+{lang="java",linenos=off}
 ~~~~~~~~
 package com.markwatson.info_spiders;
 
@@ -449,8 +448,9 @@ import java.net.URLConnection;
 import java.util.*;
 
 /**
- * This simple web spider returns a list of lists, each containing two
- * strings representing "URL" and "text". Specifically, I do not return links on each page.
+ * This simple web spider returns a list of lists, each containing two strings
+ * representing "URL" and "text".
+ * Specifically, I do not return links on each page.
  */
 
 /**
@@ -471,8 +471,8 @@ public class WebSpider {
         System.out.println("+ urls: " + urls);
         String url_str = urls.remove(0);
         System.out.println("+ url_str: " + url_str);
-        //if (url_str.toLowerCase().indexOf(host) > -1 && url_str.indexOf("https:") == -1 && !already_visited.contains(url_str)) {
-        if (url_str.toLowerCase().indexOf(host) > -1 && !already_visited.contains(url_str)) {
+        if (url_str.toLowerCase().indexOf(host) > -1 &&
+            !already_visited.contains(url_str)) {
           already_visited.add(url_str);
           URL url = new URL(url_str);
           URLConnection connection = url.openConnection();
@@ -531,4 +531,29 @@ public class WebSpider {
 ~~~~~~~~
 
 
-TBD
+The test class **WebClientTest** shows how to use this class:
+
+{lang="java",linenos=off}
+~~~~~~~~
+    WebSpider client = new WebSpider("http://pbs.org", 10);
+    System.out.println("Found URIs: " + client.url_content_lists);
+~~~~~~~~
+
+Here is the output for the test class **WebClientTest**:
+
+{linenos=off}
+~~~~~~~~
++ host: pbs.org
++ urls: [http://pbs.org]
++ url_str: http://pbs.org
+Found URIs: [[http://pbs.org, ]]
+~~~~~~~~
+
+## Wrap-up for Information Gathering
+
+Access to data is an advantage large companies usually have over individuals and small organizations. That said, there is a lot of free information on the web and I hope my simple utility classes we have covered here will be of some use to you.
+
+I respect the rights of people and organizations who put information on the web. This includes:
+
+- Read the terms of service on web sites to make sure your your of the site's data is compliant and also avoid accessing any one web site too frequently.
+- When you access services like DBpedia and Geonames consider caching the results so that you don't ask the service for the same information repeatedly. This is particularly important during development and testing. In a later chapter we will see how to use the Apache Derby database to cache SPARQL queries to DBPedia.
