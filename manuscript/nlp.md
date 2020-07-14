@@ -2,11 +2,11 @@
 
 I have been working in the field of Natural Language Processing (NLP) since 1982. In this chapter we will use a few of my open source NLP projects. In the next chapter I have selected one of many fine open source projects to provide more examples of using NLP to get you started using NLP in your own projects.
 
-The material in this chapter is dated but useful. It is dated because deep learning networks now far surpass the capabilities of statistics and symbolic NLP. The material is useful because most experts in AI believe that deep learning only takes us so far, and in order to reach general artificial intelligence we will use some form of hybrid deep learning, symbolic AI, and probabalistic systems.
+The material in this chapter is dated but useful. It is dated because deep learning networks now far surpass the capabilities of statistical and symbolic NLP. The material is still useful in my projects but I often prefer the OpenNLP library that we cover in the next chapter and for very difficult NLP problems like coreference resolution (or anaphora resolution) I use deep learning models like BERT or GPT.
 
-We will cover a wide variety of techniques for processing text in this chapter. The part of speech tagger, text categorization, clustering, spelling, and entity extraction examples are all derived from either my open source projects or my commercial projects.
+Deep learning is apparently "eating" the AI world, but I firmly believe in hybrid systems composed of gains we have made in the last 50 years. Most experts in AI believe that deep learning only takes us so far, and in order to reach general artificial intelligence we will use some form of hybrid deep learning, symbolic AI, and probabalistic systems.
 
-I am not offering you a very formal view of Statistical Natural Language Processing in this chapter; rather, I collected Java code that I have been using for years on various projects and simplified it to (hopefully) make it easier for you to understand and modify for your own use. The web site http://nlp.stanford.edu/links/statnlp.html is an excellent resource for both papers when you need more theory and additional software for Statistical Natural Language Processing. For Python programmers I can recommend the statistical NLP toolkit NLTK (nltk.sourceforge.net) that includes an online book.
+We will cover a wide variety of techniques for processing text in this chapter. The part of speech tagger, text categorization, and entity extraction examples are all derived from either my open source projects or my commercial projects that I developed in the 1990-2010 tim frame.
 
 The following UML class diagrams will give you an overview of my NLP library code:
 
@@ -16,7 +16,7 @@ The XML parsing code is for reading the file **test_data/classification_tags.xml
 
 ![UML class diagram for low-level utilities](images/nlp-utils-uml.png)
 
-The *Makefile* has targets for running the **main** method for each of the top level classes:
+Each main class in this library has a **main** method that provides a short demonstration of calling the library. The *Makefile* has targets for running the **main** method for each of the top level classes:
 
 {linenos=on}
 ~~~~~~~~
@@ -36,28 +36,13 @@ fasttag:
 
 ## Tokenizing, Stemming, and Part of Speech Tagging Text  {#tokenizing-and-tagging}
 
-Tokenizing text is the process of splitting a string containing text
-into individual tokens. Stemming is the reduction of words to
-abbreviated word roots that allow for easy comparison for equality of
-similar words. Tagging is identifying what part of speech each word is
-in input text. Tagging is complicated by many words having different
-parts of speech depending on context (examples: “*bank* the airplane,”
-“the river *bank*,” etc.) You can find the code in this section in the
-code ZIP file for this book in the files
-src/com/knowledgebooks/nlp/fasttag/FastTag.java and
-src/com/knowledgebooks/nlp/util/Tokenizer.java. The required data files
-are in the directory test\_data in the files lexicon.txt (for processing
-English text) and lexicon\_medpost.txt (for processing medical text).
+Tokenizing text is the process of splitting a string containing text into individual tokens. Stemming is the reduction of words to abbreviated word roots that allow for easy comparison for equality of similar words. Tagging is identifying what part of speech each word is in input text. Tagging is complicated by many words having different parts of speech depending on context (examples: “*bank* the airplane,” “the river *bank*,” etc.) You can find the code in this section in the
+GitHub repository in the files **src/com/knowledgebooks/nlp/fasttag/FastTag.java** and **src/com/knowledgebooks/nlp/util/Tokenizer.java**. The required data files are in the directory test\_data in the files lexicon.txt (for processing English text) and lexicon\_medpost.txt (for processing medical text).
 
-We will also look at a public domain word stemmer that I frequently use
-in this section.
+We will also look at a public domain word stemmer that I frequently use in this section.
 
-Before we can process any text we need to break text into individual
-tokens. Tokens can be words, numbers and punctuation symbols. The class
-**Tokenizer** has two static methods, both take an input string to
-tokenize and return a list of token strings. The second method has an
-extra argument to specify the maximum number of tokens that you want
-returned:
+Before we can process any text we need to break text into individual tokens. Tokens can be words, numbers and punctuation symbols. The class **Tokenizer** has two static methods, both take an input string to tokenize and return a list of token strings. The second method has an
+extra argument to specify the maximum number of tokens that you want returned:
 
 {lang="java",linenos=off}
 ~~~~~~~~
@@ -65,6 +50,8 @@ returned:
         static public List<String> wordsToList(String s,
                                                int maxR)
 ~~~~~~~~
+
+In line 3, **maxR** is maximum number of tokens to return and is useful when you want to sample the first part of a very long text.
 
 The following listing shows a fragment of example code using this class with the output:
 
@@ -88,7 +75,7 @@ This code fragment produces the following output:
     "down" "the" "hill" "." 
 ~~~~~~~~
 
-For many applications, it is better to “stem” word tokens to simplify comparison of similar words. For example “run,” “runs,” and “running” all stem to “run.” The stemmer that we will use, which I believe to be in the public domain, is in the file src/public\_domain/Stemmer.java. There are two convenient APIs defined at the end of the class, one to stem a string of multiple words and one to stem a single word token:
+For many applications, it is better to “stem” word tokens to simplify comparison of similar words. For example “run,” “runs,” and “running” all stem to “run.” The stemmer that we will use, which I believe to be in the public domain, is in the file **src/public\_domain/Stemmer.java**. There are two convenient APIs defined at the end of the class, one to stem a string of multiple words and one to stem a single word token:
 
 {linenos=off}
 ~~~~~~~~
@@ -96,42 +83,27 @@ For many applications, it is better to “stem” word tokens to simplify compar
         public String stemOneWord(String word)
 ~~~~~~~~
 
-We will use both the **FastTag** and **Stemmer** classes often in the remainder of this chapter.
-
 The FastTag project resulted from my using the excellent tagger written by Eric Brill while he was at the University of Pennsylvania. He used machine learning techniques to learn transition rules for tagging text using manually tagged text as training examples. In reading through his doctoral thesis I noticed that there were a few transition rules that covered most of the cases and I implemented a simple “fast tagger” in Common Lisp, Ruby, Scheme and Java. The Java version is in the file **src/com/knowledgebooks/nlp/fasttag/FastTag.java**.
 
-The file **src/com/knowledgebooks/nlp/fasttag/README.txt** contains information on where to obtain Eric Brill’s original tagging system and also defines the tags for both his English language lexicon and the Medpost lexicon. Table [tab:tagpos] shows the most commonly used tags (see the README.txt file for a complete description).
+The file **src/com/knowledgebooks/nlp/fasttag/README.txt** contains information on where to obtain Eric Brill’s original tagging system and also defines the tags for both his English language lexicon and the Medpost lexicon. The following table shows the most commonly used tags (see the README.txt file for a complete description).
 
 {linenos=off}
 ~~~~~~~~
-[htdp]
-
-l | l | l
-
-**Tag** & **Description** & **Examples**\
-NN & singular noun & dog\
-NNS & plural noun & dogs\
-NNP & singular proper noun & California\
-NNPS & plural proper noun & Watsons\
-CC & conjunction & and, but, or\
-CD & cardinal number & one, two\
-DT & determiner & the, some\
-IN & preposition & of, in, by\
-JJ & adjective & large, small, green\
-JJR & comparative adjective & bigger\
-JJS & superlative adjective & biggest\
-PP & proper pronoun & I, he, you\
-RB & adverb & slowly\
-RBR & comparative adverb & slowest\
-RP & particle & up, off\
-VB & verb & eat\
-VBN & past participle verb & eaten\
-VBG & gerund verb & eating\
-VBZ & present verb & eats\
-WP & wh\* pronoun & who, what\
-WDT & wh\* determiner & which, that\
-
-[tab:tagpos]
+NN   singular noun          dog
+NNS  plural noun            dogs
+NNP  singular proper noun   California
+CC   conjunction            and, but, or
+DT   determiner             the, some
+IN   preposition            of, in, by
+JJ   adjective              large, small, green
+PP   proper pronoun         I, he, you
+RB   adverb                 slowly
+RBR  comparative adverb     slowest
+VB   verb                   eat
+VBN  past participle verb   eaten
+VBG  gerund verb            eating
+WP   wh\* pronoun           who, what
+WDT  wh\* determiner        which, that
 ~~~~~~~~
 
 Brill’s system worked by processing manually tagged text and then creating a list of words followed by the tags found for each word. Here are a few random lines selected from the **test\_data/lexicon.txt** file:
@@ -143,31 +115,14 @@ Brill’s system worked by processing manually tagged text and then creating a l
     fair JJ NN RB
 ~~~~~~~~
 
-Here “Arco” is a proper noun because it is the name of a corporation.
-The word “Arctic” can be either a proper noun or an adjective; it is
-used most frequently as a proper noun so the tag “NNP” is listed before
-“JJ.” The word “fair” can be an adjective, singular noun, or an adverb.
+Here “Arco” is a proper noun because it is the name of a corporation. The word “Arctic” can be either a proper noun or an adjective; it is used most frequently as a proper noun so the tag “NNP” is listed before “JJ.” The word “fair” can be an adjective, singular noun, or an adverb.
 
-The class **Tagger** reads the file lexicon either as a resource stream
-(if, for example, you put lexicon.txt in the same JAR file as the
-compiled **Tagger** and **Tokenizer** class files) or as a local file. Each
-line in the lexicon.txt file is passed through the utility method
-**parseLine** that processes an input string using the first token in the
-line as a hash key and places the remaining tokens in an array that is
-the hash value. So, we would process the line “fair JJ NN RB” as a hash
-key of “fair” and the hash value would be the array of strings (only the
-first value is currently used but I keep the other values for future
-use):
+The class **Tagger** reads the file lexicon either as a resource stream (if, for example, you put lexicon.txt in the same JAR file as the compiled **Tagger** and **Tokenizer** class files) or as a local file. Each
+line in the lexicon.txt file is passed through the utility method **parseLine** that processes an input string using the first token in the line as a hash key and places the remaining tokens in an array that is
+the hash value. So, we would process the line “fair JJ NN RB” as a hash key of “fair” and the hash value would be the array of strings (only the first value is currently used but I keep the other values for future use):
 
-When the tagger is processing a list of word tokens, it looks each token
-up in the hash table and stores the first possible tag type for the
-word. In our example, the word “fair” would be assigned (possibly
-temporarily) the tag “JJ.” We now have a list of word tokens and an
-associated list of possible tag types. We now loop through all of the
-word tokens applying eight transition rules that Eric Brill’s system
-learned. We will look at the first rule in some detail; **i** is the loop
-variable in the range [0, number of word tokens - 1] and **word** is the
-current word at index **i**:
+When the tagger is processing a list of word tokens, it looks each token up in the hash table and stores the first possible tag type for the word. In our example, the word “fair” would be assigned (possibly temporarily) the tag “JJ.” We now have a list of word tokens and an associated list of possible tag types. We now loop through all of the word tokens applying eight transition rules that Eric Brill’s system learned. We will look at the first rule in some detail; **i** is the loop
+variable in the range [0, number of word tokens - 1] and **word** is the current word at index **i**:
 
 {lang="java",linenos=off}
 ~~~~~~~~
@@ -181,12 +136,9 @@ current word at index **i**:
       }
 ~~~~~~~~
 
-In English, this rule states that if a determiner (DT) at word token
-index **i-1** is followed by either a past tense verb (VBD) or a present
-tense verb (VBP) then replace the tag type at index **i** with “NN.”
+In English, this rule states that if a determiner (DT) at word token index **i - 1** is followed by either a past tense verb (VBD) or a present tense verb (VBP) then replace the tag type at index **i** with “NN.”
 
-I list the remaining seven rules in a short syntax here and you can look
-at the Java source code to see how they are implemented:
+I list the remaining seven rules in a short syntax here and you can look at the Java source code to see how they are implemented:
 
 {linenos=off}
 ~~~~~~~~
@@ -206,25 +158,15 @@ at the Java source code to see how they are implemented:
               verb (i.e., a gerund)
 ~~~~~~~~
 
-My FastTag tagger is not quite as accurate as Brill’s original tagger so
-you might want to use his system written in C but which can be executed
-from Java as an external process or with a JNI interface.
+My FastTag tagger is not quite as accurate as Brill’s original tagger so you might want to use his system written in C but which can be executed from Java as an external process or with a JNI interface.
 
-In the next section we will use the tokenizer, stemmer, and tagger from
-this section to develop a system for identifying named entities in text.
+In the next section we will use the tokenizer, stemmer, and tagger from this section to develop a system for identifying named entities in text.
 
 
 ## Named Entity Extraction From Text  {#named-entity-extraction}
 
-
-In this section we will look at identifying names of people and places
-in text. This can be useful for automatically tagging news articles with
-the people and place names that occur in the articles. The “secret
-sauce” for identifying names and places in text is the data in the file
-test\_data/propername.ser – a serialized Java data file containing hash
-tables for human and place names. This data is read in the constructor
-for the class **Names**; it is worthwhile looking at the code if you have
-not used the Java serialization APIs before:
+In this section we will look at identifying names of people and places in text. This can be useful for automatically tagging news articles with the people and place names that occur in the articles. The “secret
+sauce” for identifying names and places in text is the data in the file **test\_data/propername.ser** – a serialized Java data file containing hash tables for human and place names. This data is read in the constructor for the class **Names**; it is worthwhile looking at the code if you have not used the Java serialization APIs before:
 
 {lang="java",linenos=off}
 ~~~~~~~~
@@ -246,7 +188,7 @@ If you want to see these data values, use code like
       }
 ~~~~~~~~
 
-to see data values like the following:
+The small part of the output from running this code snippet is:
 
 {linenos=off}
 ~~~~~~~~
@@ -257,9 +199,7 @@ to see data values like the following:
     Lithuania : country
 ~~~~~~~~
 
-Before we look at the entity extraction code and how it works, we will
-first look at an example of using the main APIs for the **Names** class.
-The following example uses the methods **isPlaceName**, **isHumanName**, and
+Before we look at the entity extraction code and how it works, we will first look at an example of using the main APIs for the **Names** class. The following example uses the methods **isPlaceName**, **isHumanName**, and
 **getProperNames**:
 
 {lang="java",linenos=off}
@@ -318,11 +258,7 @@ example:
       }
 ~~~~~~~~
 
-The versions of these APIs that handle names containing multiple words
-are just a little more complicated; we need to construct a string from
-the words between the starting and ending indices and test to see if
-this new string value is a valid key in the human names or place names
-hash tables. Here is the code for finding multi-word place names:
+The versions of these APIs that handle names containing multiple words are just a little more complicated; we need to construct a string from the words between the starting and ending indices and test to see if this new string value is a valid key in the human names or place names hash tables. Here is the code for finding multi-word place names:
 
 {lang="java",linenos=off}
 ~~~~~~~~
@@ -348,27 +284,14 @@ hash tables. Here is the code for finding multi-word place names:
       }
 ~~~~~~~~
 
-This same scheme is used to test for multi-word human names. The
-top-level utility method **getProperNames** is used to find human and
-place names in text. The code in **getProperNames** is intentionally easy
-to understand but not very efficient because of all of the temporary
-test strings that need to be constructed.
+This same scheme is used to test for multi-word human names. The top-level utility method **getProperNames** is used to find human and place names in text. The code in **getProperNames** is intentionally easy to understand but not very efficient because of all of the temporary test strings that need to be constructed.
 
 ## Automatically Assigning Tags to Text
 
-By tagging I mean assigning zero or more categories like “politics”,
-“economy”, etc. to text based on the words contained in the text. While
-the code for doing this is simple there is usually much work to do to
-build a word count database for different classifications.
+By tagging I mean assigning zero or more categories like “politics”, “economy”, etc. to text based on the words contained in the text. While the code for doing this is simple there is usually much work to do to build a word count database for different classifications. The approach we use here is often called "bag of words" because the words in input text matter but not the order of words in text or proximity to other words.
 
-I have been working on commercial products for automatic tagging and
-semantic extraction for about ten years (see www.knowledgebooks.com if
-you are interested). In this section I will show you some simple
-techniques for automatically assigning tags or categories to text using
-some code snippets from my own commercial product. We will use a set of
-tags for which I have collected word frequency statistics. For example,
-a tag of “Java” might be associated with the use of the words “Java,”
-“JVM,” “Sun,” etc. You can find my pre-trained tag data in the file:
+I have been working on open source products for automatic tagging and semantic extraction for since the 1990s (see my old web site www.knowledgebooks.com if you are interested). In this section I will show you some simple techniques for automatically assigning tags or categories to text. We will use a set of tags for which I have collected word frequency statistics. For example,
+a tag of “Java” might be associated with the use of the words “Java,” “JVM,” “Sun,” etc. You can find my pre-trained tag data in the file:
 
 {line-numbers=off}
 ~~~~~~~~
@@ -379,28 +302,19 @@ The Java source code for the class **AutoTagger** is in the file:
 
 {line-numbers=off}
 ~~~~~~~~
-    src-statistical-nlp/
-          com/knowledgebooks/nlp/AutoTagger.java
+    src-statistical-nlp/com/knowledgebooks/nlp/AutoTagger.java
 ~~~~~~~~
 
-The **AutoTagger** class uses a few data structures to keep track of both the names of tags
-and the word count statistics for words associated with each tag name. I
-use a temporary hash table for processing the XML input data:
+The **AutoTagger** class uses a few data structures to keep track of both the names of tags and the word count statistics for words associated with each tag name. I use a temporary hash table for processing the XML input data:
 
 {lang="java",linenos=off}
 ~~~~~~~~
-      private static
-        Hashtable<String, Hashtable<String, Float>>
-          tagClasses;
+  private static Hashtable<String, Hashtable<String, Float>> tagClasses;
 ~~~~~~~~
 
-The names of tags used are defined in the XML tag data file: change this
-file, and you alter both the tags and behavior of this utility class.
-Please note that the data in this XML file is from a small set of hand-labeled (i.e., I labelled articles as being about "religion", "politics", etc.) that I use for development. I use a much larger tagged data set in my commercial product that you can experiment with at [kbsportal.com]{#http://kbsportal.com}.
+The names of tags used are defined in the XML tag data file: change this file, and you alter both the tags and behavior of this utility class. Please note that the data in this XML file is from a small set of hand-labeled (i.e., my wife and I labelled articles as being about "religion", "politics", etc.). 
 
-Here is a snippet of data defined in the XML tag data file describing
-some words (and their scores) associated with the tag
-“religion\_buddhism”:
+Here is a snippet of data defined in the XML tag data file describing some words (and their scores) associated with the tag “religion\_buddhism”:
 
 {lang="xml",linenos=off}
 ~~~~~~~~
@@ -428,12 +342,9 @@ some words (and their scores) associated with the tag
     </tags>
 ~~~~~~~~
 
-Notice that the term names are stemmed words and all lower case. There
-are 28 tags defined in the input XML file included in the ZIP file for
-this book.
+Notice that the term names are stemmed words and all lower case. There are 28 tags defined in the input XML file included in the [GitHub repository for this book](https://github.com/mark-watson/Java-AI-Book-Code).
 
-For data access, I also maintain an array of tag names and an associated
-list of the word frequency hash tables for each tag name:
+For data access, I also maintain an array of tag names and an associated list of the word frequency hash tables for each tag name:
 
 {lang="java",linenos=off}
 ~~~~~~~~
@@ -443,10 +354,7 @@ list of the word frequency hash tables for each tag name:
            new ArrayList<Hashtable<String, Float>>();
 ~~~~~~~~
 
-The XML data is read and these data structures are filled during static
-class load time so creating multiple instances of the class **AutoTagger** has no performance penalty in either memory use or processing time.
-Except for an empty default class constructor, there is only one public
-API for this class, the method **getTags**:
+The XML data is read and these data structures are filled during static class load time so creating multiple instances of the class **AutoTagger** has no performance penalty in memory use. Except for an empty default class constructor, there is only one public API for this class, the method **getTags**:
 
 {lang="java",linenos=off}
 ~~~~~~~~
@@ -454,23 +362,15 @@ API for this class, the method **getTags**:
                      getTags(String text) {
 ~~~~~~~~
 
-The utility class **NameValue** is defined in the file:
+To be clear, the tags returned are classification tags like "politics," "economy," etc. The utility class **NameValue** is defined in the file:
 
 {linenos=off}
 ~~~~~~~~
-    src-statistical-nlp/
-          com/knowledgebooks/nlp/util/NameValue.java
+src-statistical-nlp/com/knowledgebooks/nlp/util/NameValue.java
 ~~~~~~~~
 
-To determine the tags for input text, we keep a running score for each
-defined tag type. I use the internal class **SFtriple** to hold triple
-values of word, score, and tag index. I choose the tags with the highest
-scores as the automatically assigned tags for the input text. Scores for
-each tag are calculated by taking each word in the input text, stemming
-it, and if the stem is in the word frequency hash table for the tag then
-add the score value in the hash table to the running sum for the tag.
-You can refer to the AutoTagger.java source code for details. Here is an
-example use of class **AutoTagger**:
+To determine the tags for input text, we keep a running score for each defined tag type. I use the internal class **SFtriple** to hold triple values of word, score, and tag index. I choose the tags with the highest scores as the automatically assigned tags for the input text. Scores for each tag are calculated by taking each word in the input text, stemming it, and if the stem is in the word frequency hash table for the tag then add the score value in the hash table to the running sum for the tag.
+You can refer to the AutoTagger.java source code for details. Here is an example use of class **AutoTagger**:
 
 {lang="java",linenos=off}
 ~~~~~~~~
@@ -497,38 +397,19 @@ The output looks like:
 
 ## Text Clustering  {#text-clustering}
 
+Clustering text documents refers to associating similar text documents with each other. The text clustering system that I have written for my own projects is simple and effective but it inefficient for large numbers of documents. The example code in this section is inherently inefficient for clustering a large number of text documents because I perform significant semantic processing on each text document and then compare all combinations of documents. The runtime performance is **O(N^2^)** where **N** is the number of text documents. If you need to cluster or compare a very large number of documents you will probably want to use a K-Mean clustering algorithm instead.
 
-Clustering text documents refers to associating similar text documents with each other. The text clustering system that I have written for my own projects, in
-simplified form, will be used in the section. (I converted my commercial NLP product [kbsportal.com](#http://kbsportal.com) from Java to the Clojure programming language in 2012.)
-
-The example code in this section is inherently inefficient when clustering a large number of text documents because I
-perform significant semantic processing on each text document and then
-compare all combinations of documents. The runtime performance is **O(N^2^)** where **N**
-is the number of text documents. If you need to cluster or compare a
-very large number of documents you will probably want to use a K-Mean
-clustering algorithm (search for “K-Mean clustering Java” for some open
-source projects).
-
-I use a few different algorithms to rate the similarity of any two text
-documents and I will combine these depending on the requirements of the
-project that I am working on:
+I use a few different algorithms to rate the similarity of any two text documents and I will combine these depending on the requirements of the project that I am working on:
 
 -  Calculate the intersection of common words in the two documents.
-
 -  Calculate the intersection of common word stems in the two documents.
-
 -  Calculate the intersection of tags assigned to the two documents.
-
 -  Calculate the intersection of human and place names in the two documents.
 
-In this section we will implement the second option: calculate the
-intersection of word stems in two documents. Without showing the package
-and import statements, it takes just a few lines of code to implement
-this algorithm when we use the **Stemmer** class.
+In this section we will implement the second option: calculate the intersection of word stems in two documents. Without showing the package and import statements, it takes just a few lines of code to implement this algorithm when we use the **Stemmer** class.
 
 The following listing shows the implementation of class
-**ComparableDocument** with comments. We start by defining constructors
-for documents defined by a **File** object and a **String** object:
+**ComparableDocument** with comments. We start by defining constructors for documents defined by a **File** object and a **String** object:
 
 {lang="java",linenos=off}
 ~~~~~~~~
@@ -555,13 +436,9 @@ for documents defined by a **File** object and a **String** object:
         }
 ~~~~~~~~
 
-In the last constructor, I simply create a count of how many times each
-stem occurs in the document.
+In the last constructor, I simply create a count of how many times each stem occurs in the document.
 
-The public API allows us to get the stem count hash table, the number of
-stems in the original document, and a numeric comparison value for
-comparing this document with another (this is the first version – we
-will add an improvement later):
+The public API allows us to get the stem count hash table, the number of stems in the original document, and a numeric comparison value for comparing this document with another (this is the first version – we will add an improvement later):
 
 {lang="java",linenos=off}
 ~~~~~~~~
@@ -596,12 +473,8 @@ will add an improvement later):
     }
 ~~~~~~~~
 
-I normalize the return value for the method **compareTo** to return a
-value of 1.0 if compared documents are identical (after stemming) and
-0.0 if they contain no common stems. There are four test text documents
-in the test\_data directory and the following test code compares various
-combinations. Note that I am careful to test the case of comparing
-identical documents:
+I normalize the return value for the method **compareTo** to return a value of 1.0 if compared documents are identical (after stemming) and 0.0 if they contain no common stems. There are four test text documents
+in the test\_data directory and the following test code compares various combinations. Note that I am careful to test the case of comparing identical documents:
 
 {lang="java",linenos=off}
 ~~~~~~~~
@@ -631,9 +504,7 @@ identical documents:
                          econ2.compareTo(econ2));
 ~~~~~~~~
 
-The following listing shows output that indicates mediocre results; we
-will soon make an improvement that makes the results better. The output
-for this test code is:
+The following listing shows output that indicates mediocre results; we will soon make an improvement that makes the results better. The output for this test code is:
 
 {linenos=off}
 ~~~~~~~~
@@ -647,9 +518,7 @@ for this test code is:
     econ 2 - econ2: 1.0
 ~~~~~~~~
 
-There is not as much differentiation in comparison scores between political news stories and economic news stories. What is up here? The problem is that I did not remove common words (and therefore common word stems) when creating stem counts for each document. I wrote a utility
-class **NoiseWords** for identifying both common words and their stems; you can see the implementation in the file NoiseWords.java. Removing
-noise words improves the comparison results (I added a few tests since the last printout):
+There is not as much differentiation in comparison scores between political news stories and economic news stories. What is up here? The problem is that I did not remove common words (and therefore common word stems) when creating stem counts for each document. I wrote a utility class **NoiseWords** for identifying both common words and their stems; you can see the implementation in the file NoiseWords.java. Removing noise words improves the comparison results (I added a few tests since the last printout):
 
 {linenos=off}
 ~~~~~~~~
@@ -662,16 +531,14 @@ noise words improves the comparison results (I added a few tests since the last 
     econ 1 - econ2: 0.26178515
 ~~~~~~~~
 
-Much better results! The API for **com.knowledgebooks.nlp.util.NoiseWords**
-is:
+Much better results! The API for **com.knowledgebooks.nlp.util.NoiseWords** is a single static method:
 
 {lang="java",linenos=off}
 ~~~~~~~~
-        public static boolean checkFor(String stem)
+public static boolean checkFor(String stem)
 ~~~~~~~~
 
 You can add additional noise words to the data section in the file **NoiseWords.java**, depending on your application.
-
 
 ## Wrapup
 
