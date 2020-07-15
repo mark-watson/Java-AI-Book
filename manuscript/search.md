@@ -1,6 +1,8 @@
 Search  {#search}
 ======
 
+Unless you write the AI for game programs and entertainment systems (which I have done for Angel Studios, Nintendo, and Disney), the material in the chapter may not be relevant to your work. That said I recommend that you develop some knowledge of defining search spaces for problems and techniques to search these spaces. I hope that you have fun with the material in this chapter.
+
 Early AI research emphasized the optimization of search algorithms. At this time in the 1950s and 1960s this approach made sense because many AI tasks can be solved effectively by defining state spaces and using search algorithms to define and explore search trees in this state space. This approach for AI research encountered some early success in game playing systems like checkers and chess which reinforced confidence in viewing many AI problems as search problems.
 
 I now consider this form of classic search to be a well understood problem but that does not mean that we will not see exciting improvements in search algorithms in the future. This book does not cover Monte Carlo Search or game search using Reinforcement Learning with Monte Carlo Search that Alpha Go uses.
@@ -32,9 +34,13 @@ maze:
 
 You can run the examples using:
 
-    make maze
-    make graph
-    make chess
+{linenos=off}
+~~~~~~~~
+make maze
+make graph
+make chess
+~~~~~~~~
+
 
 ## Representation of Search State Space and Search Operators
 
