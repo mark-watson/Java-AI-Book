@@ -6,7 +6,9 @@ The problem with back propagation networks is that as error gradients are back p
 
 I became interested in deep learning neural networks when I took Geoffrey Hinton's Neural Network class (a Coursera class, taken summer of 2012) and then for the next seven years most of my professional work involved deep learning.
 
-The [Deeplearning4j.org](http://deeplearning4j.org/) Java library supports many neural network algorithms including support for Deep Learning (DL). We will look at a simple example of a feed forward network using the same University of Wisconsin cancer database that I often use for examples when writing. Deep learning refers to neural networks with many layers, possibly with weights connecting neurons in non-adjacent layers which makes it possible to model temporal and spacial patterns in data. I will often refer to Deeplearning4j as DL4J.
+The [Deeplearning4j.org](http://deeplearning4j.org/) Java library supports many neural network algorithms including support for Deep Learning (DL).  Note that I will often refer to Deeplearning4j as DL4J. There is a separate [repository for DL4J examples](https://github.com/eclipse/deeplearning4j-examples) that you should clone because the last half of this chapter is a general discussion with one additional example of running the DL4J examples and modifying them for your needs.
+
+We will first look at a simple example of a feed forward network using the same University of Wisconsin cancer database that I often use for examples when writing. Deep learning refers to neural networks with many layers, possibly with weights connecting neurons in non-adjacent layers which makes it possible to model temporal and spacial patterns in data.
 
 We will start with a simple example, then look at how to set up DL4J projects using Maven, and then discuss other types of layer classes that you will likely use in your project. Hopefully after learning how to set up and use DL4J and having a roadmap of commonly used layer classes, then you will be set to work on your own projects.
 
@@ -215,6 +217,37 @@ As you build more deep learning enabled applications, depending on what requirem
 - [org.deeplearning4j.nn.conf.layers.LSTM](https://deeplearning4j.org/api/latest/org/deeplearning4j/nn/conf/layers/LSTM.html) - LSTM layers are used to extend the temporal memory of what a layer can remember. LSTM are a refinement of RNN models that use an input window to pass through a data stream and the RNN model can only use what is inside this temporal sampling window.
 - [org.deeplearning4j.nn.conf.layers.Pooling1D](https://deeplearning4j.org/api/latest/org/deeplearning4j/nn/conf/layers/Pooling1D.html) - a one dimensional pooling layer transforms a longer input to a shorter output by downsampling, i.e., there are fewer output connections than input connections.
 - [org.deeplearning4j.nn.conf.layers.Pooling2D](https://deeplearning4j.org/api/latest/org/deeplearning4j/nn/conf/layers/Pooling2D.html) - a two dimensional pooling layer transforms a larger two dimensional array of data input to a smaller output two dimensional array by downsampling.
+
+## Running the DL4J Example Programs and Modifying Them For Your Use
+
+To get started clone the DL4J examples repository if you have not already done so and fetch all of the required libraries:
+
+{lang="bash",linenos=off}
+~~~~~~~~
+git clone https://github.com/eclipse/deeplearning4j-examples
+cd deeplearning4j-examples
+mvn install
+~~~~~~~~
+
+We will start with modyfying [Alex Black's](https://github.com/AlexDBlack) character generating LSTM example that you can run using:
+
+{lang="bash",linenos=off}
+~~~~~~~~
+cd deeplearning4j-examples
+mvn exec:java -Dexec.mainClass="org.deeplearning4j.examples.advanced.modelling.charmodelling.generatetext.GenerateTxtModel"
+~~~~~~~~
+
+Alex Black's example downloads the complete works of Shakespeare from the web and trains a recurrent network LSTM model by passing an input window through the complete text. Each input character is one-hot encoded and the target output is the same one-hot encoded text data in the input window except the sample is shifter one character further in the text. The model learns to predict the next character in a sequence given a sample of input seed text.
+
+TBD: add my standard one-hot encoding explanation here
+
+By processing sufficient sample text, an LSTM network can learn a language that models input text. If you train on samples from Shakespeare then the model generates text that looks like Shakespeare wrote it. This also works for any author with a specific writing style.
+
+For a customer, I used an LSTM model trained on JSON log data from AWS. They wanted to have a large amount of test data that did not contain any sensitive information. The LSTM model worked fairly well, the major restriction being that I checked each generated JSON datum for having valid syntax and followed the Schema of the original data, discarding samples that failed these tests.
+
+The examples provided with DL4J cover most of the deep learning use cases you may require for your work. If you load the entire DL4J examples repository in a Java IDE and use global search then you should be able to find appropriate CNN, Classification, Regression, etc. examples similar to your current use case that you can modify. I wanted to try using an LSTM character generation model to generate CSV style spreadsheet data and in the next section is a small example where I modified Alex Black's character generating LSTM example.
+
+## Modifying Alex Black's character generating LSTM example to Model and Generate CSV Spreadsheet data
 
 
 
