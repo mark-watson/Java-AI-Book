@@ -26,6 +26,12 @@ The following UML class diagram will give you an overview all of the neural netw
 
 ![UML class diagram for neural network code](images/neuralnetwork-uml.png)
 
+There are three parts to the code base: main backpropagation library, GUI examples, and text-only tests. The following screen show of the project open in an IDE is useful to see the file layout for the project:
+
+![IDE view of code showing main library, GUI examples, and text-only tests](images/neural-ide.png)
+
+
+
 
 ## Back Propagation Neural Networks  {#backprop}
 
