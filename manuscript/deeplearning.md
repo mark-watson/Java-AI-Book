@@ -34,7 +34,7 @@ In the previous editions of this book I provided examples of implementing back p
 
 The important thing to understand is that before deep learning algorithm optimizations, backpropagation did not work well for networks with many hidden layers because the back propagated errors get smaller as we process backwards towards the input neurons and this would cause network training to be very slow. This is referred to as vanishing gradients in the literature. With modern libraries like DL4J, TensorFlow, PyTorch, and mxnet this is not an issue.
 
-## Simple Example
+## Feed Forward Example
 
 The following screen show shows an IntelliJ project (you can use the free community or professional version for the examples in this book) for the example in this chapter:
 
@@ -229,7 +229,7 @@ cd deeplearning4j-examples
 mvn install
 ~~~~~~~~
 
-We will start with modyfying [Alex Black's](https://github.com/AlexDBlack) character generating LSTM example that you can run using:
+In the next section we will modify [Alex Black's](https://github.com/AlexDBlack) character generating LSTM example. You can run his example using:
 
 {lang="bash",linenos=off}
 ~~~~~~~~
@@ -248,6 +248,73 @@ For a customer, I used an LSTM model trained on JSON log data from AWS. They wan
 The examples provided with DL4J cover most of the deep learning use cases you may require for your work. If you load the entire DL4J examples repository in a Java IDE and use global search then you should be able to find appropriate CNN, Classification, Regression, etc. examples similar to your current use case that you can modify. I wanted to try using an LSTM character generation model to generate CSV style spreadsheet data and in the next section is a small example where I modified Alex Black's character generating LSTM example.
 
 ## Modifying Alex Black's character generating LSTM example to Model and Generate CSV Spreadsheet data
+
+Here are the major changes the I made to the **GenerateTxtModel** example, starting with preparing the text training data:
+
+{lang="java",linenos=off}
+~~~~~~~~
+
+  TBD
+  
+~~~~~~~~
+
+Changes for configuring the model:
+
+
+{lang="java",linenos=off}
+~~~~~~~~
+
+  TBD
+  
+~~~~~~~~
+
+Sample output after training the model for a few minutes (most lines are not properly formatted or valid):
+
+{linenos=off}
+~~~~~~~~
+0,4,000,2,5,1,1,5,8,0
+,,,,61,,,,,8
+,,,6014,0,1,1,1,1,0
+1,4,,3,1,2,2,5,3,0
+,,2,0,4,,,0,1,5
+6,1,,1,5,1,2,4,1,5
+1,,7,,,,60,1,0,7
+1,2,6,1,2,1,3,1,1,6
+0,5,1,2,3,2,1,,000000,8
+8,1,5,1,,8,1,0,1,0
+2,1,2,6,1,1,2,8,0,2
+~~~~~~~~
+
+Sample output after training the model for a ten minutes (errors in lines 1 and 4):
+
+{linenos=on}
+~~~~~~~~
+1,1,1,1,2,16,7,1,1,1
+6,1,1,1,2,1,3,1,1,0
+6,1,1,1,2,1,1,1,1,0
+13,10,4,10,3,10,10,7,1,1
+1,1,1,1,2,1,1,1,1,0
+4,1,1,1,2,1,1,1,1,0
+3,1,1,1,2,1,1,1,1,0
+3,1,2,1,2,1,1,1,1,0
+2,1,1,1,2,1,1,1,1,0
+~~~~~~~~
+
+
+Final model after training for twenty minutes:
+
+{linenos=off}
+~~~~~~~~
+1,1,1,1,1,1,1,1,1,0
+5,1,1,1,2,1,2,1,1,0
+8,8,6,10,2,10,7,10,1,1
+5,1,1,1,2,1,1,1,1,0
+2,1,4,3,2,1,1,1,1,0
+4,1,1,1,2,1,1,1,1,0
+1,1,1,1,1,1,1,1,1,0
+1,1,1,1,1,1,3,1,1,0
+4,1,1,1,3,1,1,10,2,1
+~~~~~~~~
 
 
 
