@@ -4,7 +4,7 @@ One limitation of back propagation neural networks seen in the last chapter is t
 
 The problem with back propagation networks is that as error gradients are back propagated through the network toward the input layer, the gradients get smaller and smaller. The effect is that it can take a lot of time to train back propagation networks with many hidden layers. We will see in the next chapter on Deep Learning how this problem can be solved and deep networks (i.e., networks with many hidden layers) can be trained.
 
-I became interested in deep learning neural networks when I took Geoffrey Hinton's Neural Network class (a Coursera class, taken summer of 2012) and then for the next seven years most of my professional work involved deep learning.
+I became interested in deep learning neural networks when I took Geoffrey Hinton's Neural Network class (a Coursera class, taken summer of 2012) and then for the next seven years most of my professional work involved deep learning. I have used GAN (generative adversarial networks) models for synthesizing numeric spreadsheet data and LSTM (long short term memory) models to synthesize highly structured text data like nested JSON and for NLP (natural language processing). Several of my 55 US patents use neural network and Deep Learning technology.
 
 The [Deeplearning4j.org](http://deeplearning4j.org/) Java library supports many neural network algorithms including support for Deep Learning (DL).  Note that I will often refer to Deeplearning4j as DL4J. There is a separate [repository for DL4J examples](https://github.com/eclipse/deeplearning4j-examples) that you should clone because the last half of this chapter is a general discussion with one additional example of running the DL4J examples and modifying them for your needs.
 
@@ -239,7 +239,9 @@ mvn exec:java -Dexec.mainClass="org.deeplearning4j.examples.advanced.modelling.c
 
 Alex Black's example downloads the complete works of Shakespeare from the web and trains a recurrent network LSTM model by passing an input window through the complete text. Each input character is one-hot encoded and the target output is the same one-hot encoded text data in the input window except the sample is shifter one character further in the text. The model learns to predict the next character in a sequence given a sample of input seed text.
 
-TBD: add my standard one-hot encoding explanation here
+Let's review one-hot encoding. We need to convert each character in the training data to a one-hot encoding which is a vector of all 0.0 values except for a single value of 1.0. If there are, for example,  256 unique characters in the training data then the vector will have 256 elements. If the index of character "m" (for example) is 77, then we set element at index 77 to one, all other elements being zero. We won't look at the implementation of one-hot encoding here because DL4J provides APIs for this. I cover implementation in another book in the [chapter on Deep Learning for the Hy Language](https://leanpub.com/hy-lisp-python/read#leanpub-auto-deep-learning) that you can read online.
+
+Here we will be using one-hot encoding for characters but it also works well for encoding words in a vocabulary. Typically training data may have about 10,000 unique words so the one-hot encoding vector would have 10,001 elements. We add a special word position for "unknown word." For some applications we also use word-embeddings using a smaller vector, 500 elements being a reasonable size. We won't be using word-embeddings here, or one-hot word embedding but I want you to know what these terms mean.
 
 By processing sufficient sample text, an LSTM network can learn a language that models input text. If you train on samples from Shakespeare then the model generates text that looks like Shakespeare wrote it. This also works for any author with a specific writing style.
 
@@ -249,26 +251,55 @@ The examples provided with DL4J cover most of the deep learning use cases you ma
 
 ## Modifying Alex Black's character generating LSTM example to Model and Generate CSV Spreadsheet data
 
-Here are the major changes the I made to the **GenerateTxtModel** example, starting with preparing the text training data:
+Here are the major changes the I made to the **GenerateTxtModel** example, starting with preparing the text training data where I substitute the original method to use complete works of William Shakespeare in the class **getShakespeareIterator** with the class **getWisconsinDataIterator** that processes the CSV file in **data/training.csv** in my example class **LstmCharGenerator**:
 
 {lang="java",linenos=off}
 ~~~~~~~~
-
-  TBD
-  
+  static CharacterIterator getWisconsinDataIterator(int miniBatchSize, int sequenceLength) throws IOException {
+    String fileLocation = "data/training.csv";
+    char[] validCharacters = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ',', '\n'};
+    System.out.println("++ valid characters in training data: ");
+    for (char ch : validCharacters) System.out.print(" " + ch);
+    System.out.println();
+    return new CharacterIterator(fileLocation, StandardCharsets.UTF_8,
+        miniBatchSize, sequenceLength, validCharacters, new Random(12345));
+  }
 ~~~~~~~~
 
 Changes for configuring the model:
 
+{lang="java",linenos=off}
+~~~~~~~~
+    int lstmLayerSize = 400;	 //Number of units in each LSTM layer
+    int miniBatchSize = 16;	//Size of mini batch to use when  training
+    int exampleLength = 250;	 //Length of each training example sequence to use. This could certainly be increased
+    int tbpttLength = 40; //Length for truncated backpropagation through time
+    int numEpochs = 100;		//Total number of training epochs
+    int generateSamplesEveryNMinibatches = 5;  //How frequently to generate samples
+    int nSamplesToGenerate = 20;		//Number of samples to generate after each training epoch
+    int nCharactersToSample = 300;	 //Length of each sample to generate
+~~~~~~~~
+
+I made a third change to Alex Black's example: I discard generated samples that don't match the schema of the original data in the method **sampleCharactersFromNetwork**:
 
 {lang="java",linenos=off}
 ~~~~~~~~
-
-  TBD
-  
+          System.out.println("----- Samples -----");
+          for( int j=0; j<samples.length; j++ ) {
+            // discard samples that don't contain 10 numbers per line
+            String [] lines = samples[j].split("\n");
+            for (int k=0; k<lines.length; k++) {
+              if (StringUtils.countMatches(lines[k], ",") == 9 &&
+                  lines[k].split(",").length == 10) {
+                System.out.println(lines[k]);
+              }
+            }
+          }
 ~~~~~~~~
 
-Sample output after training the model for a few minutes (most lines are not properly formatted or valid):
+We will look at three samples taken about two minutes into the training process, after ten minutes, and finally after twenty minutes. You might want to look at the training file **data/training.csv** to understand what we are trying to model and then generate similar data.
+
+Here is sample output after training the model for about two minutes (most lines are not properly formatted or valid):
 
 {linenos=off}
 ~~~~~~~~
@@ -276,8 +307,6 @@ Sample output after training the model for a few minutes (most lines are not pro
 ,,,,61,,,,,8
 ,,,6014,0,1,1,1,1,0
 1,4,,3,1,2,2,5,3,0
-,,2,0,4,,,0,1,5
-6,1,,1,5,1,2,4,1,5
 1,,7,,,,60,1,0,7
 1,2,6,1,2,1,3,1,1,6
 0,5,1,2,3,2,1,,000000,8
@@ -294,9 +323,6 @@ Sample output after training the model for a ten minutes (errors in lines 1 and 
 6,1,1,1,2,1,1,1,1,0
 13,10,4,10,3,10,10,7,1,1
 1,1,1,1,2,1,1,1,1,0
-4,1,1,1,2,1,1,1,1,0
-3,1,1,1,2,1,1,1,1,0
-3,1,2,1,2,1,1,1,1,0
 2,1,1,1,2,1,1,1,1,0
 ~~~~~~~~
 
@@ -310,11 +336,11 @@ Final model after training for twenty minutes:
 8,8,6,10,2,10,7,10,1,1
 5,1,1,1,2,1,1,1,1,0
 2,1,4,3,2,1,1,1,1,0
-4,1,1,1,2,1,1,1,1,0
 1,1,1,1,1,1,1,1,1,0
 1,1,1,1,1,1,3,1,1,0
 4,1,1,1,3,1,1,10,2,1
 ~~~~~~~~
+
 
 ## Roadmap for the DL4J Model Zoo
 
