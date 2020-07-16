@@ -225,7 +225,7 @@ To get started clone the DL4J examples repository if you have not already done s
 {lang="bash",linenos=off}
 ~~~~~~~~
 git clone https://github.com/eclipse/deeplearning4j-examples
-cd deeplearning4j-examples
+cd deeplearning4j-examples/dl4j-examples
 mvn install
 ~~~~~~~~
 
@@ -233,7 +233,7 @@ In the next section we will modify [Alex Black's](https://github.com/AlexDBlack)
 
 {lang="bash",linenos=off}
 ~~~~~~~~
-cd deeplearning4j-examples
+cd deeplearning4j-examples/dl4j-examples
 mvn exec:java -Dexec.mainClass="org.deeplearning4j.examples.advanced.modelling.charmodelling.generatetext.GenerateTxtModel"
 ~~~~~~~~
 
@@ -316,7 +316,39 @@ Final model after training for twenty minutes:
 4,1,1,1,3,1,1,10,2,1
 ~~~~~~~~
 
+## Roadmap for the DL4J Model Zoo
 
+DL4J supports a Model Zoo containing the following pretrained models ([see documentation](https://deeplearning4j.konduit.ai/model-zoo/zoo-models)):
+
+- AlexNet - was a breakthrough for image recognition, AlexNet is a convolutional neural network designed by Alex Krizhevsky (with Ilya Sutskever and Geoffrey Hinton). AlexNet used Relu instead of arc-tangent or Sigmoid activation.
+- Darknet19 - is a type of realtime YOLO model.
+- FaceNetNN4Small2 - is a small version of the FaceNet embeddings for face recognition.
+- InceptionResNetV1 - Inception models use many convolutional layers. 
+- LeNet -
+- NASNet -
+- ResNet50 - residual neural network that uses "skip connections" that connect neurons in non-adjacent layers which helps reduce the vanishing gradient problem for models with many layers. Skipped layers are connected later in the training process (example class **AlphaGoZeroTrainer**).
+- SimpleCNN - simple architecture using alternating pooling and convolutional layers.
+- SqueezeNet - architecture for computer vision that experiments with smaller neural networks with fewer parameters.
+- TextGenerationLSTM - a general model architecture for using LSTM layers for building language models from input text and then generating new similar text.
+- TinyYOLO - a small YOLO model (example class *TinyYoloHouseNumberDetection** demonstrates Transfer Learning).
+- UNet - convolutional model designed to perform medical image segmentation.
+- VGG16 - convolutional model for classification and detection using convolutional (with ReLu), max pooling, and fully connected layers (example class **FitFromFeaturized** demonstrates Transfer Learning).
+- VGG19 - a larger variant of VGG16 that uses (16 convolution layers, 3 fully connected layers, 5 max pooling layers and 1 SoftMax layer.
+- Xception - a newer version of Inception V3 with slightly better performance but long training times.
+- YOLO2 - "you only look once" real time object detection.
+
+If you are interested in fine tuning existing models (Transfer Learning) then I suggest that you start with the example class **FitFromFeaturized**. You can look at the code using your favorite editor and run this example using:
+
+{lang="bash",linenos=off}
+~~~~~~~~
+$ cd deeplearning4j-examples/dl4j-examples
+
+$ emacs src/main/java/org/deeplearning4j/examples/advanced/features/transferlearning/editlastlayer/presave/FitFromFeaturized.java
+
+$ mvn exec:java -Dexec.mainClass="org.deeplearning4j.examples.advanced.features.transferlearning.editlastlayer.presave.FitFromFeaturized"
+~~~~~~~~
+
+This is a good example to get started with because it is short (about 90 lines of code) and shows clearly how to take a saved model and build a configuration to add your own output layer and then perform additional training using your own data.
 
 ## Deep Learning Wrapup
 
