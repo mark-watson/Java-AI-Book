@@ -1,50 +1,36 @@
 # Deep Learning Using Deeplearning4j {#dl4j}
 
-One limitation of back propagation neural networks seen in the last chapter is that they are limited to the number of neuron layers that can be efficiently trained. If you experimented with the sample back propagation code then you may have noticed that it took a longer to train a network with two hidden layers compared to the training time for a network with only one hidden layer. There are also problems like vanishing gradients (the backpropagated errors that are used to update connection weights) that occur in architectures with many layers. Deep learning uses computations improvements like using ReLu activation functions rather that the more traditional Sigmoid function, and “skip connections” networks where some layers are initially turned off with connections skipping to the next active layer. After some initial training the skipped layers at an be activated (as in ResNet50, mentioned in the section on DL4J Model Zoo at the end of this chapter).
+One limitation of back propagation neural networks seen in the last chapter is that they are limited to the number of neuron layers that can be efficiently trained. If you experimented with the sample back propagation code then you may have noticed that it took a longer to train a network with two hidden layers compared to the training time for a network with only one hidden layer. There are also problems like vanishing gradients (the backpropagated errors that are used to update connection weights) that occur in architectures with many layers. Deep learning uses computational improvements to mitigate the vanishing gradient problem like using ReLu activation functions rather that the more traditional Sigmoid function, and “skip connections” networks where some layers are initially turned off with connections skipping to the next active layer. After some initial training the skipped layers are activated and become part of the model (as in ResNet50, mentioned in the section on DL4J Model Zoo at the end of this chapter).
 
-Digging deeper into the problem of vanishing gradients, the problem with back propagation networks is that as error gradients are back propagated through the network toward the input layer, the gradients get smaller and smaller. The effect is that it can take a lot of time to train back propagation networks with many hidden layers. Even worse the small backpropagated errors get so small that they cause numerical underflows. We will see in the next chapter on Deep Learning how this problem can be solved and deep networks (i.e., networks with many hidden layers) can be trained.
+Digging deeper into the problem of vanishing gradients, the problem with back propagation networks is as error gradients are back propagated through the network toward the input layer, the gradients get smaller and smaller. The effect is that it can take a lot of time to train back propagation networks with many hidden layers. Even worse the small backpropagated errors get so small that they cause numerical underflows.
 
 I became interested in deep learning neural networks when I took Geoffrey Hinton's Neural Network class (a Coursera class, taken summer of 2012) and then for the next seven years most of my professional work involved deep learning. I have used GAN (generative adversarial networks) models for synthesizing numeric spreadsheet data and LSTM (long short term memory) models to synthesize highly structured text data like nested JSON and for NLP (natural language processing). Several of my 55 US patents use neural network and Deep Learning technology.
 
 The [Deeplearning4j.org](http://deeplearning4j.org/) Java library supports many neural network algorithms including support for Deep Learning (DL).  Note that I will often refer to Deeplearning4j as DL4J. There is a separate [repository for DL4J examples](https://github.com/eclipse/deeplearning4j-examples) that you should clone because the last half of this chapter is a general discussion with one additional example of running the DL4J examples and modifying them for your needs.
 
-We will first look at a simple example of a feed forward network using the same University of Wisconsin cancer database that I often use for examples when writing. Deep learning refers to neural networks with many layers, possibly with weights connecting neurons in non-adjacent layers which makes it possible to model temporal and spacial patterns in data.
+We will first look at a simple example of a feed forward network using the same University of Wisconsin cancer database that we used earlier. Deep learning refers to neural networks with many layers, possibly with weights connecting neurons in non-adjacent layers which makes it possible to model temporal and spacial patterns in data.
 
-We will start with a simple example, then look at how to set up DL4J projects using Maven, and then discuss other types of layer classes that you will likely use in your project. Hopefully after learning how to set up and use DL4J and having a roadmap of commonly used layer classes, then you will be set to work on your own projects.
+We will start with a simple example, then look at how to set up DL4J projects using Maven, and then discuss other types of layer classes that you will likely use in your projects. Hopefully after learning how to set up and use DL4J and having a roadmap of commonly used layer classes, then you will be set to work on your own projects.
 
 I am going to assume that you have some knowledge of simple backpropagation neural networks from working through the examples in the last chapter.
 
-
-
-## Deep Learning
-
-The difficulty in training many layer networks with backpropagation is that the delta errors in the layers near the input layer (and far from the output layer) get very small and training can take a very long time even on modern processors and GPUs. Geoffrey Hinton and his colleagues created a new technique for pretraining weights. In 2012 I took a Coursera course taught by Hinton and some colleagues titled ['Neural Networks for Machine Learning'](https://www.coursera.org/course/neuralnets) and the material may still be available online when you read this book.
-
-For Java developers, Deeplearning4j is a great starting point for experimenting with deep learning. 
-
 ## Feed Forward Classification Networks
 
-Feed forward classification networks are a type of deep neural network that can contain multiple hidden neuron layers. In the example here the adjacent layers are fully connects.
+Feed forward classification networks are a type of deep neural network that can contain multiple hidden neuron layers. In the example here the adjacent layers are fully connected (all neurons in adjacent layers are connected).
 
-In general, simpler network architectures are better than unnecessarily complicated architectures. For feed forward networks this complexity has two dimensions: the numbers of neurons in hidden layers, and also the number of hidden layers. If you put too many neurons in hidden layers then the training data is effectively memorized and this will hurt performance on data samples not used in training. In practice, I "starve the network" by reducing the number of hidden neurons until the model has reduced accuracy on independent training data. Then I slightly increase the number of neurons in hidden layers.
-
-Using the feed forward classification classes in DL4J, backpropagation learning is used to train the entire network.
-
-In the previous editions of this book I provided examples of implementing back propagation from scratch. I decided to now just show you how to use a library. I recommend taking an online class in deep learning to get the experience of implementing models from scratch. Andrew Ng's online classes are especially good for this.
-
-The important thing to understand is that before deep learning algorithm optimizations, backpropagation did not work well for networks with many hidden layers because the back propagated errors get smaller as we process backwards towards the input neurons and this would cause network training to be very slow. This is referred to as vanishing gradients in the literature. With modern libraries like DL4J, TensorFlow, PyTorch, and mxnet this is not an issue.
+In general, simpler network architectures are better than unnecessarily complicated architectures. You can start with simple architectures and add layers, different layer types, and parallel models as-needed. For feed forward networks model complexity has two dimensions: the numbers of neurons in hidden layers, and also the number of hidden layers. If you put too many neurons in hidden layers then the training data is effectively memorized and this will hurt performance on data samples not used in training. In practice, I "starve the network" by reducing the number of hidden neurons until the model has reduced accuracy on independent test data. Then I slightly increase the number of neurons in hidden layers.
 
 ## Feed Forward Example
 
-The following screen show shows an IntelliJ project (you can use the free community or professional version for the examples in this book) for the example in this chapter:
+The following screen shot shows an IntelliJ project (you can use the free community or professional version for the examples in this book) for the example in this chapter:
 
 ![IntelliJ project view for the examples in this chapter](images/intellij_dl.png)
 
-The Deeplearning4j library can use user-written Java classes to import training and testing data into a form that the Deeplearning4j library can use. Some of the examples at [https://github.com/eclipse/deeplearning4j-examples](https://github.com/eclipse/deeplearning4j-examples) use custom data loaders but in this simple example we use built-in utilites for read spreadsheet data.
+The Deeplearning4j library can use user-written Java classes to import training and testing data into a form that the Deeplearning4j library can use. Some of the examples at [https://github.com/eclipse/deeplearning4j-examples](https://github.com/eclipse/deeplearning4j-examples) use custom data loaders but in this simple example we use built-in utilities for reading spreadsheet data (see lines 46-56 in the following listing).
 
-The following listing shows the definition of the class **ClassifierWisconsinData** that reads the University of Wisconsin cancer data set using the code in the last two listings, randomly selects part of it to use for training and for testing, creates a DBN, and tests it. The value of the variable **numHidden** set in line 3 refers to the number of neurons in each hidden layer.
+The class **ClassifierWisconsinData** reads the University of Wisconsin cancer training and testing data sets,, creates a model (lines 59-81), trains it (line 82) and tests it (lines 84-97). The value of the variable **numHidden** set in line 3 refers to the number of neurons in each hidden layer.
 
-The network is configured and constructed in lines TBD through TBD. If we increased the number of hidden units (something that you might do for more complex problems) then you would repeat lines TBD through TBD to add a new hidden layer, and you would change the layer indices (first argument) as appropriate in calls to the chained method **.layer()**.
+If we increased the number of hidden units in line 36 (something that you might do for more complex problems) then you would repeat lines 66-71 to add another new hidden layer, and you would change the layer indices (first argument) as appropriate in calls to the chained method **.layer()**.
 
 
 {lang="java",linenos=on}
@@ -148,7 +134,7 @@ public class ClassifierWisconsinData {
 
 It is very important to not use training data for testing because performance on recognizing training data should always be good assuming that you have enough memory capacity in a network (i.e., enough hidden units and enough neurons in each hidden layer).
 
-After training the model in lines TBD through TBD, we test the model (lines TBD through TBD) on the separate test data. The program output when I ran the model is (much output removed fr brevity):
+The program output is (much output removed for brevity):
 
 {line-numbers=off}
 ~~~~~~~~
@@ -183,19 +169,20 @@ Confusion matrix format: Actual (rowClass) predicted as (columnClass) N times
 
 ~~~~~~~~
 
-The F1 score is calculated as twice precision times recall, all divided by precision + recall. We would like F1 to be as close to 1.0 as possible and it is common to spend a fair amount of time experimenting with meta learning parameters to increase F1.
+The F1 score is calculated as twice precision times recall, divided by precision + recall. We would like F1 to be as close to 1.0 as possible and it is common to spend a fair amount of time experimenting with meta learning parameters to increase F1.
 
 It is also fairly common to try to learn good values of meta learning parameters also. We won't do this here but the process involves splitting the data into three disjoint sets: training, validation, and testing. The meta parameters are varied, training is performed, and using the validation data the best set of meta parameters is selected. Finally, we test the network as defined my meta parameters and learned weights for those meta parameters with the separate test data to see what the effective F1 score is.
 
 ## Configuring the example using Maven
 
-There is a Maven pom.xml configuration file that is configured for a recent version of DL4J (as I write this in July 2020). DL4J is fairly good at detecting if the Open BLAS library is available, if CUDA software support for any GPUs on your system are available, etc. If you try running the *Makefile* and get any errors, then check the [DL4J Quickstart and setup guide](https://deeplearning4j.konduit.ai/getting-started/quickstart) to see if there are any dependencies that you need on your system. The *Makefile* has a single target:
+There is a Maven pom.xml configuration file for this example that is configured for a recent version of DL4J (as I write this in July 2020). DL4J is fairly good at detecting if the Open BLAS library is available, if CUDA software support for any GPUs on your system are available, etc. If you try running the *Makefile* and get any errors, then check the [DL4J Quickstart and setup guide](https://deeplearning4j.konduit.ai/getting-started/quickstart) to see if there are any dependencies that you need on your system. The *Makefile* has a single target:
 
 {line-numbers=off}
 ~~~~~~~~
 deep_wisconsin:
   mvn install
-  mvn exec:java -Dexec.mainClass="com.markwatson.deeplearning.ClassifierWisconsinData"
+  mvn exec:java \
+    -Dexec.mainClass="com.markwatson.deeplearning.ClassifierWisconsinData"
 ~~~~~~~~
 
 ## Documentation Other Types of Deep Learning Layers
@@ -220,7 +207,7 @@ As you build more deep learning enabled applications, depending on what requirem
 
 ## Running the DL4J Example Programs and Modifying Them For Your Use
 
-To get started clone the DL4J examples repository if you have not already done so and fetch all of the required libraries:
+To get started clone the DL4J examples repository written by the authors of DL4J if you have not already done so and fetch all of the required libraries:
 
 {lang="bash",linenos=off}
 ~~~~~~~~
@@ -229,7 +216,7 @@ cd deeplearning4j-examples/dl4j-examples
 mvn install
 ~~~~~~~~
 
-In the next section we will modify [Alex Black's](https://github.com/AlexDBlack) character generating LSTM example. You can run his example using:
+In the next section we will modify [Alex Black's](https://github.com/AlexDBlack) character generating LSTM example for a different application (modeling and generating CSV data). Before moving on the the example in the next section you may want to run his example using:
 
 {lang="bash",linenos=off}
 ~~~~~~~~
@@ -237,17 +224,19 @@ cd deeplearning4j-examples/dl4j-examples
 mvn exec:java -Dexec.mainClass="org.deeplearning4j.examples.advanced.modelling.charmodelling.generatetext.GenerateTxtModel"
 ~~~~~~~~
 
-Alex Black's example downloads the complete works of Shakespeare from the web and trains a recurrent network LSTM model by passing an input window through the complete text. Each input character is one-hot encoded and the target output is the same one-hot encoded text data in the input window except the sample is shifter one character further in the text. The model learns to predict the next character in a sequence given a sample of input seed text.
+Alex Black's example downloads the complete works of Shakespeare from the web and trains a recurrent network LSTM model by passing an input window through the complete text. Each input character is one-hot encoded and the target output is the same one-hot encoded text data in the input window except the sample is shifted one character further in the input text. The model learns to predict the next character in a sequence given a sample of input seed text.
 
-Let's review one-hot encoding. We need to convert each character in the training data to a one-hot encoding which is a vector of all 0.0 values except for a single value of 1.0. If there are, for example,  256 unique characters in the training data then the vector will have 256 elements. If the index of character "m" (for example) is 77, then we set element at index 77 to one, all other elements being zero. We won't look at the implementation of one-hot encoding here because DL4J provides APIs for this. I cover implementation in another book in the [chapter on Deep Learning for the Hy Language](https://leanpub.com/hy-lisp-python/read#leanpub-auto-deep-learning) that you can read online.
+Let's review one-hot encoding. We need to convert each character in the training data to a one-hot encoding which is a vector of all 0.0 values except for a single value of 1.0. If there are, for example,  256 unique characters in the training data the vector will have 256+1 elements because we add an "unknown character" that represents characters the model may see in the future that were not in the training data. If the index of character "m" (for example) is 77, then we set element at index 77 to one, all other elements being zero. We won't look at the implementation of one-hot encoding here because DL4J provides APIs for this. I cover one-hot-encoding implementation in another book in the chapter on [Deep Learning for the Hy Language](https://leanpub.com/hy-lisp-python/read#leanpub-auto-deep-learning) that you can read online.
 
 Here we will be using one-hot encoding for characters but it also works well for encoding words in a vocabulary. Typically training data may have about 10,000 unique words so the one-hot encoding vector would have 10,001 elements. We add a special word position for "unknown word." For some applications we also use word-embeddings using a smaller vector, 500 elements being a reasonable size. We won't be using word-embeddings here, or one-hot word embedding but I want you to know what these terms mean.
 
 By processing sufficient sample text, an LSTM network can learn a language that models input text. If you train on samples from Shakespeare then the model generates text that looks like Shakespeare wrote it. This also works for any author with a specific writing style.
 
-For a customer, I used an LSTM model trained on JSON log data from AWS. They wanted to have a large amount of test data that did not contain any sensitive information. The LSTM model worked fairly well, the major restriction being that I checked each generated JSON datum for having valid syntax and followed the Schema of the original data, discarding samples that failed these tests.
+For a customer, I used an LSTM model trained on JSON log data from AWS. They wanted to have a large amount of test data that did not contain any sensitive information so we generated "fake data" in the correct schema. The LSTM model worked fairly well, the major restriction being that I checked each generated JSON datum for having valid syntax and followed the Schema of the original data, discarding samples that failed these tests.
 
-The examples provided with DL4J cover most of the deep learning use cases you may require for your work. If you load the entire DL4J examples repository in a Java IDE and use global search then you should be able to find appropriate CNN, Classification, Regression, etc. examples similar to your current use case that you can modify. I wanted to try using an LSTM character generation model to generate CSV style spreadsheet data and in the next section is a small example where I modified Alex Black's character generating LSTM example.
+The examples provided with DL4J cover most of the deep learning use cases you may require for your work. If you load the entire DL4J examples repository in a Java IDE and use global search then you should be able to find appropriate CNN, Classification, Regression, etc. examples similar to your current use case that you can modify.
+
+As an experiment, I wanted to try using an LSTM character generation model to generate CSV style spreadsheet data and you can see the implementation of this idea in next section where I modified Alex Black's character generating LSTM example.
 
 ## Modifying Alex Black's character generating LSTM example to Model and Generate CSV Spreadsheet data
 
@@ -255,9 +244,12 @@ Here are the major changes the I made to the **GenerateTxtModel** example, start
 
 {lang="java",linenos=off}
 ~~~~~~~~
-  static CharacterIterator getWisconsinDataIterator(int miniBatchSize, int sequenceLength) throws IOException {
+  static CharacterIterator getWisconsinDataIterator(int miniBatchSize,
+                           int sequenceLength)
+                 throws IOException {
     String fileLocation = "data/training.csv";
-    char[] validCharacters = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ',', '\n'};
+    char[] validCharacters = {'0', '1', '2', '3', '4', '5', '6', '7', '8',
+                              '9', ',', '\n'};
     System.out.println("++ valid characters in training data: ");
     for (char ch : validCharacters) System.out.print(" " + ch);
     System.out.println();
@@ -270,14 +262,14 @@ Changes for configuring the model:
 
 {lang="java",linenos=off}
 ~~~~~~~~
-    int lstmLayerSize = 400;	 //Number of units in each LSTM layer
-    int miniBatchSize = 16;	//Size of mini batch to use when  training
-    int exampleLength = 250;	 //Length of each training example sequence to use. This could certainly be increased
+    int lstmLayerSize = 400; //Number of units in each LSTM layer
+    int miniBatchSize = 16; //Size of mini batch to use when  training
+    int exampleLength = 250;; //Length of each training example sequence to use.
     int tbpttLength = 40; //Length for truncated backpropagation through time
-    int numEpochs = 100;		//Total number of training epochs
-    int generateSamplesEveryNMinibatches = 5;  //How frequently to generate samples
-    int nSamplesToGenerate = 20;		//Number of samples to generate after each training epoch
-    int nCharactersToSample = 300;	 //Length of each sample to generate
+    int numEpochs = 100; //Total number of training epochs
+    int generateSamplesEveryNMinibatches = 5; //How frequently to generate samples
+    int nSamplesToGenerate = 20; //Number of samples to generate after each training epoch
+    int nCharactersToSample = 300; //Length of each sample to generate
 ~~~~~~~~
 
 I made a third change to Alex Black's example: I discard generated samples that don't match the schema of the original data in the method **sampleCharactersFromNetwork**:
@@ -341,17 +333,22 @@ Final model after training for twenty minutes:
 4,1,1,1,3,1,1,10,2,1
 ~~~~~~~~
 
+This example should convince you, dear reader, that the language modeling capabilities of LSTM models is surprising and effective. 
+
+You can modify this example to try modeling other types of test. You might try modeling a large sample of Python or Java source code, or text in any language you might know like German, Farsi, Hebrew, or Spanish.
+
+There are interesting papers on using LSTM models to analyze design specifications that feeds into convolutional layers than generate images for design documents. Is this process perfect? No, but still impressive and provides some intuition into what may be possible in the future.
 
 ## Roadmap for the DL4J Model Zoo
 
-DL4J supports a Model Zoo containing the following pretrained models ([see documentation](https://deeplearning4j.konduit.ai/model-zoo/zoo-models)):
+DL4J supports a Model Zoo containing the following pre-trained models your own projects ([see documentation](https://deeplearning4j.konduit.ai/model-zoo/zoo-models)):
 
 - AlexNet - was a breakthrough for image recognition, AlexNet is a convolutional neural network designed by Alex Krizhevsky (with Ilya Sutskever and Geoffrey Hinton). AlexNet used Relu instead of arc-tangent or Sigmoid activation.
 - Darknet19 - is a type of realtime YOLO model.
 - FaceNetNN4Small2 - is a small version of the FaceNet embeddings for face recognition.
 - InceptionResNetV1 - Inception models use many convolutional layers. 
-- LeNet -
-- NASNet -
+- LeNet - of historical interest, a convolutional model design by Yann LeCun and his colleagues (1998).
+- NASNet - like Inception and Xception models, with claimed superior results.
 - ResNet50 - residual neural network that uses "skip connections" that connect neurons in non-adjacent layers which helps reduce the vanishing gradient problem for models with many layers. Skipped layers are connected later in the training process (example class **AlphaGoZeroTrainer**).
 - SimpleCNN - simple architecture using alternating pooling and convolutional layers.
 - SqueezeNet - architecture for computer vision that experiments with smaller neural networks with fewer parameters.
@@ -378,7 +375,7 @@ This is a good example to get started with because it is short (about 90 lines o
 
 ## Deep Learning Wrapup
 
-I first used complex neural network topologies in the late 1980s for phoneme (speech) recognition, specifically using time delay neural networks and I gave a talk about it at [IEEE First Annual International Conference on Neural Networks San Diego, California June 21-24, 1987](http://ieeexplore.ieee.org/xpl/articleDetails.jsp?reload=true&arnumber=4307059). In the following year I wrote the Backpropagation neural network code that my company used in a bomb detector that we built for the FAA. Back then, neural networks were not really considered to be a great technology for this application but in the present time Google, Microsoft, and other companies are using deep (many layered) neural networks for speech and image recognition. Exciting work is also being done in the field of natural language processing. I just provided a small example in this chapter that you can experiment with easily. I wanted to introduce you to [Deeplearning4j](http://deeplearning4j.org/) because I think it is probably the easiest way for Java developers to get started working with many layered neural networks and I refer you to [the project documentation](http://deeplearning4j.org/documentation.html).
+I first used complex neural network topologies in the late 1980s for phoneme (speech) recognition, specifically using time delay neural networks and I gave a talk about it at [IEEE First Annual International Conference on Neural Networks San Diego, California June 21-24, 1987](http://ieeexplore.ieee.org/xpl/articleDetails.jsp?reload=true&arnumber=4307059). In the following year I wrote the Backpropagation neural network code that my company used in a bomb detector that we built for the FAA. Back then, neural networks were not really considered to be a great technology for this application but in the present time Google, Microsoft, and other companies are using deep learning for a wide range of practical problems. Exciting work is also being done in the field of natural language processing. I just provided a small example in this chapter that you can experiment with easily. I wanted to introduce you to [Deeplearning4j](http://deeplearning4j.org/) because I think it is probably the easiest way for Java developers to get started working with many layered neural networks and I refer you to [the project documentation](http://deeplearning4j.org/documentation.html).
 
 I managed a deep learning team at Capital One 2018-2019 and while there much of my work involved GANs and LSTM deep models (and many of my 55 US patents were at least partially inspired by this work). I refer you to a good GAN DL4J example on the web [https://github.com/wmeddie/dl4j-gans](https://github.com/wmeddie/dl4j-gans) and a tutorial on LSTM applications from the developers of DL4J [https://deeplearning4j.konduit.ai/getting-started/tutorials/clinical-time-series-lstm](https://deeplearning4j.konduit.ai/getting-started/tutorials/clinical-time-series-lstm).
 
