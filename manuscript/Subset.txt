@@ -1,2 +1,3 @@
-genetic_algorithms.md
+neural_networks.md
+deeplearning.md
 

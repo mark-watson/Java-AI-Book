@@ -6,9 +6,8 @@ Here I write an implementation for a backpropagation neural network from scratch
 
 Although most of this book is intended to provide practical advice (with some theoretical background) on using AI programming techniques, I cannot imagine being interested in practical AI programming without also thinking about the philosophy and mechanics of how the human mind works. I hope that my readers share this interest.
 
-The physical structure and dynamics of the human brain is inherently parallel and distributed [*Parallel Distributed Processing: Explorations in the
-Microstructure of Cognition*, Rumelhart, McClelland, etc. 1986]. We are experts at doing many things at once. For example, I simultaneously can walk, talk with my wife, keep our puppy out of cactus, and enjoy the scenery behind our house in Sedona, Arizona. AI software systems struggle to perform even narrowly defined tasks well, so how is it that we are able to simultaneously perform several complex tasks? There is no clear or certain answer to this question at this time, but certainly the distributed neural architecture of our brains is a requirement for our abilities. Classical artificial neural network simulations (like the ones we study in this chapter) do not address “multi-tasking” (other techniques that do address this issue are multi-agent systems with some form or mediation between
-agents) but deep learning models that can have multiple inputs, different outputs, and complex internal structure. While deep learning models, trained jointly on different types of input data break through the limitations of simple backpropagation models, the simple backpropagation models we look at now are very practical for a range of problems.
+The physical structure and dynamics of the human brain are inherently parallel and distributed [*Parallel Distributed Processing: Explorations in the
+Microstructure of Cognition*, Rumelhart, McClelland, etc. 1986]. We are experts at doing many things at once. For example, I simultaneously can walk, talk with my wife, keep our puppy out of cactus, and enjoy the scenery behind our house in Sedona, Arizona. AI software systems struggle to perform even narrowly defined tasks well, so how is it that we are able to simultaneously perform several complex tasks? There is no clear or certain answer to this question at this time, but certainly the distributed neural architecture of our brains is a requirement for our abilities. Classical artificial neural network simulations (like the ones we study in this chapter) do not address “multi-tasking” (other techniques that do address this issue are multi-agent systems with some form or mediation between agents). Deep learning models can have multiple types of inputs, different types of outputs, and complex internal structure - basically connected models that are trained jointly. While deep learning models, trained jointly on different types of input data break through the limitations of simple backpropagation models, the simple backpropagation models we look at now are still very practical today for a range of problems.
 
 Also interesting is the distinction between instinctual behavior and learned behavior. Our knowledge of GAs from [Chapter on Genetic Algorithms](#ga) provides a clue to how the brains of especially lower order animals can be hardwired to provide efficient instinctual behavior under the pressures of evolutionary forces (i.e., likely survival of more fit individuals). This works by using genetic algorithms to design specific neural wiring. I have used genetic algorithms to evolve recurrent neural networks for control applications. This work only had partial success but did convince me that biological genetic pressure is probably adequate to “pre-wire” some forms of behavior in natural (biological) neural networks.
 
@@ -20,7 +19,9 @@ We will start this chapter by discussing human neuron cells and which features o
 {#nn-neuron}
 ![Neuron](images/nn_neuron.png)
 
-The activation absorbed through dendrites is summed together, but the firing of a neuron only occurs when a threshold is passed. In neural network simulations there are several common ways to model neurons and connections between neurons that we will see n both this and the next chapter.
+The activation absorbed through dendrites is summed together, but the firing of a neuron only occurs when a threshold is passed. In neural network simulations there are several common ways to model neurons and connections between neurons that we will see in both this and the next chapter.
+
+## Road Map for the Neural Network Example Code
 
 The following UML class diagram will give you an overview all of the neural network library classes in this chapter before we dive into the code:
 
@@ -33,11 +34,10 @@ There are three parts to the code base: main backpropagation library, GUI exampl
 
 
 
-## Back Propagation Neural Networks  {#backprop}
+## Backpropagation Neural Networks  {#backprop}
 
 
-The next neural network model that we will use is called back propagation, also known as back-prop or delta rule learning. In this model, neurons are organized into data structures that we call layers. The [Figure showing Backpropagation network with No Hidden Layer](#nn-backprop-no-hidden) shows a simple neural network with two
-layers; this network is shown in two different views: just the neurons organized as two one-dimensional arrays, and as two one-dimensional arrays with the connections between the neurons. In our model, there is a connection between two neurons that is characterized by a single floating-point number that we will call the connection’s weight. A
+The neural network model that we use is called backpropagation, also known as back-prop or delta rule learning. In this model, neurons are organized into data structures that we call layers. The figure [Backpropagation network with No Hidden Layer](#nn-backprop-no-hidden) shows a simple neural network with two layers; this network is shown in two different views: just the neurons organized as two one-dimensional arrays, and as two one-dimensional arrays with the connections between the neurons. In our model, there is a connection between two neurons that is characterized by a single floating-point number that we will call the connection’s weight. A
 weight **W_{i,j}** connects input neuron **i** to output neuron **j**. In the back propagation model, we always assume that a neuron is connected to every neuron in the previous layer.
 
 A key feature of back-prop neural networks is that they can be efficiently trained. Training is performed by calculating sets of weights for connecting each layer. As we will see, we will train networks by applying input values to the input layer, allowing these values to propagate through the network using the current weight values, and calculating the errors between desired output values and the output values from propagation of input values through the network.
@@ -48,13 +48,13 @@ One limitation of back propagation neural networks is that they are limited to t
 
 Initially, weights are set to small random values. You will get a general idea for how this is done in this section and then we will look at Java implementation code in the [Section for a Java Class Library for Back Propagation](#nn-bp-lib).
 
-In the [Figure showing Backpropagation network with No Hidden Layer](#nn-backprop-no-hidden), we only have two neuron layers, one for the input neurons and one for the output neurons. Networks with no hidden layers are not usually useful - I am using the network in  the [Figure showing Backpropagation network with No Hidden Layer](#nn-backprop-no-hidden) just to demonstrate layer to layer connections through a weights array.
+In the figure showing a [Backpropagation network with No Hidden Layer](#nn-backprop-no-hidden), we only have two neuron layers, one for the input neurons and one for the output neurons. Networks with no hidden layers are not usually useful - I am using the network in  the figure showing a [Backpropagation network with No Hidden Layer](#nn-backprop-no-hidden) just to demonstrate layer to layer connections through a weights array.
 
 {#nn-backprop-no-hidden}
 ![Example Backpropagation network with No Hidden Layer](images/nn_backprop2d.png)
 
 
-To calculate the activation of the first output neuron **O1**, we evaluate the sum of the products of the input neurons times the appropriate weight values; this sum is input to a **Sigmoid** activation function (see the [Figure showing the Sigmoid Function](#nn-sigmoid)) and the result is the new activation value for **O1**. Here is the formula for the simple network in the [Figure showing Backpropagation network with No Hidden Layer](#nn-backprop-no-hidden):
+To calculate the activation of the first output neuron **O1**, we evaluate the sum of the products of the input neurons times the appropriate weight values; this sum is input to a **Sigmoid** activation function (see the figure showing the [Sigmoid Function](#nn-sigmoid)) and the result is the new activation value for **O1**. Here is the formula for the simple network in the figure showing a [Backpropagation network with No Hidden Layer](#nn-backprop-no-hidden):
 
 {lang="java",linenos=off}
 ~~~~~~~~
@@ -62,19 +62,18 @@ O1 = Sigmoid (I1 * W[1,1] + I2 * W[2,1])
 O2 = Sigmoid (I2 * W[1,2] + I2 * W[2,2])
 ~~~~~~~~
 
-The [Figure showing the Sigmoid Function](#nn-sigmoid) shows a plot of the **Sigmoid** function and the derivative of the sigmoid function (**SigmoidP**). We will use the derivative of the **Sigmoid** function when training a neural network (with at least one hidden neuron layer) with classified data examples.
+The figure showing the [Sigmoid Function](#nn-sigmoid) shows a plot of the **Sigmoid** function and the derivative of the sigmoid function (**SigmoidP**). We will use the derivative of the **Sigmoid** function when training a neural network (with at least one hidden neuron layer) with classified data examples.
 
 {#nn-sigmoid}
 ![Sigmoid Function and Derivative of Sigmoid Function (SigmoidP)](images/nn_sigmoid.png)
 
 
-A neural network like the one seen in the [Figure showing Backpropagation network with No Hidden Layer](#nn-backprop-no-hidden) is trained by using a set of training data. For back propagation networks, training data consists of matched sets of input with matching desired output values. We want to train a network to not only produce the same outputs for training data inputs as appear in the training data, but also to generalize its pattern matching ability based on the training data to be able to match test patterns that are similar to training input patterns. A key here is to balance the size of the network against how much information it must hold. A common mistake when using back-prop networks is to use too large a network: a network that contains too many neurons and connections will simply memorize the training examples, including any noise in the training data. However, if we use a smaller number of neurons with a very large number of training data examples, then we force the network to generalize, ignoring noise in the training
+A neural network like the one seen in the figure showing a [Backpropagation network with No Hidden Layer](#nn-backprop-no-hidden) is trained by using a set of training data. For back propagation networks, training data consists of matched sets of input with matching desired output values. We want to train a network to not only produce the same outputs for training data inputs as appear in the training data, but also to generalize its pattern matching ability based on the training data to be able to match test patterns that are similar to training input patterns. A key here is to balance the size of the network against how much information it must hold. A common mistake when using back-prop networks is to use too large a network: a network that contains too many neurons and connections will simply memorize the training examples, including any noise in the training data. However, if we use a smaller number of neurons with a very large number of training data examples, then we force the network to generalize, ignoring noise in the training
 data and learning to recognize important traits in input data while ignoring statistical noise.
 
-How do we train a back propagation neural network given that we have a good training data set? The algorithm is quite easy; we will now walk through the simple case of a two-layer network like the one in the [Figure showing Backpropagation network with No Hidden Layer](#nn-backprop-no-hidden), and later in the [Section for a Java Class Library for Back Propagation](#nn-bp-lib) we will
-review the algorithm in more detail when we have either one or two hidden neuron layers between the input and output layers.
+How do we train a back propagation neural network given that we have a good training data set? The algorithm is quite easy; we will now walk through the simple case of a two-layer network like the one in the figure showing a [Backpropagation network with No Hidden Layer](#nn-backprop-no-hidden), and later in the section for a [Java Class Library for Back Propagation](#nn-bp-lib) we will review the algorithm in more detail when we have either one or two hidden neuron layers between the input and output layers.
 
-In order to train the network in the [Figure showing Backpropagation network with No Hidden Layer](#nn-backprop-no-hidden), we repeat the following learning cycle several times:
+In order to train the network in the figure for a [Backpropagation network with No Hidden Layer](#nn-backprop-no-hidden), we repeat the following learning cycle several times:
 
 1.  Zero out temporary arrays for holding the error at each neuron. The
     error, starting at the output layer, is the difference between the
@@ -88,8 +87,7 @@ In order to train the network in the [Figure showing Backpropagation network wit
     is a tunable parameter) and **output\_error\_j** was calculated in step
     1, and **I\_i** is the activation of input neuron at index **i**.
 
-This process is continued to either a maximum number of learning cycles or until the calculated output errors get very small. We will see later that the algorithm is similar but slightly more complicated, when we have hidden neuron layers; the difference is that we will “back
-propagate” output errors to the hidden layers in order to estimate errors for hidden neurons. We will cover more on this later. This type of neural network is too simple to solve very many interesting problems, and in practical applications we almost always use either one additional hidden neuron layer or two additional hidden neuron layers. The [Figure showing mappings supported by zero hidden layer, one hidden layer, and two hidden hidden layer networks](#nn-mapping) shows the types of problems that can be solved networks with different numbers of hidden layers.
+This process is continued to either a maximum number of learning cycles or until the calculated output errors get very small. We will see later that the algorithm is similar but slightly more complicated, when we have hidden neuron layers; the difference is that we will “back propagate” output errors to the hidden layers in order to estimate errors for hidden neurons. We will cover more on this later. This type of neural network is too simple to solve very many interesting problems, and in practical applications we almost always use either one additional hidden neuron layer or two additional hidden neuron layers. The figure showing [mappings supported by zero hidden layer, one hidden layer, and two hidden hidden layer networks](#nn-mapping) shows the types of problems that can be solved networks with different numbers of hidden layers.
 
 {#nn-mapping}
 ![Mappings supported by 0, 1, and 2 hidden layer neural networks](images/nn_maping.png)
@@ -98,13 +96,10 @@ propagate” output errors to the hidden layers in order to estimate errors for 
 ## A Java Class Library for Back Propagation {#nn-bp-lib}
 
 
-The back propagation neural network library used in this chapter was written to be easily understood and is useful for many problems. However, one thing that is not in the implementation in this section (it is added in the [Section on using Momentum to speed up training](#nn-bprop-momentum)) is something usually called “momentum” to speed up the training process at a cost of doubling the storage requirements for weights. Adding a “momentum” term not only makes learning faster but also increases the chances of successfully learning more difficult problems.
+The back propagation neural network library used in this chapter was written to be easily understood and is useful for many problems. However, one thing that is not in the implementation in this section (it is added in the section [Using Momentum to speed up training](#nn-bprop-momentum)) is something usually called “momentum” to speed up the training process at a cost of doubling the storage requirements for weights. Adding a “momentum” term not only makes learning faster but also increases the chances of successfully learning more difficult problems.
 
 We will concentrate in this section on implementing a back-prop learning algorithm that works for both one and two hidden layer networks. As we saw in the [Figure
-showing mappings supported by zero hidden layer, one hidden layer, and two hidden hidden layer networks](#nn-mapping) a network with two hidden layers is
-capable of arbitrary mappings of input to output values so it used to be common opinion that there was no
-theoretical reason for using networks with three hidden
-layers. With recent projects using Deep Learning, as I mentioned at the beginning of this chapter, neural networks with many hidden layers are now common practice.
+showing mappings supported by zero hidden layer, one hidden layer, and two hidden layer networks](#nn-mapping) a network with two hidden layers is capable of arbitrary mappings of input to output values so it used to be a common (and incorrect) opinion that there was no theoretical reason for using networks with three hidden layers. With recent projects using Deep Learning, as I mentioned at the beginning of this chapter, neural networks with many hidden layers are now common practice.
 
 {#example-1-hidden-layer-1}
 ![Example showing 1 hidden layer](images/nn_1d_example_1.png)
@@ -118,10 +113,10 @@ The relevant files for the back propagation examples are:
 -   Test\_1H.java - a text-based test program for the class Neural\_1H
 -   GUITest\_1H.java - a GUI-based test program for the class Neural\_1H
 -   Neural\_2H.java - contains a class for simulating a neural network with two hidden neuron layers
--   Neural\_2H\_momentum.java - contains a class for simulating a neural network with two hidden neuron layers and implements momentum learning (implemented in the [Section on using Momentum to speed up training](#nn-bprop-momentum)
+-   Neural\_2H\_momentum.java - contains a class for simulating a neural network with two hidden neuron layers and implements momentum learning (implemented in the section [Using Momentum to speed up training](#nn-bprop-momentum)
 -   Test\_2H.java - a text-based test program for the class Neural\_2H
 -   GUITest\_2H.java - a GUI-based test program for the class Neural\_2H
--   GUITest\_2H\_momentum.java - a GUI-based test program for the class Neural\_2H\_momentum that uses momentum learning (implemented in the [Section on using Momentum to speed up training](#nn-bprop-momentum)
+-   GUITest\_2H\_momentum.java - a GUI-based test program for the class Neural\_2H\_momentum that uses momentum learning (implemented in the section [Using Momentum to speed up training](#nn-bprop-momentum)
 -   Plot1DPanel - a Java JFC graphics panel for the values of a one-dimensional array of floating point values
 -   Plot2DPanel - a Java JFC graphics panel for the values of a two-dimensional array of floating point values
 
@@ -237,8 +232,7 @@ We need to propagate the training example input values through the hidden layers
      forwardPass(); 
 ~~~~~~~~
 
-After propagating the input values to the output layer, we need to calculate the output error for each output neuron. This error is the difference between the desired output and the calculated output; this difference is multiplied by the value of the calculated output neuron value that is first modified by the **Sigmoid** function that we saw in the [Figure showing the Sigmoid Function](#nn-sigmoid).
-The **Sigmoid** function is to clamp the calculated output value to a reasonable range.
+After propagating the input values to the output layer, we need to calculate the output error for each output neuron. This error is the difference between the desired output and the calculated output; this difference is multiplied by the value of the calculated output neuron value that is first modified by the **Sigmoid** function that we saw in the figure showing the [Sigmoid Function](#nn-sigmoid). The **Sigmoid** function is to clamp the calculated output value to a reasonable range.
 
 {lang="java",linenos=off}
 ~~~~~~~~
@@ -327,11 +321,11 @@ You can look at the implementation of the Swing GUI test class **GUTest\_2H** to
 
 ## Adding Momentum to Speed Up Back-Prop Training  {#nn-bprop-momentum}
 
-We did not use a momentum term in the Java code in the [Section for a Java Class Library for Back Propagation](#nn-bp-lib). For difficult to train problems, adding a momentum term can drastically reduce the training time at a cost of doubling the weight storage requirements. To implement momentum, we remember how much each weight was changed in the previous learning cycle and make the
+We did not use a momentum term in the Java code in the section for a [Java Class Library for Back Propagation](#nn-bp-lib). For difficult to train problems, adding a momentum term can drastically reduce the training time at a cost of doubling the weight storage requirements. To implement momentum, we remember how much each weight was changed in the previous learning cycle and make the
 weight change larger if the current change in “direction” is the same as the last learning cycle. For example, if the change to weight **W\_{i,j}** had a large positive value in the last learning cycle and the calculated
 weight change for **W\_{i,j}** is also a large positive value in the current learning cycle, then make the current weight change even larger. Adding a “momentum” term not only makes learning faster but also increases the chances of successfully learning more difficult problems.
 
-I modified two of the classes from the [Section for a Java Class Library for Back Propagation](#nn-bp-lib) to use
+I modified two of the classes from the section for a [Java Class Library for Back Propagation](#nn-bp-lib) to use
 momentum:
 
 -   Neural\_2H\_momentum.java - training and recall for two hidden layer
@@ -369,8 +363,8 @@ The following code snippet shows the additions required to use momentum:
      W3_last_delta[h][o] = TRAINING_RATE * output_errors[o] * hidden2[h]; 
 ~~~~~~~~
 
-I mentioned in the last section that there are two techniques for training back-prop networks: updating the weights after processing each training example or waiting to update weights until all training examples are processed. I always use the first method when I don’t use momentum. In many cases it is best to use the second method when using momentum.
+I mentioned in the last section that there are at least two techniques for training back-prop networks: updating the weights after processing each training example or waiting to update weights until all training examples are processed. I always use the first method when I don’t use momentum. In many cases it is best to use the second method when using momentum. In the next chapter on Deep Learning we use a third method for using training data: we select randomly selected small batches of training examples for each weight update cycle.
 
 ## Wrap-up for Neural Networks
 
-I hope that the material in this chapter has given you some low-level understanding of the implementation of backpropagation neural networks. We will use a popular deep learning library in the next chapter that in practice you should prefer to the pedantic code here. That said, I used very similar code in this chapter coded in C++ for several practical engineering problems in the 1980s and early 1990s including the prediction code for a bomb detector my company made for the FAA.
+I hope that the material in this chapter has given you some low-level understanding of the implementation of backpropagation neural networks. We will use a popular deep learning library in the next chapter that in practice you should prefer to the pedantic code here. That said, I used very similar C++ code to that developed here for several practical engineering problems in the 1980s and early 1990s including the prediction code for a bomb detector my company made for the FAA.
