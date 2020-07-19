@@ -1,12 +1,12 @@
 # Reasoning {#reasoning}
 
-While the topic of reasoning may not be as immediately useful for your work as, for example, deep learning, reasoning is a broad and sometimes useful topic. You might want to just quickly review this chapter and revisit it when and if you need to use any reasoning system. That said the introductory discussion of logic and reasoning is good background information to know.
+While the topic of reasoning may not be as immediately useful for your work as for example, deep learning, reasoning is a broad and sometimes useful topic. You might want to just quickly review this chapter and revisit it when and if you need to use any reasoning system. That said, the introductory discussion of logic and reasoning is good background information to know.
 
 In this chapter we will concentrate on the use of the PowerLoom descriptive logic reasoning system. PowerLoom is available with a Java runtime and Java API - this is what I will use for the examples in this chapter. PowerLoom can also be used with other JVM languages like JRuby and Clojure. PowerLoom is also available in Common Lisp and C++ versions.
 
-The PowerLoom system has not been an active project since 2010. As I update this chapter in July 2020, I still consider PowerLoom to be a useful tool for learning about logic based systems and I have attempted to package PowerLoom in a way that will be easy for you to run it interactively and I provide a few simple Java examples in the package **com.markwatson.powerloom** that demonstrate how to embed PowerLoom in your own Java programs. The complete Java source for PowerLoom is in the directory **src/main/java/edi/isi/powerloom**.
+The PowerLoom system has not been an active project since 2010. As I update this chapter in July 2020, I still consider PowerLoom to be a useful tool for learning about logic based systems and I have attempted to package PowerLoom in a way that will be easy for you to run interactively and I provide a few simple Java examples in the package **com.markwatson.powerloom** that demonstrate how to embed PowerLoom in your own Java programs. The complete Java source for PowerLoom is in the directory **src/main/java/edi/isi/powerloom**.
 
-Additionally, we will look at different kinds of reasoning systems (the OWL language) in [Chapter on Semantic Web](#semantic-web) on the Semantic Web and use this reasoning in the later chapters [Automatically Generating Data for Knowledge Graphs](#kgcreator) and [Knowledge Graph Navigator](#kgn).
+Additionally, we will look at different kinds of reasoning systems (the OWL language) in the [Chapter on Semantic Web](#semantic-web) on the Semantic Web and use this reasoning in the later chapters [Automatically Generating Data for Knowledge Graphs](#kgcreator) and [Knowledge Graph Navigator](#kgn).
 
 While the material in this chapter will get you started with development using a powerful reasoning system and embedding this reasoning system in Java applications, you will likely want to dig deeper and I suggest sources for further study at the end of this chapter.
 
@@ -26,7 +26,7 @@ First Order Logic was invented by the philosophers Frege and Peirce and is the m
 
 -   We use PowerLoom in this chapter. PowerLoom supports a combination of limited first order predicate logic and features of description logic. PowerLoom is able to classify objects, use rules to infer facts from existing facts and to perform subsumption (determining class membership of instances).
 
--   We will use RDF Schema (RDFS) reasoning in
+-   We will use RDF Schema (RDFS) reasoning in the
     [Chapter on Semantic Web](#semantic-web). RDFS supports more limited reasoning than descriptive logic reasoners like PowerLoom and OWL Description Logic
     reasoners.
 
@@ -81,7 +81,7 @@ The PowerLoom distribution contains two very detailed examples for representing 
 We will start by defining some terms used in PowerLoom:
 
 -   concept - the Java equivalent would be an instance of a class.
--   relation - specifies a link between two concepts
+-   relation - specifies a link between two concepts.
 -   function - functional mapping of one concept to another.
 -   rule - allows new concepts to be deduced without explicitly asserting them.
 
@@ -97,7 +97,7 @@ A relation can specify the types of concepts that a relation connects. An exampl
     (defrelation parent-of ((?p1 parent) (?p2 person)))
 ~~~~~~~~
 
-Here I have defined two concepts: person and parent. Note that we have a hierarchy of concept types here: the parent is a more specific concept type than the person concept. All instances that are parents are also of type person. The relation parent-of links a parent concept to a person
+Here I have defined two concepts: person and parent. Note that we have a hierarchy of concept types: the parent is a more specific concept type than the person concept. All instances that are parents are also of type person. The relation parent-of links a parent concept to a person
 concept.
 
 We will learn more about basic PowerLoom functionality in the next two sections as we use PowerLoom in an interactive session and when we embed PowerLoom in a Java example program.
@@ -118,7 +118,7 @@ mvn exec:java -Dexec.mainClass="edu.isi.powerloom.PowerLoom"
 
 This starts the PowerLoom standalone system and prints a prompt that includes the name of the current module. The default module name is “PL-USER”. In the first example, when I enter the person concept at the interactive prompt then PowerLoom prints the result of the expression that just entered. You can enter **(demo)** to have access to the demo scripts from the PowerLoom distribution. These demo files are in the subdirectory **sources/logic/demos**.
 
-Please note that depending on what terminal you are running in, the prompt “PL-USER” does not occur until after entering a return or enter key.
+Please note that depending on which terminal you are running in, the prompt “PL-USER” does not occur until after entering a return or enter key.
 
 {linenos=off}
 ~~~~~~~~
@@ -168,7 +168,7 @@ The subdirectory **test\_data** contains the demo file **business.plm** written 
     PL-USER |= (load "test_data/business.plm")
 ~~~~~~~~
 
-This is a good example because it demonstrates most of the available functionality of PowerLoom in a short 200 lines. When you are done reading this chapter, please take a few minutes to read through this example file since I do not list all of it it here. There are a few things to notice in this example. Here we see a rule used to make the relation “contains” transitive:
+This is a good example because it demonstrates most of the available functionality of PowerLoom in a short 200 lines. When you are finished reading this chapter, please take a few minutes to read through this example file since I do not list all of it it here. There are a few things to notice in this example. Here we see a rule used to make the relation “contains” transitive:
 
 {linenos=off}
 ~~~~~~~~
@@ -259,7 +259,7 @@ These packages can be seen in this screen shot:
 ![Powerloom example in IntelliJ IDE](images/powerloom-ide1.png)
 
 
-If you download the PowerLoom manual (a PDF file) from the PowerLoom web site, you will have the complete Java API documentation for the Java version of PowerLoom (there are also C++ and Common Lisp versions with separate documentation). I have found that I usually use just a small subset of the Java PowerLoom APIs and I have “wrapped” this subset in a wrapper class in the file PowerLoomUtils.java. We will use my wrapper class for the examples in the rest of this chapter.
+If you download the PowerLoom manual (a PDF file) from the PowerLoom web site, you will have the complete Java API documentation for the Java version of PowerLoom (there are also C++ and Common Lisp versions with separate documentation). I have found that I generally use just a small subset of the Java PowerLoom APIs and I have “wrapped” this subset in a wrapper class in the file PowerLoomUtils.java. We will use my wrapper class for the examples in the rest of this chapter.
 
 The following UML class diagram will give you an overview before we dive into the code:
 
@@ -275,7 +275,7 @@ My wrapper class has the follow public methods:
 -   createRelation(String relation, int arity) - create a new relation with a specified arity (number of “arguments”). For example you could create a relation “owns” with arity 2 and then assert “(owns Elaine ’Moms Grocery’)” - I usually do not use this API since I prefer to place relations (with rules) in a source code file ending in the extension \*.plm.
 -   doQuery(String query) - returns a list of results from a query. Each result in the list is itself a list.
 
-You will always want to work in an interactive PowerLoom console for writing and debugging PowerLoom models. I copied the model in business.plm from the PowerLoom distribution to the subdirectory test\_data. Here we use it here in an embedded Java example in the file **PowerLoomExample_1.java**:
+You will always want to work in an interactive PowerLoom console for writing and debugging PowerLoom models. I copied the model in business.plm from the PowerLoom distribution to the subdirectory test\_data. Here we use it in an embedded Java example in the file **PowerLoomExample_1.java**:
 
 {lang="java",linenos=off}
 ~~~~~~~~
@@ -340,8 +340,8 @@ Knowledge Representation and Logic are huge subjects and I will close out this c
 -   *Knowledge Representation* by John Sowa. This has always been my favorite reference for knowledge representation, logic, and
     ontologies.
 -   *Artificial Intelligence, A Modern Approach* by Stuart Russell and Peter Norvig. A very good theoretical treatment of logic and knowledge representation.
--   *The Art of Prolog* by Leon Sterling and Ehud Shapiro. Prolog implements a form of predicate logic that is less expressive than the descriptive logics supported by PowerLoom and OWL ([Chapter on Semantic Web](#semantic-web)). That said, Prolog is very efficient and fairly easy to learn and so is sometimes a better choice. This book is one of my favorite general Prolog references.
+-   *The Art of Prolog* by Leon Sterling and Ehud Shapiro. Prolog implements a form of predicate logic that is less expressive than the descriptive logics supported by PowerLoom and OWL (Chapter on [Semantic Web](#semantic-web)). That said, Prolog is very efficient and fairly easy to learn and so is sometimes a better choice. This book is one of my favorite general Prolog references.
 
 The Prolog language is a powerful AI development tool. Both open source, the SWI-Prolog and Amzi Prolog systems have good Java interfaces. I don’t cover Prolog in this book but there are several very good tutorials on the web if you decide to experiment with Prolog.
 
-We will continue [Chapter on Semantic Web](#semantic-web) with our study of logic-based reasoning systems in the context of the Semantic Web.
+We will continue in the chapter on the [Semantic Web](#semantic-web) with our study of logic-based reasoning systems in the context of the Semantic Web.

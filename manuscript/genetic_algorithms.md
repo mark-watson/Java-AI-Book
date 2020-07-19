@@ -40,13 +40,13 @@ This figure shows an example of a crossover operation that we will implement lat
 In addition to using crossover operations to create new chromosomes from existing chromosomes, we will also use genetic mutation: randomly flipping bits in chromosomes. A fitness function that rates the fitness value of each chromosome allows us to decide which chromosomes to
 discard and which to use for the next generation: we will use the most fit chromosomes in the population for producing the next generation using crossover and mutation.
 
-We will implement a general purpose Java GA library in the next section and then solve the example problem posed in this section at the end of this chapter in the [GA Example Section](#java-ga-example).
+We will implement a general purpose Java GA library in the next section and then solve the example problem posed at the end of this chapter in the [GA Example Section](#java-ga-example).
 
 
 ## Java Library for Genetic Algorithms  {#java-ga-lib}
 
 
-The full implementation of the GA library is in the Java source file **Genetic.java**. The following code snippets shows the method signatures defining the public API for the library; note that there are two constructors, the first using default values for the fraction of chromosomes on which to perform crossover and mutation operations and the second constructor allows setting explicit values for these parameters:
+The full implementation of the GA library is in the Java source file **Genetic.java**. The following code snippets show the method signatures defining the public API for the library; note that there are two constructors, the first using default values for the fraction of chromosomes on which to perform crossover and mutation operations and the second constructor allows setting explicit values for these parameters:
 
 {lang="java",linenos=off}
 ~~~~~~~~
@@ -122,7 +122,7 @@ The last class **ChromosomeComparator** is used when using the Java **Collection
 
 The class **Genetic** is an abstract class: you must subclass it and implement the method **calcFitness** that uses an application specific fitness function (that you must supply) to set a fitness value for each chromosome.
 
-The following UML class diagram provides an overview of the Java classes and their public APIs as well as the class **MyGenetic** that will implements a fitness function for our example of finding a maximum value in an equation and the test class **TestGenetic**:
+The following UML class diagram provides an overview of the Java classes and their public APIs as well as the class **MyGenetic** that will implement a fitness function for our example of finding a maximum value in an equation and the test class **TestGenetic**:
 
 ![UML Class Diagram for library and test program](images/genetic-uml.png)
 
@@ -191,11 +191,11 @@ We developed a general purpose library in this section for simulating population
 
 We will use the Java library in the last section to develop an example application to find the maximum of the function seen in the [Figure showing a sample function](#ga-sample-function) which shows a plot of our test function that we are using a GA to fit, plotted in the interval [0, 10].
 
-While we could find the maximum value of this function by using Newton’s method (or even a simple brute force search over the range of the independent variable **x**), the GA method scales very well to similar problems of higher dimensionality. The GA also helps us to not find just locally optimum solutions. In this example we are working in one dimension so we only need to encode a single variable in a chromosome. As an example of a 20-dimensional space, we might have products of sine waves using 20 independent variables **x1, x2, ..x20** and a single chromosome would still represent a point in this 20-dimensional space. To continue this example, if we used 10bits to repent the value range in each of the 20 dimensions, then the chromosome would be represented as 200 bits.
+While we could find the maximum value of this function by using Newton’s method (or even a simple brute force search over the range of the independent variable **x**), the GA method scales very well to similar problems of higher dimensionality. The GA also helps us to find better than locally optimum solutions. In this example we are working in one dimension so we only need to encode a single variable in a chromosome. As an example of a 20-dimensional space, we might have products of sine waves using 20 independent variables **x1, x2, ..x20** and a single chromosome would still represent a point in this 20-dimensional space. To continue this example, if we used 10bits to repent the value range in each of the 20 dimensions, then the chromosome would be represented as 200 bits.
 
 To generalize, our first task is to characterize the search space as one or more parameters. In general when we write GA applications we might need to encode several parameters in a single chromosome. As another example, if a fitness function has three arguments we would encode three numbers in a single chromosome.
 
-Let's get back to our 1-dimensional example seen in the [Figure showing the sample function](#ga-sample-function). This is a simpler good example for showing you how to set up a GA simulation. In this example problem, we have only one parameter, the independent variable x. We will encode the parameter x using ten bits (so we have ten 1-bit genes per chromosome). A good starting place is writing utility method for converting the 10-bit representation to a floating-point number in the range [0.0, 10.0]:
+Let's get back to our 1-dimensional example seen in the [Figure showing the sample function](#ga-sample-function). This is a simple example for showing you how to set up a GA simulation. In this example problem we have only one parameter, the independent variable x. We will encode the parameter x using ten bits (so we have ten 1-bit genes per chromosome). A good starting place is writing a utility method for converting the 10-bit representation to a floating-point number in the range [0.0, 10.0]:
 
 {lang="java",linenos=off}
 ~~~~~~~~
@@ -210,7 +210,7 @@ Let's get back to our 1-dimensional example seen in the [Figure showing the samp
       }
 ~~~~~~~~
 
-After summing up all on bits times their **base_2** value, we need to normalize what is an integer in the range of [0,1023] to a floating point number in the approximate range of [0, 10]:
+For each bit at index **j** with a value of 1, add {$$} \2 ^j{/$$} to the sum **x**. We need to normalize this sum **x** that is an integer in the range of [0,1023] to a floating point number in the approximate range of [0, 10]:
 
 {lang="java",linenos=off}
 ~~~~~~~~
@@ -219,7 +219,7 @@ After summing up all on bits times their **base_2** value, we need to normalize 
     }
 ~~~~~~~~
 
-Note that we do not need the reverse method! We use our GA library from the last section to create a population of 10-bit chromosomes; in order to evaluate the fitness of each chromosome in a population, we only have to convert the 10-bit representation to a floating-point number for evaluation using the fitness function we showed earlier:
+Note that we do not need the reverse method! We use our GA library from the last section to create a population of 10-bit chromosomes. In order to evaluate the fitness of each chromosome in a population, we only have to convert the 10-bit representation to a floating-point number for evaluation using the fitness function we showed earlier:
 
 {lang="java",linenos=off}
 ~~~~~~~~
@@ -256,7 +256,7 @@ Using methods **geneToFloat** and **fitness** we now implement the abstract meth
 
 While it was useful to make this example more clear with a separate **geneToFloat** method, it would have also been reasonable to simply place the formula in the method **fitness** in the implementation of the abstract (in the base class) method **calcFitness**.
 
-In any case we are done with coding this example: you can compile the two example Java files Genetic.java and TestGenetic.java, and run the **TestGenetic** class to verify that the example program quickly finds a near maximum value for this function. The project *Makefile* has a single target that build the library and runs the example test program:
+In any case we are done with coding this example. You can compile the two example Java files **Genetic.java** and **TestGenetic.java**, and run the **TestGenetic** class to verify that the example program quickly finds a near maximum value for this function. The project *Makefile* has a single target that build the library and runs the example test program:
 
 {linenos=off}
 ~~~~~~~~
@@ -305,7 +305,7 @@ In this experiment 85% of chromosomes will be “sliced and diced” with a cros
     ...
 ~~~~~~~~
 
-This example is simple but is intended to be show you how to encode parameters for a problem where you want to search for values to maximize a fitness function that you specify. Using the library developed in this chapter you should be able to set up and run a GA simulation for your own applications.
+This example is simple but is intended to show you how to encode parameters for a problem where you want to search for values to maximize a fitness function that you specify. Using the library developed in this chapter you should be able to set up and run a GA simulation for your own applications.
 
-The important takeaway is that if you can encode a problem space as a chromosome and you have a fitness function to rate the numerical effectiveness of a chromosome, then Genetic Algorithms are an affective alternative to greedy search algorithms.
+The important takeaway is that if you can encode a problem space as a chromosome and you have a fitness function to rate the numerical effectiveness of a chromosome, then Genetic Algorithms are an effective alternative to greedy search algorithms.
 
