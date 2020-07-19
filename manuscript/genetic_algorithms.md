@@ -2,19 +2,18 @@
 
 When searching a large space with many dimensions, greedy search algorithms find locally good results that are often much worse than the best possible solutions. Genetic Algorithms (GAs) are an efficient means of finding near optimum solutions by more uniformly exploring a large many-dimensional search space.  Genetic algorithms are type of heuristic search where the heuristic takes the form of combining a fitness function with efficient search techniques inspired by biology.
 
-Genetic algorithms are said to be inspired by biology because they deal with mutation, crossover, and selection. Each possible solution to a problem is encoded in a chromosome that represents a point in a many-dimensional search space.
+Genetic algorithms can be said to be inspired by biology because they deal with mutation, crossover, and selection. Each possible solution to a problem is encoded in a chromosome that represents a point in a many-dimensional search space.
 
-GA computer simulations evolve a population of chromosomes that may contain at least some fit individuals. Fitness is specified by a fitness function that rates each individual in the population and makes it possible to use selection to choose the best candidate chromosomes to mutate and/or do crossover operations, or save as-is for the next generation. We make copies of the selected chromosomes and slightly perturb the copies with random mutations. Furthermore, pairs of selected chromosomes are cut in the same random gene index and cut pieces of the pair of chromosomes are swapped (a process called crossover).
+GA computer simulations evolve a population of chromosomes that may contain at least some fit individuals. Fitness is specified by a fitness function that is used to rate each individual in the population (of chromosomes) and makes it possible to use selection to choose the best candidate chromosomes to mutate and/or do crossover operations, or save as-is for the next generation. We make copies of the selected chromosomes and slightly perturb the copies with random mutations. Furthermore, pairs of selected chromosomes are cut in the same random gene index and cut pieces of the pair of chromosomes are swapped (a process called crossover).
 
-Setting up a GA simulation is fairly easy: we need to represent (or encode) the state of a system in a chromosome that is usually implemented as a set of bits. GA is basically a search operation: searching for a good solution to a problem where the solution is a very fit chromosome. The programming technique of using GA is useful for AI systems that must adapt to changing conditions because “re-programming” can be as simple as defining a new fitness function and re-running the simulation. An advantage of GA is that the search process will not often “get stuck” in local minimum because the genetic crossover process produces radically different chromosomes in new generations while occasional mutations (flipping a random bit in a chromosome) cause small changes. Another aspect of GA is supporting the evolutionary concept of “survival of the fittest”: by using the fitness function we will preferentially “breed” chromosomes with higher fitness values.
+Setting up a GA simulation is fairly easy: we need to represent (or encode) the state of a system in a chromosome that is usually implemented as a set of bits. GA is basically a search operation: searching for a good solution to a problem where the solution is a very fit chromosome. The programming technique of using GA is useful for AI systems that must adapt to changing conditions because “re-programming” can be as simple as defining a new fitness function and re-running the simulation. An advantage of GA is that the search process will not often “get stuck” in local minimum because the genetic crossover process produces radically different chromosomes in new generations while occasional mutations (flipping a random bit in a chromosome) cause small changes. As you can imagine, performing a crossover operation moves to a very distant point in the search space. Another aspect of GA is supporting the evolutionary concept of “survival of the fittest”: by using the fitness function we will preferentially “breed” chromosomes with higher fitness values.
 
-It is interesting to compare how GAs are trained with how we train neural networks (chapter on [Neural Networks](#neural-networks)). We need to manually “supervise” the training process: for GAs we need to supply a fitness function and for one of the neural network models used in the chapter [Neural Networks](#neural-networks) we need to supply training data with desired sample outputs for sample inputs.
+It is interesting to compare how GAs are trained with how we train neural networks (chapter on [Neural Networks](#neural-networks)). We need to manually “supervise” the training process: for GAs we need to supply a fitness function and for of the neural network models used in the chapter [Neural Networks](#neural-networks) we need to supply training data with desired sample outputs for sample inputs.
 
 
 ## Theory
 
-GAs are typically used to search very large and possibly very high dimensional search spaces. If we want to find a solution as a single point in an **N** dimensional space where a fitness function has a near maximum value, then we have **N** parameters to encode in each chromosome. In this chapter we will be solving a simple problem that is
-one-dimensional so we only need to encode a single number (a floating point number for this example) in each chromosome. Using a GA toolkit, like the one developed in a late section, requires two problem-specific customizations:
+GAs are typically used to search very large and possibly very high dimensional search spaces. If we want to find a solution as a single point in an **N** dimensional space where a fitness function has a near maximum value, then we have **N** parameters to encode in each chromosome. In this chapter we will be solving a simple problem in which we only need to encode a single number (a floating point number for this example) in each chromosome. We are effectively downsampling a floating point number to an integer and the bit representation of the integer is a chromosome. Using a GA toolkit, like the one developed in a later section, requires two problem-specific customizations:
 
 -   Characterize the search space by a set of parameters that can be encoded in a chromosome (more on this later). GAs work with the coding of a parameter set, not the parameters themselves (*Genetic
     Algorithms in Search, Optimization, and Machine Learning*, David Goldberg, 1989).
@@ -36,7 +35,7 @@ The problem that we want to solve is finding a good value of **x** to find a nea
 {#ga-crossover}
 ![Crosssover Operation](images/ga_crossover.png)
 
-This last figure shows an example of a crossover operation that we will implement later in the program example. A random chromosome bit index is chosen, and two chromosomes are “cut” at this this index and swap cut parts. The two original chromosomes in **generation_n** are shown on the left of the figure and after the crossover operation they produce two new chromosomes in **generation n + 1}** where **n** is the current generation number. The two new chromosomes are shown on the right of the figure.
+This figure shows an example of a crossover operation that we will implement later in the program example. A random chromosome bit index is chosen, and two chromosomes are “cut” at this this index and swap cut parts. The two original chromosomes in **generation_n** are shown on the left of the figure and after the crossover operation they produce two new chromosomes in **generation n + 1** where **n** is the current generation number. The two new chromosomes are shown on the right of the figure.
 
 In addition to using crossover operations to create new chromosomes from existing chromosomes, we will also use genetic mutation: randomly flipping bits in chromosomes. A fitness function that rates the fitness value of each chromosome allows us to decide which chromosomes to
 discard and which to use for the next generation: we will use the most fit chromosomes in the population for producing the next generation using crossover and mutation.
@@ -123,7 +122,7 @@ The last class **ChromosomeComparator** is used when using the Java **Collection
 
 The class **Genetic** is an abstract class: you must subclass it and implement the method **calcFitness** that uses an application specific fitness function (that you must supply) to set a fitness value for each chromosome.
 
-The following UML class diagram provides an overview of the Java classes and their public APIs:
+The following UML class diagram provides an overview of the Java classes and their public APIs as well as the class **MyGenetic** that will implements a fitness function for our example of finding a maximum value in an equation and the test class **TestGenetic**:
 
 ![UML Class Diagram for library and test program](images/genetic-uml.png)
 
@@ -134,7 +133,7 @@ This GA library provides the following behavior:
 
 -   Ability to create new chromosomes from the most fit chromosomes in the population using the genetic crossover and mutation operations
 
-There are two class constructors for Genetic set up a new GA experiment by setting the number of genes (or bits) per chromosome, and the number of chromosomes in the population.
+There are two class constructors for **Genetic** set up a new GA experiment. Both constructors require the number of genes (or bits) per chromosome, and the number of chromosomes in the population. The second constructor allows you to optionally set the fractions for mutation and crossover operations.
 
 The **Genetic** class constructors build an array of integers **rouletteWheel** which is used to weight the most fit chromosomes in the population for choosing the parents of crossover and mutation operations. When a chromosome is being chosen, a random integer is selected to be used as an index into the **rouletteWheel** array; the values in the array are all integer indices into the chromosome array. More fit chromosomes are heavily weighted in favor of being chosen as parents for the crossover operations. The algorithm for the crossover operation is fairly simple; here is the implementation:
 

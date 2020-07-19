@@ -1,3 +1,2 @@
-preface.md
-reasoning.md
+genetic_algorithms.md
 
