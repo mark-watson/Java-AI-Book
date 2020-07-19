@@ -4,7 +4,7 @@ While the topic of reasoning may not be as immediately useful for your work as, 
 
 In this chapter we will concentrate on the use of the PowerLoom descriptive logic reasoning system. PowerLoom is available with a Java runtime and Java API - this is what I will use for the examples in this chapter. PowerLoom can also be used with other JVM languages like JRuby and Clojure. PowerLoom is also available in Common Lisp and C++ versions.
 
-The PowerLoom system has not been an active project since 2010. As I update this chapter in July 2020, I still consider PowerLoom to be a useful tool for learning about logic based systems and I have attempted to package PowerLoom in a way that will be easy for you to run it interactively and I provide a few simple Java examples in the package **com.markwatson.powerloom** that demonstrate how to embed PowerLoom in your own Java programs. The complete Java source for PowerLoom is in the directory**src/main/java/edi/isi/powerloom**.
+The PowerLoom system has not been an active project since 2010. As I update this chapter in July 2020, I still consider PowerLoom to be a useful tool for learning about logic based systems and I have attempted to package PowerLoom in a way that will be easy for you to run it interactively and I provide a few simple Java examples in the package **com.markwatson.powerloom** that demonstrate how to embed PowerLoom in your own Java programs. The complete Java source for PowerLoom is in the directory **src/main/java/edi/isi/powerloom**.
 
 Additionally, we will look at different kinds of reasoning systems (the OWL language) in [Chapter on Semantic Web](#semantic-web) on the Semantic Web and use this reasoning in the later chapters [Automatically Generating Data for Knowledge Graphs](#kgcreator) and [Knowledge Graph Navigator](#kgn).
 
@@ -12,7 +12,7 @@ While the material in this chapter will get you started with development using a
 
 PowerLoom is a newer version of the classic Loom Descriptive Logic reasoning system written at ISI although as I mentioned earlier it has not been developed past 2010. At some point you may want to download the entire PowerLoom distribution to get more examples and access to documentation; the [PowerLoom web site](http://www.isi.edu/isd/LOOM/PowerLoom/).
 
-While we will look at an example of embedding the PowerLoom runtime and a PowerLoom model in a Java example program, I want to make a general comment on PowerLoom development: you will spend most of your time interactively running PowerLoom in an interactive shell that lets you type in concepts, relations, rules, and queries and immediately see the results. If you have ever programmed in Lisp, then this mode of interactive programming will be familiar to you. As seen in the next figure after interactive development you can deploy in a Java application. This style of development supports entering facts and trying rules and relations interactively and as you get things working you can paste what works into a PowerLoom source file. If you have only worked with compiled languages like Java and C++ this development style may take a while to get used to and appreciate. As seen in the next figure the PowerLoom runtime system, with relations and rules, can be embedded in Java applications that typically clear PowerLoom data memory, assert facts from other live data sources, and then use PowerLoom for inferencing.
+While we will look at an example of embedding the PowerLoom runtime and a PowerLoom model in a Java example program, I want to make a general comment on PowerLoom development: you will spend most of your time interactively running PowerLoom in an interactive shell that lets you type in concepts, relations, rules, and queries and immediately see the results. If you have ever programmed in Lisp, then this mode of interactive programming will be familiar to you. As seen in the next figure, after interactive development you can deploy in a Java application. This style of development supports entering facts and trying rules and relations interactively and as you get things working you can paste what works into a PowerLoom source file. If you have only worked with compiled languages like Java and C++ this development style may take a while to get used to and appreciate. As seen in the next figure the PowerLoom runtime system, with relations and rules, can be embedded in Java applications that typically clear PowerLoom data memory, assert facts from other live data sources, and then use PowerLoom for inferencing.
 
 {#reasoning~overview}
 ![Reasoning Overview](images/reasoning_overview.png)
@@ -20,7 +20,7 @@ While we will look at an example of embedding the PowerLoom runtime and a PowerL
 
 ## Logic
 
-We will look at different types of logic and reasoning systems in this section and then get into PowerLoom specific examples in Section [powerloom-overview]. Logic is the basis for both Knowledge Representation and for reasoning about knowledge. We will encode knowledge using logic and see that we can then infer new facts that are not explicitly asserted.
+We will look at different types of logic and reasoning systems in this section and then later we will get into PowerLoom specific examples. Logic is the basis for both Knowledge Representation and for reasoning about knowledge. We will encode knowledge using logic and see that we can then infer new facts that are not explicitly asserted. In AI literature you often see discussions of implicit vs. explicit knowledge. Implicit knowledge is inferred from explicitly stated information by using a reasoning system.
 
 First Order Logic was invented by the philosophers Frege and Peirce and is the most widely studied logic system. Unfortunately, full First Order Logic is not computationally tractable for most non-trivial problems so we use more restricted logics. We will use two reasoning systems in this book that support more limited logics:
 
@@ -65,8 +65,7 @@ Here is a query that asks who has feathers:
     X = brady
 ~~~~~~~~
 
-In this example through inference we have determined a new fact, that Brady has feathers because we know that Brady is a bird and we have the rule (or predicate) stating that all birds have feathers. Prolog is not strictly a pure logic programming language since the order in which
-rules (predicates) are defined changes the inference results. Prolog is a great language for some types of projects (I have used Prolog in both natural language processing and in planning projects). We will see that
+In this example through inference we have determined a new fact, that Brady has feathers because we know that Brady is a bird and we have the rule (or predicate) stating that all birds have feathers. Prolog is not strictly a pure logic programming language since the order in which rules (predicates) are defined changes the inference results. Prolog is a great language for some types of projects (I have used Prolog in both natural language processing and in planning projects). We will see that
 PowerLoom is considerably more flexible than Prolog but does have a steep learning curve.
 
 Description Logic deals with descriptions of concepts and how these descriptions define the domain of concepts. In terms used in object oriented programming languages: membership in a class is determined implicitly by the description of the object and not by explicitly stating something like “Brady is a member of the bird class.”
@@ -75,12 +74,9 @@ Description logics divide statements into relations (historically referred to as
 ## PowerLoom Overview {#powerloom-overview}
 
 
-PowerLoom is designed to be an expressive language for knowledge representation and reasoning. As a result, PowerLoom is not a complete reasoning system but makes tradeoffs for completeness of inferences and expressivity vs. computational efficiency. It is interesting to note
-that Loom and PowerLoom were designed and implemented to solve real world problems and the tradeoffs to make these problems computationally tractable have informed the design and implementation of these systems. PowerLoom does not make all possible inferences from concepts that it
-operates on.
+PowerLoom is designed to be an expressive language for knowledge representation and reasoning. As a result, PowerLoom is not a complete reasoning system but makes tradeoffs for completeness of inferences and expressivity vs. computational efficiency. It is interesting to note that Loom and PowerLoom were designed and implemented to solve real world problems and the tradeoffs to make these problems computationally tractable have informed the design and implementation of these systems. PowerLoom does not make all possible inferences from concepts that it operates on.
 
-The PowerLoom distribution contains two very detailed examples for representing relationships between companies and for information dealing with airplanes. These examples are more detailed than the simpler example of data from news stories used in this chapter. We will look one
-of these examples (business rules and relations) and after working through this chapter, I encourage you to interactively experiment with the two examples that ship with PowerLoom.
+The PowerLoom distribution contains two very detailed examples for representing relationships between companies and for information dealing with airplanes. These examples are more detailed than the simpler example of data from news stories used in this chapter. We will look one of these examples (business rules and relations) and after working through this chapter, I encourage you to interactively experiment with the two examples that ship with PowerLoom.
 
 We will start by defining some terms used in PowerLoom:
 
@@ -110,8 +106,7 @@ We will learn more about basic PowerLoom functionality in the next two sections 
 ## Running PowerLoom Interactively  {#running-powerloom}
 
 
-We will experiment with PowerLoom concepts, relations, and rules in this section in an interactive command shell. I will introduce more examples of PowerLoom functionality for asserting instances of concepts, performing queries, loading PowerLoom source files, defining relations,
-using separate modules, and asking PowerLoom to explain the inference process that it used for query processing.
+We will experiment with PowerLoom concepts, relations, and rules in this section in an interactive command shell. I will introduce more examples of PowerLoom functionality for asserting instances of concepts, performing queries, loading PowerLoom source files, defining relations, using separate modules, and asking PowerLoom to explain the inference process that it used for query processing.
 
 You can run PowerLoom using the command line interface by changing directory to the lib subdirectory from the ZIP file for this book and trying:
 
@@ -156,9 +151,7 @@ Now that we have entered two concepts, a test relation, and asserted a few facts
     PL-USER |= 
 ~~~~~~~~
 
-The obvious point to note from this example is that we never specified
-that Ken was a parent; rather, PowerLoom deduced this from the parent-of
-relation.
+The obvious point to note from this example is that we never specified that Ken was a parent; rather, PowerLoom deduced this from the parent-of relation. The asserted data is explicit data while the inferred data is implicit and only exists when required to reason over a query.
 
 PowerLoom’s command line system prompts you with the string \`\`PL-USER
 |=\`\` and you can type any definition or query. Like Lisp, PowerLoom
@@ -168,15 +161,14 @@ functions, and rules into different sets and as previously mentioned
 “PL-USER” is the default module. PowerLoom modules can form a hierarchy,
 inheriting concepts, relations, and rules from parent modules.
 
-The subdirectory test\_data contains the demo file business.plm written by Robert MacGregor that is supplied with the full PowerLoom distribution. You can load his complete example using:
+The subdirectory **test\_data** contains the demo file **business.plm** written by Robert MacGregor that is supplied with the full PowerLoom distribution. You can load his complete example using:
 
 {linenos=off}
 ~~~~~~~~
     PL-USER |= (load "test_data/business.plm")
 ~~~~~~~~
 
-This is a good example because it demonstrates most of the available functionality of PowerLoom in a short 200 lines. When you are done reading this chapter, please take a few minutes to read through this example file since I do not list it here. There are a few things to notice in this example. Here we see a rule used to make the relation
-“contains” transitive:
+This is a good example because it demonstrates most of the available functionality of PowerLoom in a short 200 lines. When you are done reading this chapter, please take a few minutes to read through this example file since I do not list all of it it here. There are a few things to notice in this example. Here we see a rule used to make the relation “contains” transitive:
 
 {linenos=off}
 ~~~~~~~~
@@ -190,8 +182,7 @@ This is a good example because it demonstrates most of the available functionali
           (contains ?l1 ?l3)))
 ~~~~~~~~
 
-The operator =\> means that if the first clause is true then so is the second. In English, this rule could be stated \`\`if an instance i1 contains i2 and if instance i2 contains i3 then we can infer that i1 also contains i3." To see how this rule works in practice, we can switch
-to the example module “BUSINESS” and find all locations contained inside another location:
+The operator =\> means that if the first clause is true then so is the second. In English, this rule could be stated "if an instance **i1** contains **i2** and if instance **i2** contains **i3** then we can infer that **i1** also contains **i3**." To see how this rule works in practice, we can switch to the example module “BUSINESS” and find all locations contained inside another location:
 
 {linenos=off}
 ~~~~~~~~
@@ -218,7 +209,7 @@ to the example module “BUSINESS” and find all locations contained inside ano
     BUSINESS |= 
 ~~~~~~~~
 
-Here we have fifteen solutions even though there are only seven “contains” relations asserted in the business.plm file, the other eight solutions were inferred. In addition to the “retrieve” function that finds solutions matching a query you can also use the “ask” function to determine if a specified relation is true; for example:
+Here we have fifteen solutions even though there are only seven **contains** relations asserted in the business.plm file, the other eight solutions were inferred. In addition to the **retrieve** function that finds solutions matching a query you can also use the **ask** function to determine if a specified relation is true; for example:
 
 {linenos=off}
 ~~~~~~~~
@@ -334,7 +325,7 @@ static methods for initializing the system, loading PowerLoom source files. Here
 ~~~~~~~~
       PLI.initialize();
       PLI.load("business.plm", null);
-      PLI.sChangeModule("BUSINESS", null);
+      PLI.changeModule("BUSINESS", null);
 ~~~~~~~~
 
 

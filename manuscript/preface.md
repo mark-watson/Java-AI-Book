@@ -19,7 +19,7 @@ My Java code in this book can be used under either or both the LGPL3 and Apache 
 
 My goal is to teach you both the theory of common AI techniques and to provide you with Java source code to save you some time and effort. Even though I have worked almost exclusively in the field of deep learning in the last six years, I urge you, dear reader, to look at the field of AI as being far broader than machine learning and deep learning in particular. Just as it is wrong to consider the higher level fields of Category Theory or Group Theory to "be" mathematics, there is far more to AI than machine learning. Here we will take a more balanced view of AI, and indeed, my own current research is in hybrid AI, that is, the fusion of deep learning with good old fashioned symbolic AI, probabilistic reasoning, and explainability. 
 
-This book has a [Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)](https://creativecommons.org/licenses/by-nc-nd/4.0/). Feel free to share copies of this book with friends and colleagues at work. This book is also available to [read for free online](https://leanpub.com/javaai) or to purchase if you want to support my writing activities.
+This book is released with a [Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)](https://creativecommons.org/licenses/by-nc-nd/4.0/) license. Feel free to share copies of this book with friends and colleagues at work. This book is also available to [read for free online or to purchase](https://leanpub.com/javaai) if you want to support my writing activities.
 
 ## Personal Artificial Intelligence Journey
 
