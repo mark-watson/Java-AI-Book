@@ -1,12 +1,14 @@
 # Natural Language Processing
 
-I have been working in the field of Natural Language Processing (NLP) since 1982. In this chapter we will use a few of my open source NLP projects. In the next chapter I have selected one of many fine open source projects to provide more examples of using NLP to get you started using NLP in your own projects.
+I have been working in the field of Natural Language Processing (NLP) since 1982. In this chapter we will use a few of my open source NLP projects. In the next chapter I have selected one of many fine open source projects (OpenNLP) to provide more examples of using NLP to get you started using NLP in your own projects.
 
-The material in this chapter is dated but useful. It is dated because deep learning networks now far surpass the capabilities of statistical and symbolic NLP. The material is still useful in my projects but I often prefer the OpenNLP library that we cover in the next chapter and for very difficult NLP problems like coreference resolution (or anaphora resolution) I use deep learning models like BERT or GPT.
+The material in this chapter is dated but still useful. It is dated because deep learning networks now far surpass the capabilities of statistical and symbolic NLP. The material is still useful in my projects but I often prefer the OpenNLP library (that mostly used Maximum Entropy models) that we cover in the next chapter and for very difficult NLP problems like coreference resolution (or anaphora resolution) I use deep learning models like BERT. If you use Python then I strongly recommend the **spaCy** library for NLP.
 
-Deep learning is apparently "eating" the AI world, but I firmly believe in hybrid systems composed of gains we have made in the last 50 years. Most experts in AI believe that deep learning only takes us so far, and in order to reach general artificial intelligence we will use some form of hybrid deep learning, symbolic AI, and probabalistic systems.
+Deep learning is apparently "eating" the AI world but I firmly believe in hybrid systems stand the best chance of getting us to real artificial general intelligence (AGI) - time will tell. Many experts in AI believe that deep learning only takes us so far, and in order to reach general artificial intelligence we will use some form of hybrid deep learning, symbolic AI, and probabalistic systems. That said, there are deep learning specialists who predict the their favored technology will probably be sufficient to get to AGI.
 
-We will cover a wide variety of techniques for processing text in this chapter. The part of speech tagger, text categorization, and entity extraction examples are all derived from either my open source projects or my commercial projects that I developed in the 1990-2010 tim frame.
+## Overview of the NLP  Library and Running the Examples
+
+We will cover a wide variety of techniques for processing text in this chapter. The part of speech tagger (POS), text categorization, and entity extraction examples are all derived from either my open source projects or my commercial projects that I developed in the 1990-2010 time frame.
 
 The following UML class diagrams will give you an overview of my NLP library code:
 
@@ -33,16 +35,16 @@ fasttag:
   mvn exec:java -Dexec.mainClass="com.markwatson.nlp.FastTag"
 ~~~~~~~~
 
+You might find it useful to run the examples before we look at the code.
 
 ## Tokenizing, Stemming, and Part of Speech Tagging Text  {#tokenizing-and-tagging}
 
 Tokenizing text is the process of splitting a string containing text into individual tokens. Stemming is the reduction of words to abbreviated word roots that allow for easy comparison for equality of similar words. Tagging is identifying what part of speech each word is in input text. Tagging is complicated by many words having different parts of speech depending on context (examples: “*bank* the airplane,” “the river *bank*,” etc.) You can find the code in this section in the
-GitHub repository in the files **src/com/knowledgebooks/nlp/fasttag/FastTag.java** and **src/com/knowledgebooks/nlp/util/Tokenizer.java**. The required data files are in the directory test\_data in the files lexicon.txt (for processing English text) and lexicon\_medpost.txt (for processing medical text).
+GitHub repository in the files **src/com/knowledgebooks/nlp/fasttag/FastTag.java** and **src/com/knowledgebooks/nlp/util/Tokenizer.java**. The required data files are in the directory **test\_data** in the files **lexicon.txt** (for processing English text) and **lexicon\_medpost.txt** (for processing medical text).
 
 We will also look at a public domain word stemmer that I frequently use in this section.
 
-Before we can process any text we need to break text into individual tokens. Tokens can be words, numbers and punctuation symbols. The class **Tokenizer** has two static methods, both take an input string to tokenize and return a list of token strings. The second method has an
-extra argument to specify the maximum number of tokens that you want returned:
+Before we can process any text we need to break text into individual tokens. Tokens can be words, numbers and punctuation symbols. The class **Tokenizer** has two static methods, both take an input string to tokenize and return a list of token strings. The second method has an extra argument to specify the maximum number of tokens that you want returned:
 
 {lang="java",linenos=off}
 ~~~~~~~~
@@ -83,7 +85,7 @@ For many applications, it is better to “stem” word tokens to simplify compar
         public String stemOneWord(String word)
 ~~~~~~~~
 
-The FastTag project resulted from my using the excellent tagger written by Eric Brill while he was at the University of Pennsylvania. He used machine learning techniques to learn transition rules for tagging text using manually tagged text as training examples. In reading through his doctoral thesis I noticed that there were a few transition rules that covered most of the cases and I implemented a simple “fast tagger” in Common Lisp, Ruby, Scheme and Java. The Java version is in the file **src/com/knowledgebooks/nlp/fasttag/FastTag.java**.
+My FastTag part of speech (POS) tagger project resulted from my using in the early 1990s the excellent tagger written by Eric Brill while he was at the University of Pennsylvania. He used machine learning techniques to learn transition rules for tagging text using manually tagged text as training examples. In reading through his doctoral thesis I noticed that there were a few transition rules that covered most of the cases and I implemented a simple “fast tagger” in Common Lisp, Ruby, Scheme and Java. The Java version is in the file **src/com/knowledgebooks/nlp/fasttag/FastTag.java**.
 
 The file **src/com/knowledgebooks/nlp/fasttag/README.txt** contains information on where to obtain Eric Brill’s original tagging system and also defines the tags for both his English language lexicon and the Medpost lexicon. The following table shows the most commonly used tags (see the README.txt file for a complete description).
 
@@ -117,8 +119,7 @@ Brill’s system worked by processing manually tagged text and then creating a l
 
 Here “Arco” is a proper noun because it is the name of a corporation. The word “Arctic” can be either a proper noun or an adjective; it is used most frequently as a proper noun so the tag “NNP” is listed before “JJ.” The word “fair” can be an adjective, singular noun, or an adverb.
 
-The class **Tagger** reads the file lexicon either as a resource stream (if, for example, you put lexicon.txt in the same JAR file as the compiled **Tagger** and **Tokenizer** class files) or as a local file. Each
-line in the lexicon.txt file is passed through the utility method **parseLine** that processes an input string using the first token in the line as a hash key and places the remaining tokens in an array that is
+The class **Tagger** reads the file lexicon either as a resource stream (if, for example, you put lexicon.txt in the same JAR file as the compiled **Tagger** and **Tokenizer** class files) or as a local file. Each line in the lexicon.txt file is passed through the utility method **parseLine** that processes an input string using the first token in the line as a hash key and places the remaining tokens in an array that is
 the hash value. So, we would process the line “fair JJ NN RB” as a hash key of “fair” and the hash value would be the array of strings (only the first value is currently used but I keep the other values for future use):
 
 When the tagger is processing a list of word tokens, it looks each token up in the hash table and stores the first possible tag type for the word. In our example, the word “fair” would be assigned (possibly temporarily) the tag “JJ.” We now have a list of word tokens and an associated list of possible tag types. We now loop through all of the word tokens applying eight transition rules that Eric Brill’s system learned. We will look at the first rule in some detail; **i** is the loop
