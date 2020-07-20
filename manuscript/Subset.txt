@@ -1,3 +1,2 @@
-neural_networks.md
-deeplearning.md
+nlp.md
 

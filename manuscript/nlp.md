@@ -119,11 +119,9 @@ Brill’s system worked by processing manually tagged text and then creating a l
 
 Here “Arco” is a proper noun because it is the name of a corporation. The word “Arctic” can be either a proper noun or an adjective; it is used most frequently as a proper noun so the tag “NNP” is listed before “JJ.” The word “fair” can be an adjective, singular noun, or an adverb.
 
-The class **Tagger** reads the file lexicon either as a resource stream (if, for example, you put lexicon.txt in the same JAR file as the compiled **Tagger** and **Tokenizer** class files) or as a local file. Each line in the lexicon.txt file is passed through the utility method **parseLine** that processes an input string using the first token in the line as a hash key and places the remaining tokens in an array that is
-the hash value. So, we would process the line “fair JJ NN RB” as a hash key of “fair” and the hash value would be the array of strings (only the first value is currently used but I keep the other values for future use):
+The class **Tagger** reads the file lexicon either as a resource stream (if, for example, you put **lexicon.txt **in the same JAR file as the compiled **Tagger** and **Tokenizer** class files) or as a local file. Each line in the **lexicon.txt** file is passed through the utility method **parseLine** that processes an input string using the first token in the line as a hash key and places the remaining tokens in an array that is the hash value. So, we would process the line “fair JJ NN RB” as a hash key of “fair” and the hash value would be the array of strings (only the first value is currently used but I keep the other values for future use):
 
-When the tagger is processing a list of word tokens, it looks each token up in the hash table and stores the first possible tag type for the word. In our example, the word “fair” would be assigned (possibly temporarily) the tag “JJ.” We now have a list of word tokens and an associated list of possible tag types. We now loop through all of the word tokens applying eight transition rules that Eric Brill’s system learned. We will look at the first rule in some detail; **i** is the loop
-variable in the range [0, number of word tokens - 1] and **word** is the current word at index **i**:
+When the tagger is processing a list of word tokens, it looks each token up in the hash table and stores the first possible tag type for the word. In our example, the word “fair” would be assigned (possibly temporarily) the tag “JJ.” We now have a list of word tokens and an associated list of possible tag types. We now loop through all of the word tokens applying eight transition rules that Eric Brill’s system learned. We will look at the first rule in some detail; **i** is the loop variable in the range [0, number of word tokens - 1] and **word** is the current word at index **i**:
 
 {lang="java",linenos=off}
 ~~~~~~~~
@@ -166,8 +164,7 @@ In the next section we will use the tokenizer, stemmer, and tagger from this sec
 
 ## Named Entity Extraction From Text  {#named-entity-extraction}
 
-In this section we will look at identifying names of people and places in text. This can be useful for automatically tagging news articles with the people and place names that occur in the articles. The “secret
-sauce” for identifying names and places in text is the data in the file **test\_data/propername.ser** – a serialized Java data file containing hash tables for human and place names. This data is read in the constructor for the class **Names**; it is worthwhile looking at the code if you have not used the Java serialization APIs before:
+In this section we will look at identifying names of people and places in text. This can be useful for automatically tagging news articles with the people and place names that occur in the articles. The “secret sauce” for identifying names and places in text is the data in the file **test\_data/propername.ser** – a serialized Java data file containing hash tables for human and place names. This data is read in the constructor for the class **Names**; it is worthwhile looking at the code if you have not used the Java serialization APIs before:
 
 {lang="java",linenos=off}
 ~~~~~~~~
@@ -247,10 +244,8 @@ The output from running this example is:
 ~~~~~~~~
 
 The complete implementation that you can read through in the source file
-ExtractNames.java is reasonably simple. The methods **isHumanName** and
-**isPlaceName** simply look up a string in either of the human or place
-name hash tables. For testing a single word this is very easy; for
-example:
+**ExtractNames.java** is reasonably simple. The methods **isHumanName** and
+**isPlaceName** simply look up a string in either of the human or place name hash tables. For testing a single word this is very easy; for example:
 
 {lang="java",linenos=off}
 ~~~~~~~~
@@ -289,7 +284,7 @@ This same scheme is used to test for multi-word human names. The top-level utili
 
 ## Automatically Assigning Tags to Text
 
-By tagging I mean assigning zero or more categories like “politics”, “economy”, etc. to text based on the words contained in the text. While the code for doing this is simple there is usually much work to do to build a word count database for different classifications. The approach we use here is often called "bag of words" because the words in input text matter but not the order of words in text or proximity to other words.
+By "tagging" I mean assigning zero or more categories like “politics”, “economy”, etc. to text based on the words contained in the text. While the code for doing this is simple there is usually much work to do to build a word count database for different classifications. The approach we use here is often called "bag of words" because the words in input text matter but not the order of words in text or proximity to other words.
 
 I have been working on open source products for automatic tagging and semantic extraction for since the 1990s (see my old web site www.knowledgebooks.com if you are interested). In this section I will show you some simple techniques for automatically assigning tags or categories to text. We will use a set of tags for which I have collected word frequency statistics. For example,
 a tag of “Java” might be associated with the use of the words “Java,” “JVM,” “Sun,” etc. You can find my pre-trained tag data in the file:
@@ -315,7 +310,7 @@ The **AutoTagger** class uses a few data structures to keep track of both the na
 
 The names of tags used are defined in the XML tag data file: change this file, and you alter both the tags and behavior of this utility class. Please note that the data in this XML file is from a small set of hand-labeled (i.e., my wife and I labelled articles as being about "religion", "politics", etc.). 
 
-Here is a snippet of data defined in the XML tag data file describing some words (and their scores) associated with the tag “religion\_buddhism”:
+This approach is called "bag of words." The following listing shows a snippet of data defined in the XML tag data file describing some words (and their scores) associated with the tag “religion\_buddhism”:
 
 {lang="xml",linenos=off}
 ~~~~~~~~
@@ -324,7 +319,6 @@ Here is a snippet of data defined in the XML tag data file describing some words
         <term name="buddhism" score="52" />
         <term name="buddhist" score="50" />
         <term name="mind" score="50" />
-        <term name="medit" score="41" />
         <term name="buddha" score="37" />
         <term name="practic" score="31" />
         <term name="teach" score="15" />
@@ -370,8 +364,7 @@ To be clear, the tags returned are classification tags like "politics," "economy
 src-statistical-nlp/com/knowledgebooks/nlp/util/NameValue.java
 ~~~~~~~~
 
-To determine the tags for input text, we keep a running score for each defined tag type. I use the internal class **SFtriple** to hold triple values of word, score, and tag index. I choose the tags with the highest scores as the automatically assigned tags for the input text. Scores for each tag are calculated by taking each word in the input text, stemming it, and if the stem is in the word frequency hash table for the tag then add the score value in the hash table to the running sum for the tag.
-You can refer to the AutoTagger.java source code for details. Here is an example use of class **AutoTagger**:
+To determine the tags for input text, we keep a running score for each defined tag type. I use the internal class **SFtriple** to hold triple values of word, score, and tag index. I choose the tags with the highest scores as the automatically assigned tags for the input text. Scores for each tag are calculated by taking each word in the input text, stemming it, and if the stem is in the word frequency hash table for the tag then add the score value in the hash table to the running sum for the tag. You can refer to the AutoTagger.java source code for details. Here is an example use of class **AutoTagger**:
 
 {lang="java",linenos=off}
 ~~~~~~~~
