@@ -16,7 +16,8 @@ The following UML class diagrams will give you an overview of my NLP library cod
 
 The XML parsing code is for reading the file **test_data/classification_tags.xml** that contains ranked word terms for various categories we cover (e.g., politics, economy, etc.).
 
-{width=50%}![UML class diagram for low-level utilities](images/nlp-utils-uml.png)
+{width=50%}
+![UML class diagram for low-level utilities](images/nlp-utils-uml.png)
 
 Each main class in this library has a **main** method that provides a short demonstration of calling the library. The *Makefile* has targets for running the **main** method for each of the top level classes:
 
