@@ -16,7 +16,7 @@ The following UML class diagrams will give you an overview of my NLP library cod
 
 The XML parsing code is for reading the file **test_data/classification_tags.xml** that contains ranked word terms for various categories we cover (e.g., politics, economy, etc.).
 
-![UML class diagram for low-level utilities](images/nlp-utils-uml.png)
+{width=50%}![UML class diagram for low-level utilities](images/nlp-utils-uml.png)
 
 Each main class in this library has a **main** method that provides a short demonstration of calling the library. The *Makefile* has targets for running the **main** method for each of the top level classes:
 
@@ -40,7 +40,7 @@ You might find it useful to run the examples before we look at the code.
 ## Tokenizing, Stemming, and Part of Speech Tagging Text  {#tokenizing-and-tagging}
 
 Tokenizing text is the process of splitting a string containing text into individual tokens. Stemming is the reduction of words to abbreviated word roots that allow for easy comparison for equality of similar words. Tagging is identifying what part of speech each word is in input text. Tagging is complicated by many words having different parts of speech depending on context (examples: “*bank* the airplane,” “the river *bank*,” etc.) You can find the code in this section in the
-GitHub repository in the files **src/com/knowledgebooks/nlp/fasttag/FastTag.java** and **src/com/knowledgebooks/nlp/util/Tokenizer.java**. The required data files are in the directory **test\_data** in the files **lexicon.txt** (for processing English text) and **lexicon\_medpost.txt** (for processing medical text).
+GitHub repository in the files **src/com/markwatson/nlp/fasttag/FastTag.java** and **src/com/markwatson/nlp/util/Tokenizer.java**. The required data files are in the directory **test\_data** in the files **lexicon.txt** (for processing English text) and **lexicon\_medpost.txt** (for processing medical text).
 
 We will also look at a public domain word stemmer that I frequently use in this section.
 
@@ -48,9 +48,8 @@ Before we can process any text we need to break text into individual tokens. Tok
 
 {lang="java",linenos=off}
 ~~~~~~~~
-        static public List<String> wordsToList(String s)
-        static public List<String> wordsToList(String s,
-                                               int maxR)
+      static public List<String> wordsToList(String s)
+      static public List<String> wordsToList(String s, int maxR)
 ~~~~~~~~
 
 In line 3, **maxR** is maximum number of tokens to return and is useful when you want to sample the first part of a very long text.
@@ -85,9 +84,9 @@ For many applications, it is better to “stem” word tokens to simplify compar
         public String stemOneWord(String word)
 ~~~~~~~~
 
-My FastTag part of speech (POS) tagger project resulted from my using in the early 1990s the excellent tagger written by Eric Brill while he was at the University of Pennsylvania. He used machine learning techniques to learn transition rules for tagging text using manually tagged text as training examples. In reading through his doctoral thesis I noticed that there were a few transition rules that covered most of the cases and I implemented a simple “fast tagger” in Common Lisp, Ruby, Scheme and Java. The Java version is in the file **src/com/knowledgebooks/nlp/fasttag/FastTag.java**.
+My FastTag part of speech (POS) tagger project resulted from my using in the early 1990s the excellent tagger written by Eric Brill while he was at the University of Pennsylvania. He used machine learning techniques to learn transition rules for tagging text using manually tagged text as training examples. In reading through his doctoral thesis I noticed that there were a few transition rules that covered most of the cases and I implemented a simple “fast tagger” in Common Lisp, Ruby, Scheme and Java. The Java version is in the file **src/com/markwatson/nlp/fasttag/FastTag.java**.
 
-The file **src/com/knowledgebooks/nlp/fasttag/README.txt** contains information on where to obtain Eric Brill’s original tagging system and also defines the tags for both his English language lexicon and the Medpost lexicon. The following table shows the most commonly used tags (see the README.txt file for a complete description).
+The file **src/com/markwatson/nlp/fasttag/README.txt** contains information on where to obtain Eric Brill’s original tagging system and also defines the tags for both his English language lexicon and the Medpost lexicon. The following table shows the most commonly used tags (see the README.txt file for a complete description).
 
 {linenos=off}
 ~~~~~~~~
@@ -282,12 +281,11 @@ The versions of these APIs that handle names containing multiple words are just 
 
 This same scheme is used to test for multi-word human names. The top-level utility method **getProperNames** is used to find human and place names in text. The code in **getProperNames** is intentionally easy to understand but not very efficient because of all of the temporary test strings that need to be constructed.
 
-## Automatically Assigning Tags to Text
+## Automatically Assigning Categories to Text
 
-By "tagging" I mean assigning zero or more categories like “politics”, “economy”, etc. to text based on the words contained in the text. While the code for doing this is simple there is usually much work to do to build a word count database for different classifications. The approach we use here is often called "bag of words" because the words in input text matter but not the order of words in text or proximity to other words.
+Here we will assign zero or more categories like “politics”, “economy”, etc. to text based on the words contained in the text. While the code for doing this is simple there is usually much work to do to build a word count database for different classifications. The approach we use here is often called "bag of words" because the words in input text matter but not the order of words in text or proximity to other words.
 
-I have been working on open source products for automatic tagging and semantic extraction for since the 1990s (see my old web site www.knowledgebooks.com if you are interested). In this section I will show you some simple techniques for automatically assigning tags or categories to text. We will use a set of tags for which I have collected word frequency statistics. For example,
-a tag of “Java” might be associated with the use of the words “Java,” “JVM,” “Sun,” etc. You can find my pre-trained tag data in the file:
+I have been working on open source products for automatic tagging and semantic extraction for since the 1990s (see my old web site www.knowledgebooks.com if you are interested). In this section I will show you some simple techniques for automatically assigning tags or categories to text. We will use a set of category tags for which I have collected word frequency statistics. For example, a category of “Java” might be associated with the use of the words “Java,” “JVM,” “Sun,” etc. You can find my pre-trained tag data in the file:
 
 {line-numbers=off}
 ~~~~~~~~
@@ -298,17 +296,17 @@ The Java source code for the class **AutoTagger** is in the file:
 
 {line-numbers=off}
 ~~~~~~~~
-    src-statistical-nlp/com/knowledgebooks/nlp/AutoTagger.java
+    src-statistical-nlp/com/markwatson/nlp/AutoTagger.java
 ~~~~~~~~
 
-The **AutoTagger** class uses a few data structures to keep track of both the names of tags and the word count statistics for words associated with each tag name. I use a temporary hash table for processing the XML input data:
+The **AutoTagger** class uses a few data structures to keep track of both the names of categories (tags) and the word count statistics for words associated with each tag name. I use a temporary hash table for processing the XML input data:
 
 {lang="java",linenos=off}
 ~~~~~~~~
   private static Hashtable<String, Hashtable<String, Float>> tagClasses;
 ~~~~~~~~
 
-The names of tags used are defined in the XML tag data file: change this file, and you alter both the tags and behavior of this utility class. Please note that the data in this XML file is from a small set of hand-labeled (i.e., my wife and I labelled articles as being about "religion", "politics", etc.). 
+The names of categories (tags) used are defined in the XML tag data file: change this file, and you alter both the tags and behavior of this utility class. Please note that the data in this XML file is from a small set of hand-labeled (i.e., my wife and I labelled articles as being about "religion", "politics", etc.). 
 
 This approach is called "bag of words." The following listing shows a snippet of data defined in the XML tag data file describing some words (and their scores) associated with the tag “religion\_buddhism”:
 
@@ -337,7 +335,7 @@ This approach is called "bag of words." The following listing shows a snippet of
     </tags>
 ~~~~~~~~
 
-Notice that the term names are stemmed words and all lower case. There are 28 tags defined in the input XML file included in the [GitHub repository for this book](https://github.com/mark-watson/Java-AI-Book-Code).
+Notice that the term names are stemmed words and all lower case. There are 28 categories (tags) defined in the input XML file included in the [GitHub repository for this book](https://github.com/mark-watson/Java-AI-Book-Code).
 
 For data access, I also maintain an array of tag names and an associated list of the word frequency hash tables for each tag name:
 
@@ -349,7 +347,7 @@ For data access, I also maintain an array of tag names and an associated list of
            new ArrayList<Hashtable<String, Float>>();
 ~~~~~~~~
 
-The XML data is read and these data structures are filled during static class load time so creating multiple instances of the class **AutoTagger** has no performance penalty in memory use. Except for an empty default class constructor, there is only one public API for this class, the method **getTags**:
+The XML data is read and these data structures are filled during static class load time so creating multiple instances of the class **AutoTagger** has no performance penalty in memory use. Except for an empty default class constructor, there is only one public API for this class, the method **getTags** gets the categories for input text:
 
 {lang="java",linenos=off}
 ~~~~~~~~
@@ -361,7 +359,7 @@ To be clear, the tags returned are classification tags like "politics," "economy
 
 {linenos=off}
 ~~~~~~~~
-src-statistical-nlp/com/knowledgebooks/nlp/util/NameValue.java
+src-statistical-nlp/com/markwatson/nlp/util/NameValue.java
 ~~~~~~~~
 
 To determine the tags for input text, we keep a running score for each defined tag type. I use the internal class **SFtriple** to hold triple values of word, score, and tag index. I choose the tags with the highest scores as the automatically assigned tags for the input text. Scores for each tag are calculated by taking each word in the input text, stemming it, and if the stem is in the word frequency hash table for the tag then add the score value in the hash table to the running sum for the tag. You can refer to the AutoTagger.java source code for details. Here is an example use of class **AutoTagger**:
@@ -525,7 +523,7 @@ There is not as much differentiation in comparison scores between political news
     econ 1 - econ2: 0.26178515
 ~~~~~~~~
 
-Much better results! The API for **com.knowledgebooks.nlp.util.NoiseWords** is a single static method:
+Much better results! The API for **com.markwatson.nlp.util.NoiseWords** is a single static method:
 
 {lang="java",linenos=off}
 ~~~~~~~~
