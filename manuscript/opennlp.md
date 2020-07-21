@@ -157,14 +157,17 @@ In line 6 we create a **HashSet\<String\>** object that will hold the return val
 
 Here is some sample code to use **locationNames** along with the output (edited for page width and clarity):
 
-{line-numbers=off}
+{lang="java",line-numbers=off}
 ~~~~~~~~
    String sentence =
      "Apple Computer is located in Cupertino, California and Microsoft " +
      "is located in Seattle, Washington. He went to Oregon";
    Set<String> names = NLP.locationNames(sentence);
    System.out.println("Location names found: " + names);
+~~~~~~~~
 
+{line-numbers=off}
+~~~~~~~~
 Location names found: [Oregon, Cupertino, Seattle, California, Washington]
 ~~~~~~~~
 
@@ -212,7 +215,7 @@ bin/opennlp DoccatTrainer -model models/en-newscat.bin -lang en \
 
 The model is written to the relative file path **models/en-newscat.bin**. The training file I am using is tiny so the model is trained in a few seconds. For serious applications, the more training text the better! By default the **DoccatTrainer** tool uses the default text feature generator which uses word frequencies in documents but ignores word ordering. As I mention in the next section, I sometimes like to mix word frequency feature generation with 2gram (that is, frequencies of two adjacent words). In this case you cannot simply use the **DoccatTrainer**  command line tool. You need to write a little Java code yourself that you can plug another feature generator into using the alternative API:
 
-{line-numbers=off}
+{lang="java",line-numbers=off}
 ~~~~~~~~
 public static DoccatModel train(String languageCode,
                                 ObjectStream<DocumentSample> samples,
@@ -220,9 +223,9 @@ public static DoccatModel train(String languageCode,
                                 FeatureGenerator... featureGenerators)
 ~~~~~~~~
 
-As I also mention in the next section, the last argument would look like where we combine two feature generators, one the uses "bag of words" and the other that uses adjacent word sequences:
+As I also mention in the next section, the last argument would look like the case where we combine two feature generators, one the uses "bag of words" and the other that uses adjacent word sequences:
 
-{line-numbers=off}
+{lang="java",line-numbers=off}
 ~~~~~~~~
 public DocumentCategorizerME(DoccatModel model,
            new FeatureGenerator[]{new BagOfWordsFeatureGenerator(),
@@ -334,7 +337,7 @@ public class NewsClassifier {
 }
 ~~~~~~~~
 
-In lines 33 through 42 we initialize the static data for an instance of the class **DoccatModel** that loads the model file created in the last section.
+In lines 48-57 we initialize the static data for an instance of the class **DoccatModel** that loads the model file created in the last section.
 
 A new instance of the class **DocumentCategorizerME** is created in line 28 each time we want to classify input text. I called the one argument constructor for this class that uses the default feature detector. An alternative constructor is:
 
@@ -439,7 +442,7 @@ Best category with score: [HEALTH, 0.35546926]
 
 ## Using the OpenNLP Parsing Model
 
-We will use the parsing model that is included in the OpenNLP distribution to parse English language input text. You are unlikely to use a statistical parsing model in your work but I think you will enjoy the material in the section. If you are more interested in practical techniques then skip to the next chapter that covers more machine learning techniques.
+We will use the parsing model that is included in the OpenNLP distribution to parse English language input text into syntax trees. You are unlikely to use a statistical parsing model in your work but I think you will enjoy the material in the section.
 
 The following example code listing is long (68 lines) but I will explain the interesting parts after the listing:
 
@@ -517,7 +520,7 @@ public class ChunkingParserDemo {
 
 The OpenNLP parsing model is read from a file in lines 45 through 53. The static variable **parserModel** (instance of class **ParserModel**) if created in line 49 and used in lines 17 and 18 to parse input text. It is instructive to look at the intermediate calculation results. The value for variable parser defined in line 17 has a value of:
 
-Note that the parser returned 5 results because we specified this number in line 18. For a long sentence the parser generates a very large number of possible parses for the sentence and returns, in order of probability of being correct, the number of results we requested.
+Note that the parser returned 5 different results because we specified this number in line 18. For a long sentence the parser generates a very large number of possible parses for the sentence and returns, in order of probability of being correct, the number of results we requested.
 
 The OpenNLP chunking parser code prints out results in a flat list, one result on a line. This is difficult to read which is why I wrote the method **prettyPrint** (lines 21 through 41) to print the parse results indented. Here is the output from the last code example (the first parse shown is all on one line but line wraps in the following listing):
 
@@ -556,7 +559,7 @@ pretty printed parse:
               (NN work))))))))
 ~~~~~~~~
 
-In the 1980s I spent much time on syntax level parsing. While the example in this section is a statistical parsing model I don't find these models very relevant to my own work but I wanted to include a probalistic parsing example for completeness in this chapter.
+In the 1980s I spent much time on syntax level parsing. I no longer find these models very relevant to my own work.
 
-OpenNLP is a great resource for Java programmers and its Apache 2 license is "business friendly." If you can use software with a GPL license then please also look at the [Stanford NLP libraries](https://nlp.stanford.edu/software/).
+OpenNLP is a good resource for Java programmers and its Apache 2 license is "business friendly." If you can use software with a GPL license then please also look at the [Stanford NLP libraries](https://nlp.stanford.edu/software/).
  
