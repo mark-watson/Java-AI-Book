@@ -35,10 +35,9 @@ The problem that we want to solve is finding a good value of **x** to find a nea
 {#ga-crossover}
 ![Crosssover Operation](images/ga_crossover.png)
 
-This figure shows an example of a crossover operation that we will implement later in the program example. A random chromosome bit index is chosen, and two chromosomes are “cut” at this this index and swap cut parts. The two original chromosomes in **generation_n** are shown on the left of the figure and after the crossover operation they produce two new chromosomes in **generation n + 1** where **n** is the current generation number. The two new chromosomes are shown on the right of the figure.
+This figure shows an example of a crossover operation that we will implement later in the program example. A random chromosome bit index is chosen, and two chromosomes are “cut” at this index and swap cut parts. The two original chromosomes in **generation_n** are shown on the left of the figure and after the crossover operation they produce two new chromosomes in **generation n + 1** where **n** is the current generation number. The two new chromosomes are shown on the right of the figure.
 
-In addition to using crossover operations to create new chromosomes from existing chromosomes, we will also use genetic mutation: randomly flipping bits in chromosomes. A fitness function that rates the fitness value of each chromosome allows us to decide which chromosomes to
-discard and which to use for the next generation: we will use the most fit chromosomes in the population for producing the next generation using crossover and mutation.
+In addition to using crossover operations to create new chromosomes from existing chromosomes, we will also use genetic mutation: randomly flipping bits in chromosomes. A fitness function that rates the fitness value of each chromosome allows us to decide which chromosomes to discard and which to use for the next generation: we will use the most fit chromosomes in the population for producing the next generation using crossover and mutation.
 
 We will implement a general purpose Java GA library in the next section and then solve the example problem posed at the end of this chapter in the [GA Example Section](#java-ga-example).
 
@@ -183,7 +182,7 @@ The method **doMutations** is similar to **doCrossovers**: we randomly choose ch
       }
 ~~~~~~~~
 
-We developed a general purpose library in this section for simulating populations of chromosomes that can evolve to a more “fit” population given a fitness function that ranks individual chromosomes in order of fitness. In Section [section:java-ga-example] we will develop an example GA application by defining the size of a population and the fitness function that we saw earlier.
+We developed a general purpose library in this section for simulating populations of chromosomes that can evolve to a more “fit” population given a fitness function that ranks individual chromosomes in order of fitness. In the next section we will develop an example GA application by defining the size of a population and the fitness function that we saw earlier.
 
 
 ## Finding the Maximum Value of a Function  {#java-ga-example}
@@ -210,7 +209,9 @@ Let's get back to our 1-dimensional example seen in the [Figure showing the samp
       }
 ~~~~~~~~
 
-For each bit at index **j** with a value of 1, add {$$} \2 ^j{/$$} to the sum **x**. We need to normalize this sum **x** that is an integer in the range of [0,1023] to a floating point number in the approximate range of [0, 10]:
+For each bit at index **j** with a value of 1, add
+{$$}2 ^j{/$$} to the sum **x**.
+We need to normalize this sum **x** that is an integer in the range of [0,1023] to a floating point number in the approximate range of [0, 10]:
 
 {lang="java",linenos=off}
 ~~~~~~~~
