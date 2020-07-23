@@ -4,7 +4,7 @@ I have been working in the field of Natural Language Processing (NLP) since 1982
 
 The material in this chapter is dated but still useful. It is dated because deep learning networks now far surpass the capabilities of statistical and symbolic NLP. The material is still useful in my projects but I often prefer the OpenNLP library (that mostly used Maximum Entropy models) that we cover in the next chapter and for very difficult NLP problems like coreference resolution (or anaphora resolution) I use deep learning models like BERT. If you use Python then I strongly recommend the **spaCy** library for NLP.
 
-Deep learning is apparently "eating" the AI world but I firmly believe in hybrid systems stand the best chance of getting us to real artificial general intelligence (AGI) - time will tell. Many experts in AI believe that deep learning only takes us so far, and in order to reach general artificial intelligence we will use some form of hybrid deep learning, symbolic AI, and probabalistic systems. That said, there are deep learning specialists who predict the their favored technology will probably be sufficient to get to AGI.
+Deep learning is apparently "eating" the AI world but I firmly believe that hybrid systems stand the best chance of getting us to real artificial general intelligence (AGI) - time will tell. Many experts in AI believe that deep learning only takes us so far, and in order to reach general artificial intelligence we will use some form of hybrid deep learning, symbolic AI, and probabalistic systems. That said, there are deep learning specialists who predict their favored technology will probably be sufficient to get to AGI.
 
 ## Overview of the NLP  Library and Running the Examples
 
@@ -119,7 +119,7 @@ Brill’s system worked by processing manually tagged text and then creating a l
 
 Here “Arco” is a proper noun because it is the name of a corporation. The word “Arctic” can be either a proper noun or an adjective; it is used most frequently as a proper noun so the tag “NNP” is listed before “JJ.” The word “fair” can be an adjective, singular noun, or an adverb.
 
-The class **Tagger** reads the file lexicon either as a resource stream (if, for example, you put **lexicon.txt **in the same JAR file as the compiled **Tagger** and **Tokenizer** class files) or as a local file. Each line in the **lexicon.txt** file is passed through the utility method **parseLine** that processes an input string using the first token in the line as a hash key and places the remaining tokens in an array that is the hash value. So, we would process the line “fair JJ NN RB” as a hash key of “fair” and the hash value would be the array of strings (only the first value is currently used but I keep the other values for future use):
+The class **Tagger** reads the file lexicon either as a resource stream (if, for example, you put **lexicon.txt **in the same JAR file as the compiled **Tagger** and **Tokenizer** class files) or as a local file. Each line in the **lexicon.txt** file is passed through the utility method **parseLine** that processes an input string using the first token in the line as a hash key and places the remaining tokens in an array that is the hash value. So, we would process the line “fair JJ NN RB” as a hash key of “fair” and the hash value would be the array of strings (only the first value is currently used but I keep the other values for future use).
 
 When the tagger is processing a list of word tokens, it looks each token up in the hash table and stores the first possible tag type for the word. In our example, the word “fair” would be assigned (possibly temporarily) the tag “JJ.” We now have a list of word tokens and an associated list of possible tag types. We now loop through all of the word tokens applying eight transition rules that Eric Brill’s system learned. We will look at the first rule in some detail; **i** is the loop variable in the range [0, number of word tokens - 1] and **word** is the current word at index **i**:
 
@@ -286,7 +286,7 @@ This same scheme is used to test for multi-word human names. The top-level utili
 
 Here we will assign zero or more categories like “politics”, “economy”, etc. to text based on the words contained in the text. While the code for doing this is simple there is usually much work to do to build a word count database for different classifications. The approach we use here is often called "bag of words" because the words in input text matter but not the order of words in text or proximity to other words.
 
-I have been working on open source products for automatic tagging and semantic extraction for since the 1990s (see my old web site www.knowledgebooks.com if you are interested). In this section I will show you some simple techniques for automatically assigning tags or categories to text. We will use a set of category tags for which I have collected word frequency statistics. For example, a category of “Java” might be associated with the use of the words “Java,” “JVM,” “Sun,” etc. You can find my pre-trained tag data in the file:
+I have been working on open source products for automatic tagging and semantic extraction since the 1990s (see my old web site www.knowledgebooks.com if you are interested). In this section I will show you some simple techniques for automatically assigning tags or categories to text. We will use a set of category tags for which I have collected word frequency statistics. For example, a category of “Java” might be associated with the use of the words “Java,” “JVM,” “Sun,” etc. You can find my pre-trained tag data in the file:
 
 {line-numbers=off}
 ~~~~~~~~
@@ -307,7 +307,7 @@ The **AutoTagger** class uses a few data structures to keep track of both the na
   private static Hashtable<String, Hashtable<String, Float>> tagClasses;
 ~~~~~~~~
 
-The names of categories (tags) used are defined in the XML tag data file: change this file, and you alter both the tags and behavior of this utility class. Please note that the data in this XML file is from a small set of hand-labeled (i.e., my wife and I labelled articles as being about "religion", "politics", etc.). 
+The names of categories (tags) used are defined in the XML tag data file: change this file, and you alter both the tags and behavior of this utility class. Please note that the data in this XML file is from a small set of hand-labeled text found on the Web (i.e., my wife and I labelled articles as being about "religion", "politics", etc.). 
 
 This approach is called "bag of words." The following listing shows a snippet of data defined in the XML tag data file describing some words (and their scores) associated with the tag “religion\_buddhism”:
 
