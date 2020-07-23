@@ -1,5 +1,3 @@
-reasoning.md
-anomaly_detection.md
 genetic_algorithms.md
 neural_networks.md
 deeplearning.md
