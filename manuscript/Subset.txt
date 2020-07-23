@@ -1,5 +1,3 @@
-preface.md
-search.md
 reasoning.md
 anomaly_detection.md
 genetic_algorithms.md
