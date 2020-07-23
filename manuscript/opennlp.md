@@ -223,7 +223,7 @@ public static DoccatModel train(String languageCode,
                                 FeatureGenerator... featureGenerators)
 ~~~~~~~~
 
-As I also mention in the next section, the last argument would look like the case where we combine two feature generators, one the uses "bag of words" and the other that uses adjacent word sequences:
+In the next section, you will note that the last argument would look like the case where we combine two feature generators, one that uses "bag of words" and the other that uses adjacent word sequences:
 
 {lang="java",line-numbers=off}
 ~~~~~~~~
@@ -357,7 +357,7 @@ public DocumentCategorizerME(DoccatModel model,
 ~~~~~~~~
 
 
-The following listings show interspersed both example code snippets for for using the **NewsClassifier** class followed by the output printed by each code snippet:
+The following listings show interspersed both example code snippets for using the **NewsClassifier** class followed by the output printed by each code snippet:
 
 {line-numbers=off}
 ~~~~~~~~

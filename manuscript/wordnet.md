@@ -60,7 +60,7 @@ When you look up words in WordNet you can optionally specify one of the followin
     POS.ADVERB(4, "r", "adverb");
 ~~~~~~~~
 
-This example could have been written to not use OpenNLP to find nouns and instead try all four possible parts of speech on every input word. I was motivated to use OpenNLP partly because I wanted to provide an example of reusing a library developed in a different chapter, in this case the previous chapter on OpenNLP.
+Rather than using Open NLP in this example to find nouns, we could try all four possible parts of speech on every input word. I was motivated to use OpenNLP partly because I wanted to provide an example of reusing a library developed in a different chapter, in this case the previous chapter on OpenNLP.
 
 What are hypernyms?  A hypernym is in a semantic type-of relationship with another word that is more general. As an example, the word "country" is a hypernym of the word "Mexico." The opposite of hypernym is a hyponym, that is a hyponym has a more narrow meaning. The word "country" is a hyponym of the word "Mexico."
 
@@ -321,7 +321,7 @@ The following three sub-sections are suggested projects.
 
 ### Using a Part of Speech Tagger to Use the Correct WordNet Synonyms
 
-WordNet will give us both synonyms and antonyms (opposite meaning) of words. The problem is that we can only get words with similar and opposite meanings for specific “senses” of a word. Using for  example, synonyms of the word “bank” in the sense of a verb meaning “have confidence or faith in” are:
+WordNet will give us both synonyms and antonyms (opposite meaning) of words. The problem is that we can only get words with similar and opposite meanings for specific “senses” of a word. Using for  example synonyms of the word “bank” in the sense of a verb meaning “have confidence or faith in” are:
 
 - trust
 - swear
@@ -337,7 +337,7 @@ So it does not make too much sense to try to maintain a data map of synonyms for
 
 ### Using WordNet Synonyms to Improve Document Clustering
 
-Another suggestion for a WordNet-based project is to use the OpenNLP part of speech to identify the probable part of speech for each word in all text documents that you want to cluster, and augment the documents with synset (synonym) data. You can then cluster the documents similarly to how we used a "bag of words" technique two chapters ago but instead of counting word frequencies, count composite word/part-of-speech token frequencies as well as implied synonym-word/part-of-speech token frequencies.
+Another suggestion for a WordNet-based project is to use the OpenNLP part of speech to identify the probable part of speech for each word in all text documents that you want to cluster, and augment the documents with synset (synonym) data. You can then cluster the documents similarly to how we used a "bag of words" in the earlier chapter **Natural Language Processing** but instead of counting word frequencies, count composite word/part-of-speech token frequencies as well as implied synonym-word/part-of-speech token frequencies.
 
 
 
