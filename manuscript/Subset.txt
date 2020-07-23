@@ -1,17 +1,3 @@
-preface.md
-search.md
-reasoning.md
-anomaly_detection.md
-genetic_algorithms.md
-neural_networks.md
-deeplearning.md
-nlp.md
 opennlp.md
 wordnet.md
-ner_dbpedia.md
-information_gathering.md
-semantic_web.md
-kgc.md
-kgn.md
-conclusion.md
 
