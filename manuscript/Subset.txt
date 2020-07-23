@@ -1,2 +1,2 @@
-neural_networks.md
+genetic_algorithms.md
 
