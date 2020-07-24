@@ -9,9 +9,9 @@ I now consider this form of classic search to be a well understood problem but t
 
 We will cover depth-first and breadth-first search. The basic implementation for depth-first and breadth-first search is the same with one key difference. When searching from any location in state space we start by calculating nearby locations that can be moved to in one search cycle. For depth-first search we store new locations to be searched in a stack data structure and for breadth-first search we store new locations to search in a queue data structure. As we will shortly see this simple change has a large impact on search quality (usually breadth-first search will produce better results) and computational resources (depth-first search requires less storage).
 
-It is customary to cover search in AI books but to be honest I have only used search techniques in one interactive planning system in the 1980s and much later while doing the "game AI" in two Nintendo games and a PC hovercraft racing game. Still, you should understand how to optimize search.
+It is customary to cover search in AI books but to be honest I have only used search techniques in one interactive planning system in the 1980s and much later while doing the "game AI" in two Nintendo games, a PC hovercraft racing game and a VR system for Disney. Still, you should understand how to optimize search.
 
-What are the limitations of search? Early on, search applied to problems like checkers and chess misled early researchers into underestimating the extreme difficulty of writing software that performs tasks in domains that require general world knowledge or deal with complex and changing environments. These types of problems usually require the understanding and the implementation of domain specific knowledge.
+What are the limitations of search? Early on, success in applying search to problems like checkers and chess misled early researchers into underestimating the extreme difficulty of writing software that performs tasks in domains that require general world knowledge or deal with complex and changing environments. These types of problems usually require the understanding and the implementation of domain specific knowledge.
 
 In this chapter, we will use three search problem domains for studying search algorithms: path finding in a maze, path finding in a graph, and alpha-beta search in the games tic-tac-toe and chess.
 
@@ -45,11 +45,11 @@ make chess
 ## Representation of Search State Space and Search Operators
 
 We will use a single search tree representation in graph search and maze search examples in this chapter. Search trees consist of nodes that define locations in state space and links to other nodes. For some small problems, the search tree can be pre-computed and cover all of the search space. For most problems however it is impossible to completely enumerate a search tree for a state space so we must define successor node search operators that for a given node produce all nodes that can be reached from the current node in one step. For example, in the game of chess we can not possibly enumerate the search tree for all possible games of chess, so we define a successor node search operator that given a board position (represented by a node in the search tree) calculates all possible moves for either the white or black pieces. The possible
-chess moves are calculated by a successor node search operator and are represented by newly calculated nodes that are linked to the previous node. Note that even when it is simple to fully enumerate a search tree, as in the game maze example, we still might want to generate the search tree dynamically as we will do in this chapter.
+Chess moves are calculated by a successor node search operator and are represented by newly calculated nodes that are linked to the previous node. Note that even when it is simple to fully enumerate a search tree, as in the small maze example, we still want to use the general implementation strategy of generating the search tree dynamically as we will do in this chapter.
 
 For calculating a search tree we use a graph. We will represent graphs as nodes with links between some of the nodes. For solving puzzles and for game related search, we will represent positions in the search space with Java objects called nodes. Nodes contain arrays of references to child nodes and for some applications we also might store links back to parent nodes. A search space using this node representation can be viewed as a **directed graph** or a **tree**. The node that has no parent nodes is the root node and all nodes that have no child nodes a called leaf nodes.
 
-Search operators are used to move from one point in the search space to another. We deal with quantized search spaces in this chapter, but search spaces can also be continuous in some applications. Often search spaces are either very large or are infinite. In these cases we implicitly define a search space using some algorithm for extending the space from our reference position in the space. The [Figure showing Search Space Representations](#searchspace)
+Search operators are used to move from one point in the search space to another. We deal with quantized search spaces in this chapter, but search spaces can also be continuous in some applications (e.g., a robot's position while moving in the real world). In general search spaces are either very large or are infinite. We implicitly define a search space using some algorithm for extending the space from our reference position in the space. The figure [Search Space Representations](#searchspace)
 shows representations of search space as both connected nodes in a graph
 and as a two-dimensional grid with arrows indicating possible movement
 from a reference point denoted by **R**.
@@ -66,54 +66,32 @@ location diagonally.
 
 When we specify a search space using node representation, search operators can move the reference point down to any child node or up to the parent node. For search spaces that are represented implicitly, search operators are also responsible for determining legal child nodes, if any, from the reference point.
 
-Note that I use different libraries for the maze and graph search examples.
+Note that I created different libraries for the maze and graph search examples.
 
 ## Finding Paths in Mazes
 
 The example program used in this section is **MazeSearch.java** in the
-directory **src/main/java/search/maze** and I assume that you have cloned the GitHub repository for this book. [Figure showing UML Diagram for Search Classes](#search-uml) shows an overview of
-the maze search classes: depth-first and
-breadth-first search. The abstract base class **AbstractSearchEngine**
-contains common code and data that is required by both the classes
-**DepthFirstSearch** and **BreadthFirstSearch**. The class **Maze** is used to
-record the data for a two-dimensional maze, including which grid
-locations contain walls or obstacles. The class **Maze** defines three
-static short integer values used to indicate obstacles, the starting
-location, and the ending location.
+directory **search/src/main/java/search/maze** and I assume that you have cloned the [GitHub repository for this book](https://github.com/mark-watson/Java-AI-Book-Code). The figure [UML Diagram for Search Classes](#search-uml) shows an overview of
+the maze search strategies: depth-first and breadth-first search. The abstract base class **AbstractSearchEngine**
+contains common code and data that is required by both the classes **DepthFirstSearch** and **BreadthFirstSearch**. The class **Maze** is used to
+record the data for a two-dimensional maze, including which grid locations contain walls or obstacles. The class **Maze** defines three
+static short integer values used to indicate obstacles, the starting location, and the ending location.
 
 
 {#search-uml}
 ![UML Diagram for Search Classes](images/search_uml.png)
 
 
-The Java class **Maze** defines the search space. This class allocates a
-two-dimensional array of short integers to represent the state of any
-grid location in the maze. Whenever we need to store a pair of integers,
-we will use an instance of the standard Java class **java.awt.Dimension**,
-which has two integer data components: width and height. Whenever we
-need to store an x-y grid location, we create a new Dimension object (if
-required), and store the x coordinate in Dimension.width and the y
-coordinate in Dimension.height. As in the right-hand side of Figure
-[fig:searchspace], the operator for moving through the search space from
-given x-y coordinates allows a transition to any adjacent grid location
-that is empty. The Maze class also contains the x-y location for the
-starting location (startLoc) and goal location (goalLoc). Note that for
-these examples, the class Maze sets the starting location to grid
-coordinates 0-0 (upper left corner of the maze in the figures to follow)
-and the goal node in (width - 1)-(height - 1) (lower right corner in the
-following figures).
+The Java class **Maze** defines the search space. This class allocates a two-dimensional array of short integers to represent the state of any grid location in the maze. Whenever we need to store a pair of integers,
+we will use an instance of the standard Java class **java.awt.Dimension**, which has two integer data components: width and height. Whenever we
+need to store an x-y grid location, we create a new Dimension object (if required), and store the x coordinate in **Dimension.width** and the y coordinate in **Dimension.height**. As in the right-hand side of figure [Search Space](#searchspace), the operator for moving through the search space from given x-y coordinates allows a transition to any adjacent grid location that is empty. The Maze class also contains the x-y location for the starting location (**startLoc**) and goal location (**goalLoc**). Note that for these examples, the class Maze sets the starting location to grid coordinates 0-0 (upper left corner of the maze in the figures to follow) and the goal node in (width - 1) - (height - 1) (lower right corner in the following figures).
 
 The abstract class **AbstractSearchEngine** is the base class for both the
 depth-first (uses a stack to store moves) search class
-**DepthFirstSearchEngine** and the breadth-first (uses a queue to store
-moves) search class **BreadthFirstSearchEngine**. We will start by looking
+**DepthFirstSearchEngine** and the breadth-first (uses a queue to store moves) search class **BreadthFirstSearchEngine**. We will start by looking
 at the common data and behavior defined in **AbstractSearchEngine**. The
-class constructor has two required arguments: the width and height of
-the maze, measured in grid cells. The constructor defines an instance of
-the **Maze** class of the desired size and then calls the utility method
-initSearch to allocate an array **searchPath** of **Dimension** objects,
-which will be used to record the path traversed through the maze. The
-abstract base class also defines other utility methods:
+class constructor has two required arguments: the width and height of the maze, measured in grid cells. The constructor defines an instance of
+the **Maze** class of the desired size and then calls the utility method initSearch to allocate an array **searchPath** of **Dimension** objects, which will be used to record the path traversed through the maze. The abstract base class also defines other utility methods:
 
 -   **equals(Dimension d1, Dimension d2)** – checks to see if two
     arguments of type **Dimension** are the same.
@@ -131,7 +109,7 @@ current search depth:
 
 {lang="java",linenos=off}
 ~~~~~~~~
-        private void iterateSearch(Dimension loc, int depth)
+    private void iterateSearch(Dimension loc, int depth) {
 ~~~~~~~~
 
 The class variable **isSearching** is used to halt search, avoiding more
@@ -139,14 +117,14 @@ solutions, once one path to the goal is found.
 
 {lang="java",linenos=off}
 ~~~~~~~~
-            if (isSearching == false) return;
+      if (isSearching == false) return;
 ~~~~~~~~
 
 We set the maze value to the depth for display purposes only:
 
 {lang="java",linenos=off}
 ~~~~~~~~
-            maze.setValue(loc.width, loc.height, (short)depth);
+      maze.setValue(loc.width, loc.height, (short)depth);
 ~~~~~~~~
 
 Here, we use the super class **getPossibleMoves** method to get an array
@@ -156,10 +134,10 @@ move):
 
 {lang="java",linenos=off}
 ~~~~~~~~
-    Dimension [] moves = getPossibleMoves(loc);
-    for (int i=0; i<4; i++) {
-    if (moves[i] == null) break; // out of possible moves
-                                 // from this location
+      Dimension [] moves = getPossibleMoves(loc);
+      for (int i=0; i<4; i++) {
+        if (moves[i] == null) break; // out of possible moves
+                                     // from this location
 ~~~~~~~~
 
 Record the next move in the search path array and check to see if we are
@@ -338,7 +316,7 @@ In the last section, we used both depth-first and breadth-first search technique
 
 Links between nodes are often called edges. The algorithms used for finding paths in graphs are very similar to finding paths in a two-dimensional maze. The primary difference is the operators that allow us to move from one node to another. In the last section we saw that in a maze, an agent can move from one grid space to another if the target space is empty. For graph search, a movement operator allows movement to another node if there is a link to the target node.
 
-The [figure showing UML Diagram for Search Classes](#search-uml) shows the UML class diagram for the graph search Java classes that we will use in this section. The abstract class **AbstractGraphSearch** class is the base class for both **DepthFirstSearch** and **BreadthFirstSearch**. The classes **GraphDepthFirstSearch** and **GraphBreadthFirstSearch** and test programs also provide a Java Foundation Class (JFC) or Swing based user interface. These two test programs produced Figures [fig:gsearch-depth-maze] and [fig:gsearch-breadth-maze].
+The [figure showing UML Diagram for Search Classes](#search-uml) shows the UML class diagram for the graph search Java classes that we will use in this section. The abstract class **AbstractGraphSearch** class is the base class for both **DepthFirstSearch** and **BreadthFirstSearch**. The classes **GraphDepthFirstSearch** and **GraphBreadthFirstSearch** and test programs also provide a Java Foundation Class (JFC) or Swing based user interface. These two test programs produced figures [Search Depth-First](#gsearch-depth-maze) and [Search Breadth-First](#gsearch-breadth-maze).
 
 {#gsearch-uml}
 ![UML Diagram for Graphics Search Demo](images/gsearch_uml.png)

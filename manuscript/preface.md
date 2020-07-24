@@ -19,7 +19,7 @@ The code for the example programs is available on **github**:
 
 My Java code in this book can be used under either or both the LGPL3 and Apache 2 licenses - choose whichever of these two licenses that works best for you. Git pull requests with code improvements will be appreciated by me and the readers of this book.
 
-My goal is to teach you both the theory of common AI techniques and to provide you with Java source code to save you some time and effort. Even though I have worked almost exclusively in the field of deep learning in the last six years, I urge you, dear reader, to look at the field of AI as being far broader than machine learning and deep learning in particular. Just as it is wrong to consider the higher level fields of Category Theory or Group Theory to "be" mathematics, there is far more to AI than machine learning. Here we will take a more balanced view of AI, and indeed, my own current research is in hybrid AI, that is, the fusion of deep learning with good old fashioned symbolic AI, probabilistic reasoning, and explainability. 
+My goal is to introduce you to common AI techniques and to provide you with Java source code to save you some time and effort. Even though I have worked almost exclusively in the field of deep learning in the last six years, I urge you, dear reader, to look at the field of AI as being far broader than machine learning and deep learning in particular. Just as it is wrong to consider the higher level fields of Category Theory or Group Theory to "be" mathematics, there is far more to AI than machine learning. Here we will take a more balanced view of AI, and indeed, my own current research is in hybrid AI, that is, the fusion of deep learning with good old fashioned symbolic AI, probabilistic reasoning, and explainability. 
 
 This book is released with a [Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)](https://creativecommons.org/licenses/by-nc-nd/4.0/) license. Feel free to share copies of this book with friends and colleagues at work. This book is also available to [read free online or to purchase](https://leanpub.com/javaai) if you want to support my writing activities.
 
@@ -37,14 +37,14 @@ Additionally, the chapter Statistical Natural Language Processing is configured 
 
 Code sharing is achieved by installing the code in your local maven repository, for example:
 
-        cd opennlp
+        cd Java-AI-Book-Code/opennlp
         mvn install
 
 Now, the code in the OpenNLP example is installed on your system.
 
 ## Software Licenses for Example Programs in this Book
 
-My example programs (i.e., the code I wrote) are licensed under the LGPL version 3 and the Apache 2. Use whichever of these two licenses that works better for you. I also use several open source libraries and their licenses are:
+My example programs (i.e., the code I wrote) are licensed under the LGPL version 3 and the Apache 2. Use whichever of these two licenses that works better for you. I also use several open source libraries in the book examples and their licenses are:
 
 -   PowerLoom Reasoning: LGPL
 -   Jena Semantic Web: Apache 2
