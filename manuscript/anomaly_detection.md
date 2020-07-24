@@ -4,6 +4,7 @@ Anomaly detection models are used in one very specific class of use cases: when 
 
 If you have a large training set of both negative and positive examples then do not use anomaly detection models. If your training examples are balanced then use a classification model as we will see later in the chapter [Deep Learning Using Deeplearning4j](#dl4j).
 
+
 ## Motivation for Anomaly Detection
 
 There are two other examples in this book using the University of Wisconsin cancer data. These other examples are supervised learning. Anomaly detection as we do it in this chapter is, more or less, unsupervised learning.
