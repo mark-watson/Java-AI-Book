@@ -1,19 +1,23 @@
 # Genetic Algorithms {#ga}
 
-When searching a large space with many dimensions, greedy search algorithms find locally good results that are often much worse than the best possible solutions. Genetic Algorithms (GAs) are an efficient means of finding near optimum solutions by more uniformly exploring a large many-dimensional search space.  Genetic algorithms are type of heuristic search where the heuristic takes the form of combining a fitness function with efficient search techniques inspired by biology.
+When searching a large space with many dimensions, greedy search algorithms find locally good results that are often much worse than the best possible solutions. Genetic Algorithms (GAs) are an efficient means of finding near optimum solutions by more uniformly exploring a large many-dimensional search space.  Genetic algorithms are a type of heuristic search where the heuristic takes the form of combining a fitness function with efficient search techniques inspired by biology.
 
 Genetic algorithms can be said to be inspired by biology because they deal with mutation, crossover, and selection. Each possible solution to a problem is encoded in a chromosome that represents a point in a many-dimensional search space.
 
 GA computer simulations evolve a population of chromosomes that may contain at least some fit individuals. Fitness is specified by a fitness function that is used to rate each individual in the population (of chromosomes) and makes it possible to use selection to choose the best candidate chromosomes to mutate and/or do crossover operations, or save as-is for the next generation. We make copies of the selected chromosomes and slightly perturb the copies with random mutations. Furthermore, pairs of selected chromosomes are cut in the same random gene index and cut pieces of the pair of chromosomes are swapped (a process called crossover).
 
-Setting up a GA simulation is fairly easy: we need to represent (or encode) the state of a system in a chromosome that is usually implemented as a set of bits. GA is basically a search operation: searching for a good solution to a problem where the solution is a very fit chromosome. The programming technique of using GA is useful for AI systems that must adapt to changing conditions because “re-programming” can be as simple as defining a new fitness function and re-running the simulation. An advantage of GA is that the search process will not often “get stuck” in local minimum because the genetic crossover process produces radically different chromosomes in new generations while occasional mutations (flipping a random bit in a chromosome) cause small changes. As you can imagine, performing a crossover operation moves to a very distant point in the search space. Another aspect of GA is supporting the evolutionary concept of “survival of the fittest”: by using the fitness function we will preferentially “breed” chromosomes with higher fitness values.
+Setting up a GA simulation is fairly easy: we need to represent (or encode) the state of a system in a chromosome that is usually implemented as a set of bits. GA is basically a search operation: searching for a good solution to a problem where the solution is a very fit chromosome. The programming technique of using GA is useful for AI systems that must adapt to changing conditions because “re-programming” can be as simple as defining a new fitness function and re-running the simulation. An advantage of GA is that the search process will not often “get stuck” in local minimum because the genetic crossover process produces radically different chromosomes in new generations while occasional mutations (flipping a random bit in a chromosome) cause small changes.
 
-It is interesting to compare how GAs are trained with how we train neural networks (chapter on [Neural Networks](#neural-networks)). We need to manually “supervise” the training process: for GAs we need to supply a fitness function and for of the neural network models used in the chapter [Neural Networks](#neural-networks) we need to supply training data with desired sample outputs for sample inputs.
+As you can imagine, performing a crossover operation moves to a very distant point in the search space. Alternatively mutating a single bit only moves a point (i.e., a chromosome) in one dimension in the search space.
+
+Another aspect of GA is supporting the evolutionary concept of “survival of the fittest”: by using the fitness function we will preferentially “breed” chromosomes with higher fitness values.
+
+It is interesting to compare how GAs are trained with how we train neural networks (see the next chapter on [Neural Networks](#neural-networks)). We need to manually “supervise” the training process: for GAs we need to supply a fitness function and for of the neural network models used in the chapter [Neural Networks](#neural-networks) we need to supply training data with desired sample outputs for sample inputs.
 
 
 ## Theory
 
-GAs are typically used to search very large and possibly very high dimensional search spaces. If we want to find a solution as a single point in an **N** dimensional space where a fitness function has a near maximum value, then we have **N** parameters to encode in each chromosome. In this chapter we will be solving a simple problem in which we only need to encode a single number (a floating point number for this example) in each chromosome. We are effectively downsampling a floating point number to an integer and the bit representation of the integer is a chromosome. Using a GA toolkit, like the one developed in a later section, requires two problem-specific customizations:
+GAs are typically used to search very large and usually very high dimensional search spaces. If we want to find a solution as a single point in an **N** dimensional space where a fitness function has a near maximum value, then we have **N** parameters to encode in each chromosome. In this chapter we will be solving a simple problem in which we only need to encode a single number (a floating point number for this example) in each chromosome. We are effectively downsampling a floating point number to an integer and the bit representation of the integer is a chromosome. Using a GA toolkit, like the one developed in a later section, requires two problem-specific customizations:
 
 -   Characterize the search space by a set of parameters that can be encoded in a chromosome (more on this later). GAs work with the coding of a parameter set, not the parameters themselves (*Genetic
     Algorithms in Search, Optimization, and Machine Learning*, David Goldberg, 1989).
@@ -21,7 +25,7 @@ GAs are typically used to search very large and possibly very high dimensional s
 
 The GA toolkit developed in this chapter treats genes as a single bit; while you can consider a gene to be an arbitrary data structure, the approach of using single bit genes and specifying the number of genes (or bits) in a chromosome is very flexible. A population is a set of chromosomes. A generation is defined as one reproductive cycle of replacing some elements of the chromosome population with new chromosomes produced by using a genetic crossover operation followed by optionally mutating a few chromosomes in the population.
 
-We will describe a simple example problem in this section, write a general purpose library in the section [Java Library for Genetic Algorithms](#java-ga-lib), and finish the chapter in the section [Java Genetic Algorithm Example](#java-ga-example) by solving the problem posed in this section.
+We will describe a simple example problem (that can be better solved using Newton's method) in this section, write a general purpose library in the section [Java Library for Genetic Algorithms](#java-ga-lib), and finish the chapter in the section [Java Genetic Algorithm Example](#java-ga-example) by solving this problem.
 
 {#ga-sample-function}
 ![Example Function](images/ga_sample_function.png)
@@ -188,13 +192,13 @@ We developed a general purpose library in this section for simulating population
 ## Finding the Maximum Value of a Function  {#java-ga-example}
 
 
-We will use the Java library in the last section to develop an example application to find the maximum of the function seen in the [Figure showing a sample function](#ga-sample-function) which shows a plot of our test function that we are using a GA to fit, plotted in the interval [0, 10].
+We will use the Java library in the last section to develop an example application to find the maximum of the function seen in the figure showing the [sample function](#ga-sample-function) which shows a plot of our test function we are using a GA to fit, plotted in the interval [0, 10].
 
-While we could find the maximum value of this function by using Newton’s method (or even a simple brute force search over the range of the independent variable **x**), the GA method scales very well to similar problems of higher dimensionality. The GA also helps us to find better than locally optimum solutions. In this example we are working in one dimension so we only need to encode a single variable in a chromosome. As an example of a 20-dimensional space, we might have products of sine waves using 20 independent variables **x1, x2, ..x20** and a single chromosome would still represent a point in this 20-dimensional space. To continue this example, if we used 10bits to repent the value range in each of the 20 dimensions, then the chromosome would be represented as 200 bits.
+While we could find the maximum value of this function by using Newton’s method (or even a simple brute force search over the range of the independent variable **x**), the GA method scales very well to similar problems of higher dimensionality. The GA also helps us to find better than locally optimum solutions. In this example we are working in one dimension so we only need to encode a single variable in a chromosome. As an example of a 20-dimensional space, we might have a financial model with 20 independent variables **x1, x2, ..x20** and a single chromosome would still represent a point in this 20-dimensional space. To continue this example, if we used 10 bits to represent the value range in each of the 20 dimensions, then the chromosome would be represented as 200 bits.
 
 To generalize, our first task is to characterize the search space as one or more parameters. In general when we write GA applications we might need to encode several parameters in a single chromosome. As another example, if a fitness function has three arguments we would encode three numbers in a single chromosome.
 
-Let's get back to our 1-dimensional example seen in the [Figure showing the sample function](#ga-sample-function). This is a simple example for showing you how to set up a GA simulation. In this example problem we have only one parameter, the independent variable x. We will encode the parameter x using ten bits (so we have ten 1-bit genes per chromosome). A good starting place is writing a utility method for converting the 10-bit representation to a floating-point number in the range [0.0, 10.0]:
+Let's get back to our 1-dimensional example seen in the figure showing the [sample function](#ga-sample-function). This is a simple example for showing you how to set up a GA simulation. In this example problem we have only one parameter, the independent variable x. We will encode the parameter x using ten bits (so we have ten 1-bit genes per chromosome). A good starting place is writing a utility method for converting the 10-bit representation to a floating-point number in the range [0.0, 10.0]:
 
 {lang="java",linenos=off}
 ~~~~~~~~
@@ -220,7 +224,7 @@ We need to normalize this sum **x** that is an integer in the range of [0,1023] 
     }
 ~~~~~~~~
 
-Note that we do not need the reverse method! We use our GA library from the last section to create a population of 10-bit chromosomes. In order to evaluate the fitness of each chromosome in a population, we only have to convert the 10-bit representation to a floating-point number for evaluation using the fitness function we showed earlier:
+Note that we do not need the reverse method! We use our GA library from the last section to create a population of 10-bit chromosomes. In order to evaluate the fitness of each chromosome in a population, we only have to convert the 10-bit representation to a floating-point number for evaluation using the fitness function we showed earlier (figure showing the [sample function](#ga-sample-function)):
 
 {lang="java",linenos=off}
 ~~~~~~~~
@@ -231,7 +235,7 @@ Note that we do not need the reverse method! We use our GA library from the last
     }
 ~~~~~~~~
 
-The following table shows some sample random chromosomes and the floating point numbers that they encode. The first column shows the gene indices where the bit is “on,” the second column shows the chromosomes as an integer number represented in binary notation, and the third column shows the floating point number that the chromosome encodes. The center column in the following table shows the bits in order where index 0 is the left-most bit, and index 9 if the right-most bit; this is the reverse of the normal order for encoding integers but the GA does not care: it works with any encoding we use as long as it is consistent.
+The following table shows some sample random chromosomes and the floating point numbers that they encode. The first column shows the gene indices where the bit is “on,” the second column shows the chromosomes as an integer number represented in binary notation, and the third column shows the floating point number that the chromosome encodes. Note that the center column in the following table shows the bits in order where index 0 is the left-most bit, and index 9 if the right-most bit; this is the reverse of the normal order for encoding integers but the GA does not care: it works with any encoding we use as long as it is consistent.
 
 {linenos=off}
 ~~~~~~~~
