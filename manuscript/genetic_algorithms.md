@@ -12,12 +12,12 @@ As you can imagine, performing a crossover operation moves to a very distant poi
 
 Another aspect of GA is supporting the evolutionary concept of “survival of the fittest”: by using the fitness function we will preferentially “breed” chromosomes with higher fitness values.
 
-It is interesting to compare how GAs are trained with how we train neural networks (see the next chapter on [Neural Networks](#neural-networks)). We need to manually “supervise” the training process: for GAs we need to supply a fitness function and for of the neural network models used in the chapter [Neural Networks](#neural-networks) we need to supply training data with desired sample outputs for sample inputs.
+It is interesting to compare how GAs are trained with how we train neural networks (see the next chapter on [Neural Networks](#neural-networks)). We need to manually “supervise” the training process: for GAs we need to supply a fitness function. For of the neural network models used in the chapter [Neural Networks](#neural-networks) we supply training data with desired sample outputs for sample inputs.
 
 
 ## Theory
 
-GAs are typically used to search very large and usually very high dimensional search spaces. If we want to find a solution as a single point in an **N** dimensional space where a fitness function has a near maximum value, then we have **N** parameters to encode in each chromosome. In this chapter we will be solving a simple problem in which we only need to encode a single number (a floating point number for this example) in each chromosome. We are effectively downsampling a floating point number to an integer and the bit representation of the integer is a chromosome. Using a GA toolkit, like the one developed in a later section, requires two problem-specific customizations:
+GAs are typically used to search very large and usually very high dimensional search spaces. If we want to find a solution as a single point in an **N** dimensional space where a fitness function has a near maximum value, then we have **N** parameters to encode in each chromosome. In this chapter we will be solving a simple problem in which we only need to encode a single number (a floating point number for this example) in each chromosome. We are effectively downsampling a floating point number to an integer and the bit representation of the integer is a chromosome. Using a GA toolkit like the one developed in a later section, requires two problem-specific customizations:
 
 -   Characterize the search space by a set of parameters that can be encoded in a chromosome (more on this later). GAs work with the coding of a parameter set, not the parameters themselves (*Genetic
     Algorithms in Search, Optimization, and Machine Learning*, David Goldberg, 1989).
@@ -41,7 +41,7 @@ The problem that we want to solve is finding a good value of **x** to find a nea
 
 This figure shows an example of a crossover operation that we will implement later in the program example. A random chromosome bit index is chosen, and two chromosomes are “cut” at this index and swap cut parts. The two original chromosomes in **generation_n** are shown on the left of the figure and after the crossover operation they produce two new chromosomes in **generation n + 1** where **n** is the current generation number. The two new chromosomes are shown on the right of the figure.
 
-In addition to using crossover operations to create new chromosomes from existing chromosomes, we will also use genetic mutation: randomly flipping bits in chromosomes. A fitness function that rates the fitness value of each chromosome allows us to decide which chromosomes to discard and which to use for the next generation: we will use the most fit chromosomes in the population for producing the next generation using crossover and mutation.
+In addition to using crossover operations to create new chromosomes from existing chromosomes, we will also perform genetic mutation by randomly flipping bits in chromosomes. A fitness function that rates the fitness value of each chromosome allows us to decide which chromosomes to discard and which to use for the next generation. We will use the most fit chromosomes in the population for producing the next generation using crossover and mutation.
 
 We will implement a general purpose Java GA library in the next section and then solve the example problem posed at the end of this chapter in the [GA Example Section](#java-ga-example).
 
@@ -49,7 +49,7 @@ We will implement a general purpose Java GA library in the next section and then
 ## Java Library for Genetic Algorithms  {#java-ga-lib}
 
 
-The full implementation of the GA library is in the Java source file **Genetic.java**. The following code snippets show the method signatures defining the public API for the library; note that there are two constructors, the first using default values for the fraction of chromosomes on which to perform crossover and mutation operations and the second constructor allows setting explicit values for these parameters:
+The full implementation of the GA library is in the Java source file **Genetic.java**. The following code snippets show the method signatures defining the public API for the library. Note that there are two constructors, the first using default values for the fraction of chromosomes on which to perform crossover and mutation operations and the second constructor allows setting explicit values for these parameters:
 
 {lang="java",linenos=off}
 ~~~~~~~~
@@ -62,7 +62,7 @@ The full implementation of the GA library is in the Java source file **Genetic.j
                      float mutation_fraction)
 ~~~~~~~~
 
-The method **sort** is used to sort the population of chromosomes in most fit first order. The methods **getGene** and **setGene** are used to fetch and change the value of any gene (bit) in any chromosome. These methods are protected but you will probably not need to override them in derived classes.
+The method **sort** is used to sort the population of chromosomes in most fit first order. The methods **getGene** and **setGene** are used to fetch and change the value of any gene (bit) in any chromosome. These methods are protected because you may need to override them in derived classes.
 
 {lang="java",linenos=off}
 ~~~~~~~~
@@ -110,7 +110,7 @@ The class **Chromosome** represents an ordered bit sequence with a specified num
     }
 ~~~~~~~~
 
-The class **ChromosomeComparator** implements a **Comparator** interface and is application specific: it is used to sort a population in “best first” order:
+The class **ChromosomeComparator** implements a **Comparator** interface and is application specific. It is used to sort a population in “best first” order:
 
 {lang="java",linenos=off}
 ~~~~~~~~
@@ -198,7 +198,7 @@ While we could find the maximum value of this function by using Newton’s metho
 
 To generalize, our first task is to characterize the search space as one or more parameters. In general when we write GA applications we might need to encode several parameters in a single chromosome. As another example, if a fitness function has three arguments we would encode three numbers in a single chromosome.
 
-Let's get back to our 1-dimensional example seen in the figure showing the [sample function](#ga-sample-function). This is a simple example for showing you how to set up a GA simulation. In this example problem we have only one parameter, the independent variable x. We will encode the parameter x using ten bits (so we have ten 1-bit genes per chromosome). A good starting place is writing a utility method for converting the 10-bit representation to a floating-point number in the range [0.0, 10.0]:
+Let's get back to our 1-dimensional example seen in the figure showing the [sample function](#ga-sample-function). This is a simple example showing you how to set up a GA simulation. In this example problem we have only one parameter, the independent variable x. We will encode the parameter x using ten bits (so we have ten 1-bit genes per chromosome). A good starting place is writing a utility method for converting the 10-bit representation to a floating-point number in the range [0.0, 10.0]:
 
 {lang="java",linenos=off}
 ~~~~~~~~
@@ -235,7 +235,7 @@ Note that we do not need the reverse method! We use our GA library from the last
     }
 ~~~~~~~~
 
-The following table shows some sample random chromosomes and the floating point numbers that they encode. The first column shows the gene indices where the bit is “on,” the second column shows the chromosomes as an integer number represented in binary notation, and the third column shows the floating point number that the chromosome encodes. Note that the center column in the following table shows the bits in order where index 0 is the left-most bit, and index 9 if the right-most bit; this is the reverse of the normal order for encoding integers but the GA does not care: it works with any encoding we use as long as it is consistent.
+The following table shows some sample random chromosomes and the floating point numbers that they encode. The first column shows the gene indices where the bit is “on,” the second column shows the chromosomes as an integer number represented in binary notation, and the third column shows the floating point number that the chromosome encodes. Note that the center column in the following table shows the bits in order where index 0 is the left-most bit, and index 9 is the right-most bit; this is the reverse of the normal order for encoding integers but the GA does not care, it works with any encoding we use as long as it is consistent.
 
 {linenos=off}
 ~~~~~~~~
@@ -261,7 +261,7 @@ Using methods **geneToFloat** and **fitness** we now implement the abstract meth
 
 While it was useful to make this example more clear with a separate **geneToFloat** method, it would have also been reasonable to simply place the formula in the method **fitness** in the implementation of the abstract (in the base class) method **calcFitness**.
 
-In any case we are done with coding this example. You can compile the two example Java files **Genetic.java** and **TestGenetic.java**, and run the **TestGenetic** class to verify that the example program quickly finds a near maximum value for this function. The project *Makefile* has a single target that build the library and runs the example test program:
+In any case we are done with coding this example. You can compile the two example Java files **Genetic.java** and **TestGenetic.java**, and run the **TestGenetic** class to verify that the example program quickly finds a near maximum value for this function. The project *Makefile* has a single target that builds the library and runs the example test program:
 
 {linenos=off}
 ~~~~~~~~
