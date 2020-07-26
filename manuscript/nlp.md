@@ -1,10 +1,8 @@
 # Natural Language Processing
 
-I have been working in the field of Natural Language Processing (NLP) since 1982. In this chapter we will use a few of my open source NLP projects. In the next chapter I have selected one of many fine open source projects (OpenNLP) to provide more examples of using NLP to get you started using NLP in your own projects.
+I have been working in the field of Natural Language Processing (NLP) since 1982. In this chapter we will use a few of my open source NLP project. In the next chapter I have selected the open source NLP project [OpenNLP](https://opennlp.apache.org/) to provide more examples of using NLP to get you started using NLP in your own projects. For my current work I usually use a combination of my own library discussed in this chapter, OpenNLP (covered in the next chapter), and two deep learning NLP libraries for the Python language ([spaCy](https://spacy.io/) and [Hugging Face](https://huggingface.co/) pre-trained deep learning models). Wile I don't cover these Python libraries in this book, I do have examples of using spaCy in my [Hy Language book](https://leanpub.com/hy-lisp-python/). Hy is a Lisp language that is implemented in Python. For difficult NLP problems like coreference resolution (or anaphora resolution) I use deep learning models like BERT.
 
-The material in this chapter is dated but still useful. It is dated because deep learning networks now far surpass the capabilities of statistical and symbolic NLP. The material is still useful in my projects but I often prefer the OpenNLP library (that mostly used Maximum Entropy models) that we cover in the next chapter and for very difficult NLP problems like coreference resolution (or anaphora resolution) I use deep learning models like BERT. If you use Python then I strongly recommend the **spaCy** library for NLP.
-
-Deep learning is apparently "eating" the AI world but I firmly believe that hybrid systems stand the best chance of getting us to real artificial general intelligence (AGI) - time will tell. Many experts in AI believe that deep learning only takes us so far, and in order to reach general artificial intelligence we will use some form of hybrid deep learning, symbolic AI, and probabalistic systems. That said, there are deep learning specialists who predict their favored technology will probably be sufficient to get to AGI.
+Deep learning is apparently "eating" the AI world but I firmly believe that hybrid systems stand the best chance of getting us to real artificial general intelligence (AGI) - time will tell as more NLP, knowledge representation, reasoning, etc., tasks are implemented in hybrid systems. Many experts in AI believe that deep learning only takes us so far, and in order to reach general artificial intelligence we will use some form of hybrid deep learning, symbolic AI, and probabalistic systems. That said, there are deep learning specialists who predict their favored technology will probably be sufficient to get to AGI.
 
 ## Overview of the NLP  Library and Running the Examples
 
@@ -14,12 +12,12 @@ The following UML class diagrams will give you an overview of my NLP library cod
 
 ![UML class diagram for top level NLP code](images/nlp-uml.png)
 
-The XML parsing code is for reading the file **test_data/classification_tags.xml** that contains ranked word terms for various categories we cover (e.g., politics, economy, etc.).
+The XML parsing code is for reading the file **test_data/classification_tags.xml** that contains ranked word terms for various categories we cover (e.g., politics, economy, etc.), often referred to as term frequency–inverse document frequency ([tf-idf](https://en.wikipedia.org/wiki/Tf%E2%80%93idf)).
 
 {width=50%}
 ![UML class diagram for low-level utilities](images/nlp-utils-uml.png)
 
-Each main class in this library has a **main** method that provides a short demonstration of calling the library. The *Makefile* has targets for running the **main** method for each of the top level classes:
+Each main class in this library has a **main** method that provides a short demonstration of using the class. The *Makefile* has targets for running the **main** method for each of the top level classes:
 
 {linenos=on}
 ~~~~~~~~
@@ -47,13 +45,13 @@ We will also look at a public domain word stemmer that I frequently use in this 
 
 Before we can process any text we need to break text into individual tokens. Tokens can be words, numbers and punctuation symbols. The class **Tokenizer** has two static methods, both take an input string to tokenize and return a list of token strings. The second method has an extra argument to specify the maximum number of tokens that you want returned:
 
-{lang="java",linenos=off}
+{lang="java",linenos=on}
 ~~~~~~~~
       static public List<String> wordsToList(String s)
       static public List<String> wordsToList(String s, int maxR)
 ~~~~~~~~
 
-In line 3, **maxR** is maximum number of tokens to return and is useful when you want to sample the first part of a very long text.
+In line 2, **maxR** is maximum number of tokens to return and is useful when you want to sample the first part of a very long text.
 
 The following listing shows a fragment of example code using this class with the output:
 
@@ -179,6 +177,7 @@ If you want to see these data values, use code like
 
 {lang="java",linenos=off}
 ~~~~~~~~
+      Enumeration keysE = placeNameHash.keys();
       while (keysE.hasMoreElements()) {
         Object key = keysE.nextElement();
         System.out.println(key + " : " +
