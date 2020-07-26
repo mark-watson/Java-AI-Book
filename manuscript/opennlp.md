@@ -1,6 +1,6 @@
 # Natural Language Processing Using OpenNLP {#opennlp}
 
-Here we use the [pache OpenNLP project](https://opennlp.apache.org). OpenNLP has pre-trained models for tokenization, sentence segmentation, part-of-speech tagging, named entity extraction, chunking, parsing, and coreference resolution. As we see later OpenNLP has tools to also build our own models.
+Here we use the [Apache OpenNLP project](https://opennlp.apache.org). OpenNLP has pre-trained models for tokenization, sentence segmentation, part-of-speech tagging, named entity extraction, chunking, parsing, and coreference resolution. As we see later OpenNLP has tools to also build our own models.
 
 I have worked in the field of Natural Language Processing (NLP) since the early 1980s. Many more people are now interested in the field of NLP and the techniques have changed drastically in the last decade.
 
@@ -29,7 +29,7 @@ Assuming that you have cloned the github repository for this book, you can fetch
 mvn install
 ~~~~~~~~
 
-The model files, including the categorization model you will learn to build later in this chapter, are found in the subdirectory **models**. The unit tests in **src/test/java/com/markwatson/opennlp/NLPTest.java** provide examples for using the code we develop in this chapter. As for most examples in this book, I use unit tests as examples for using a library and not as tests that check computed values.
+The model files, including the categorization model you will learn to build later in this chapter, are found in the subdirectory **models**. The unit tests in **src/test/java/com/markwatson/opennlp/NLPTest.java** provide examples for using the code we develop in this chapter. As for many examples in this book, I use unit tests as examples for using a library and not as tests that check computed values.
 
 The Java example code for tokenization (splitting text into individual words), splitting sentences, and recognizing organizations, locations, and people in text is all in the Java class **NLP**. You can look at the source code in the repository for this book. Here I will just show a few snippets of the code to make clear how to load and use pre-trained models.
 
@@ -439,6 +439,7 @@ All ranked categories found (HEALTH): [[COMPUTERS, 0.1578880260493374], [ECONOMY
 Best category with score: [HEALTH, 0.35546926]
 ~~~~~~~~
 
+As this example shows it is simple to train new classifier models once you have prepared training data. In my work I have often needed to train models customized for specific topics.
 
 ## Using the OpenNLP Parsing Model
 
