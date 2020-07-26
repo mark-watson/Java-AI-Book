@@ -2,34 +2,23 @@
 
 Here we build on the material from the last chapter by using OpenNLP to process input text to identify parts of speech and then looking up words with their parts of speech in WordNet. You can use WordNet to look up all uses of a word so using OpenNLP as we do here is not required but I think makes a good example of blending libraries.
 
-The WordNet linguistic database is complex and you may want to review the [WordNet documentation] after working through the following example of finding synonyms and hypernyms for nouns in text input.
+The WordNet linguistic database is complex and you may want to review the [WordNet documentation](https://wordnet.princeton.edu/documentation) after working through the following example of finding synonyms and hypernyms for nouns in text input.
 
 ## Using the WordNet Linguistic Database  {#stat-nlp-wordnet}
 
-The Maven **pom.xml** file (that we will look at later) for this example is configured to download both the WordNet data and the **extjwnl** library. The home page for the WordNet project is [http://wordnet.princeton.edu](http://wordnet.princeton.edu).
+The Maven **pom.xml** file (that we will look at later) for this example is configured to download both the WordNet data and the [**extjwnl**](https://github.com/extjwnl/extjwnl) library. The home page for the WordNet project is [http://wordnet.princeton.edu](http://wordnet.princeton.edu).
 
 ### Tutorial on WordNet
 
-The WordNet lexical database is an ongoing research project spanning decades that includes many years of effort by professional linguists. My own use of WordNet over the last twenty years has been simple, mainly using the database to determine synonyms (called synsets in WordNet) and looking at the possible parts of speech of words. For reference from a [Wikipedia article on WordNet](https://en.wikipedia.org/wiki/WordNet), here is a small subset of the type of relationships contained in WordNet for verbs:
-
-{linenos=off}
-~~~~~~~~
-hypernym
-:   travel (less general) is an hypernym of movement (more general)
-
-entailment
-:   to sleep is entailed by to snore because you must be asleep to snore
-~~~~~~~~
-
-Here are a few of the relations supported for nouns:
+The WordNet lexical database is an ongoing research project spanning decades that includes many years of effort by professional linguists. My own use of WordNet over the last twenty years has been simple, mainly using the database to determine synonyms (called synsets in WordNet) and looking at the possible parts of speech of words. For reference from a [Wikipedia article on WordNet](https://en.wikipedia.org/wiki/WordNet), here is a small subset of the type of relationships contained in WordNet for nouns (we will look at relations for verbs, adjectives, and adverbs at the end of this chapter):
 
 {linenos=off}
 ~~~~~~~~
 hypernyms
-:   canine is a hypernym of dog since every dog is of type canine
+:   parent is a hypernym of mother since every mother is of type parent
 
 hyponyms
-:   dog (less general) is a hyponym of canine (more general)
+:   father (less general) is a hyponym of parent (more general)
 
 holonym
 :   building is a holonym of window because a window is part of a
@@ -40,35 +29,27 @@ meronym
     building
 ~~~~~~~~
 
-Some of the related information maintained for adjectives is:
-
-{linenos=off}
-~~~~~~~~
-related nouns
-similar to
-~~~~~~~~
-
 I find the WordNet book (*WordNet: An Electronic Lexical Database (Language, Speech, and Communication)* by Christiane Fellbaum, 1998) to be a detailed reference for WordNet but there have been several new releases of WordNet since the book was published. The WordNet site and the Wikipedia article on WordNet are also good sources of information if you decide to make WordNet part of your toolkit.
 
 When you look up words in WordNet you can optionally specify one of the following parts of speech (POS):
 
 {lang="java",linenos=off}
 ~~~~~~~~
-    POS.NOUN(1, "n", "noun"),
-    POS.VERB(2, "v", "verb"),
-    POS.ADJECTIVE(3, "a", "adjective"),
-    POS.ADVERB(4, "r", "adverb");
+    POS.NOUN
+    POS.VERB
+    POS.ADJECTIVE
+    POS.ADVERB
 ~~~~~~~~
 
 Rather than using Open NLP in this example to find nouns, we could try all four possible parts of speech on every input word. I was motivated to use OpenNLP partly because I wanted to provide an example of reusing a library developed in a different chapter, in this case the previous chapter on OpenNLP.
 
 What are hypernyms?  A hypernym is in a semantic type-of relationship with another word that is more general. As an example, the word "country" is a hypernym of the word "Mexico." The opposite of hypernym is a hyponym, that is a hyponym has a more narrow meaning. The word "country" is a hyponym of the word "Mexico."
 
-The following example is simple. We only look up WordNet entries for nouns and for nouns and only look-up at hypernyms and synonyms. In the chapter wrap-up I will give you some ideas for more extended projects that you may want to do using WordNet.
+The following example is simple. We only look up WordNet hypernyms and synonyms entries for nouns and for nouns. In the chapter wrap-up I will give you some ideas for more extended projects that you may want to do using WordNet.
 
 Before diving into the code I want to show you what the generated synonym and hypernym data looks like.
 
-The following two figures show the generated structured output data in a IntelliJ Community Edition debug session, in particular look at the structure of **synonymMap**:
+The following two figures show the generated structured output data in a IntelliJ Community Edition debug session, in particular look at the structure of **synonymMap**. While I rarely use the debugger to actually debug code, I frequently us it to inspect data.
 
 ![WordNet example: examining generated synonym data](images/wordnet-synonym.png)
 
@@ -95,7 +76,7 @@ The maven **pom.xml** configuration file for this project contains the following
         </dependency>
 ~~~~~~~~
 
-The second dependency loads the WordNet linguistic database. As an alternative, you can remove the **extjwnl-data-wn31** dependency from the project **pom.xml** file and use the **Makefile** to download a local copy of the data.
+The second dependency loads the WordNet linguistic database.
 
 I assume that you have performed a maven install for the project in the last chapter:
 
@@ -122,7 +103,7 @@ We also need the OpenNLP library and my OpenNLP wrapper library developed in the
         </dependency>
 ~~~~~~~~
 
-There is a **Makefile** for this example that has targets for running the example:
+There is a **Makefile** for running the example:
 
 {linenos=off}
 ~~~~~~~~
@@ -132,7 +113,7 @@ example:
     -Dexec.mainClass="com.markwatson.wordnet_example.WordNetAndOpenNlpExample"
 ~~~~~~~~
 
-And then run the example:
+Run the example using:
 
 {linenos=off}
 ~~~~~~~~
@@ -152,7 +133,7 @@ static public Map<String, List<List<String>>> getSynonyms(String s)
 ~~~~~~~~
   
   
-The following UML class diagram shows this public API for the example code. There is only one source file in this example **WordNetAndOpenNlpExample.java** because our goal here is not building a reusable library, rather to provide a short example and started project for your own experiments. That said this project does get installed as a local Maven library so you can require the library and call **getHypernyms** and **getSynonyms** in other projects. I will later suggest further projects in the wrap-up.
+The following UML class diagram shows this public API for the example code. There is only one source file in this example **WordNetAndOpenNlpExample.java** because our goal here is not building a reusable library, rather to provide a short example and a "starter project" for your own experiments. That said this project does get installed as a local Maven library so you can require the library and call **getHypernyms** and **getSynonyms** in other projects. I will later suggest further projects in the wrap-up.
 
 ![UML class diagram for WordNet example](images/wordnet-uml.png)
 
@@ -167,7 +148,7 @@ Let's look at the word "Clinton" which has four different word senses; here we l
 
 As an example, the hypernyms for the first word sense are: legislator, state senator, Clinton, Hiliary Clinton, etc.
 
-WordNet is a linguistic database and does not have the wide coverage of semantic web knowledge graphs like DBPedia and WikiData. We will discuss the semantic web and Knowledge Graphs in later chapters as a source of information and knowledge. Here we seek ways to understand words in text.
+WordNet is a linguistic database for automating the processing of text and does contain some "real world" knowledge but does not have the wide coverage of semantic web knowledge graphs like DBPedia and WikiData. We will discuss the semantic web and Knowledge Graphs in later chapters as a source of information. Here we seek ways to understand words in text.
 
 Here is a small segment of the output of the example program:
 
@@ -186,7 +167,7 @@ Here is a small segment of the output of the example program:
 
 ## Implementation
 
-You will never need to instantiate an instance of the class WordNetAndOpenNlpExample** because all data is static class data and the two public methods are both static. The methods **getHypernyms** (lines 27-58) and **getSynonyms** (lines 60-81) are similar except the APIs for getting synonyms (lines 68-69) differ than those for getting hypernyms (lines 39-43). These two methods could be combined into a single method with an argument to control which APIs to use but I thought the code looked simpler as it is.
+You will never need to instantiate an instance of the class **WordNetAndOpenNlpExample** because all data is static class data and the two public methods are both static. The methods **getHypernyms** (lines 27-58) and **getSynonyms** (lines 60-81) are similar except the APIs for getting synonyms (lines 68-69) differ than those for getting hypernyms (lines 39-43). These two methods could be combined into a single method with an argument to control which APIs to use but I thought the code looked simpler as it is.
 
 {lang="java",linenos=on}
 ~~~~~~~~
@@ -313,11 +294,14 @@ As mentioned before, I find the book **WordNet: An Electronic Lexical Database (
 
 WordNet provides a rich linguistic database for human linguists but although I have been using WordNet since 1999, I do not often use it in automated systems. I tend to use it for manual reference and sometimes for simple tasks like augmenting a list of terms with synonyms.
 
+
+The following three sub-sections are suggested projects.
+
+### Process all possible word senses
+
 We only used WordNet entries for nouns. You might want to make copies of the file **WordNetAndOpenNlpExample.java** and instead of looking up entries for nouns, you might want to try other parts of speech: verbs, adjectives, and adverbs. You might also make a copy of **WordNetAndOpenNlpExample.java** and don't use OpenNLP to tag text but rather look up all four supported parts of speech for each word in the input text.
 
 WordNet is a powerful tool for automating natural language processing but it is not easy to work with. I hope that with this simple example you are now motivated to dive in deeper and consider using WordNet for your projects, where it is appropriate to do so.
-
-The following three sub-sections are suggested projects.
 
 ### Using a Part of Speech Tagger to Use the Correct WordNet Synonyms
 
@@ -333,11 +317,11 @@ while synonyms for “bank” in the sense of a noun meaning “a financial inst
 - banking concern
 - banking company
 
-So it does not make too much sense to try to maintain a data map of synonyms for a given word. It does make some sense to try to use some information about the context of a word. We did this with some degree of accuracy by using the part of speech tagger from the last chapter on OpenNLP to at least determine that a word in a sentence is a noun or a verb, and thus limit the mapping of possible synonyms for the word in its current context.
+So it does not make too much sense to try to maintain a data map of synonyms for a given word unless we use the word sense or a word in the context of a sentence.
 
 ### Using WordNet Synonyms to Improve Document Clustering
 
-Another suggestion for a WordNet-based project is to use the OpenNLP part of speech to identify the probable part of speech for each word in all text documents that you want to cluster, and augment the documents with synset (synonym) data. You can then cluster the documents similarly to how we used a "bag of words" in the earlier chapter **Natural Language Processing** but instead of counting word frequencies, count composite word/part-of-speech token frequencies as well as implied synonym-word/part-of-speech token frequencies.
+Another suggestion for a OpenNLP and WordNet-based project is to use the OpenNLP part of speech to identify the probable part of speech for each word in all text documents that you want to cluster, and augment the documents with WordNet synset (synonym) data. You can then cluster the documents similarly to how we used a "bag of words" in the earlier chapter **Natural Language Processing** but instead of counting word frequencies, count composite word/part-of-speech token frequencies as well as implied synonym-word/part-of-speech token frequencies.
 
 
 
