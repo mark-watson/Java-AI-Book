@@ -1,21 +1,23 @@
 # Resolve Entity Names to DBPedia References
 
-As a personal research project I have collected a large set of mapping of entity names (e.g., people's names, city names, names of music groups, company names, etc.) along with a mapping to the DBPedia URI for each entity. I have developed libraries to use this data in [Common Lisp](https://leanpub.com/lovinglisp), [Haskell](https://leanpub.com/haskell-cookbook), and Java. Here we use the Java version of this library.
+As a personal research project I have collected a large data set that maps entity names (e.g., people's names, city names, names of music groups, company names, etc.) to the DBPedia URI for each entity. I have developed libraries to use this data in [Common Lisp](https://leanpub.com/lovinglisp), [Haskell](https://leanpub.com/haskell-cookbook), and Java. Here we use the Java version of this library.
 
 The Java library is found in the directory **ner_dbpedia** in the GitHub repository. The raw data for these entity to URI mappings are found in the directory **ner_dbpedia/dbpedia_as_text**.
 
-This example shows the use of a standard Java and Maven packaging technique: building a JAR file that contains resource files in addition to compiled Java code. The example code will read the required data resources from the JAR file (or the temporary **target** directory during development). This will make the JAR file self contained when we use this example in later chapters.
+This example shows the use of a standard Java and Maven packaging technique: building a JAR file that contains resource files in addition to compiled Java code. The example code reads the required data resources from the JAR file (or the temporary **target** directory during development). This makes the JAR file self contained when we use this example library in later chapters.
 
 
 ## DBPedia Entities
 
-The raw data for these entity to URI mappings are found in the directory **ner_dbpedia/dbpedia_as_text** files have the format (for people in this case:
+DBPedia is the structured RDF database that is automatically created from WikiPedia info boxes. We will go into some detail on RDF data in the later chapter [Semantic Web](#semantic-web). The raw data for these entity to URI mappings is found in the directory **ner_dbpedia/dbpedia_as_text** files have the format (for people in this case):
 
 {linenos=off}
 ~~~~~~~~
 Al Stewart      <http://dbpedia.org/resource/Al_Stewart>
 Alan Watts      <http://dbpedia.org/resource/Alan_Watts>
 ~~~~~~~~
+
+If you visit any or these URIs using a web browser, for example [http://dbpedia.org/page/Al_Stewart](http://dbpedia.org/page/Al_Stewart) you will see the DBPedia data for the entity formatted for human reading but to be clear the primary purpose of information in DBPedia is for use by software, not humans.
 
 There are 58953 entities defined with their DBPedia URI and the following listing shows the breakdown of number of entities by entity type by counting the number of lines in each resource file:
 
@@ -34,14 +36,14 @@ ner_dbpedia: $ wc -l ./src/main/resources/*.txt
    58953 total
 ~~~~~~~~
 
-
+The URI for each entity defines a unique identifier for real world entities as well as concepts. 
 ## Library Implementation
 
 The following UML class diagram shows the APIs and fields for the two classes in the package **com.markwatson.ner_dbpedia** for this example: **NerMaps** and **TextToDbpediaUris**:
 
 ![Overview of Java Class UML Diagram for this Example](images/nerdbpedia-uml.png)
 
-As you see in the following figure of the project for this example opened in the free Community Edition of IntelliJ there are nine text files, one for each entity type, in the directory **src/main/resources**. Later we will look at the code required to read these files in two cases:
+As you see in the following figure showing the IntelliJ Community Edition project for this example, there are nine text files, one for each entity type in the directory **src/main/resources**. Later we will look at the code required to read these files in two cases:
 
 - During development these files are read from **target/classes**.
 - During client application use of the JAR file (created using *mvn install*) these files are read as resources from the Java class loader.
@@ -142,7 +144,7 @@ The empty constructor is private since it makes no sense to create an instance o
 
 As a matter of programming style I generally no longer use getter and setter methods, preferring a more concise coding style. I usually make output fields package default visibility (i.e., no **private** or **public** specification so the fields are public within a package and private from other packages). Here I make them public because the package **nerdbpedia** developed here is meant to be used by other packages. If you prefer using getter and setter methods, modern IDEs like IntelliJ and Eclipse can generate those for you for the example code in this book.
 
-We will handle entity names comprised one, two, and three word sequences. We check for longer word sequences before shorter sequences:
+We will handle entity names comprised of one, two, and three word sequences. We check for longer word sequences before shorter sequences:
  
 {lang="java",linenos=off}
 ~~~~~~~~
@@ -160,7 +162,7 @@ We will handle entity names comprised one, two, and three word sequences. We che
       }
  ~~~~~~~~
 
-The class **NerMaps** that we previously saw listed converts text entity to DBPedia URIs mapping files to Java hash maps. The method **log** does two things:
+The class **NerMaps** that we previously saw listed converts text files of entities to DBPedia URIs mappings to Java hash maps. The method **log** does two things:
 
 - Prints out the entity type, the word indices from the original tokenized text, the entity name as a single string (combine tokens for an entity to a string), and the DBPedia URI.
 - Saves entity mapping in the public fields **personUris**, **personNames**, etc.
@@ -206,9 +208,9 @@ For some NLP applications I will use a standard tokenizer like the OpenNLP token
   }
 ~~~~~~~~
 
-Here is the code snippet from the unit test code in the class **TextToDbpediaUrisTest** that calls the **TextToDbpediaUris** constructor with a text sample (**junit** boilerplate code is not shown):
+The following listing shows the code snippet from the unit test code in the class **TextToDbpediaUrisTest** that calls the **TextToDbpediaUris** constructor with a text sample (**junit** boilerplate code is not shown):
 
-{lang="java",linenos=off}
+{lang="java",linenos=on}
 ~~~~~~~~
 package com.markwatson.ner_dbpedia;
  
@@ -224,6 +226,8 @@ package com.markwatson.ner_dbpedia;
   }
 }
 ~~~~~~~~
+
+On line 11, the object **test** contains public fields for accessing the entity names and corresponding URIs. We will use these fields in the later chapters [Automatically Generating Data for Knowledge Graphs](#kgcreator) and [Knowledge Graph Navigator](#kgn).
 
 Here is the output from running the unit test code:
 
