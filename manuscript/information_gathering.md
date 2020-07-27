@@ -1,6 +1,6 @@
 # Information Gathering
 
-I often write software to automatically collect and use data from the web and other sources. In this chapter I have collected utility code that I have written over the years into a small library that I hope you also find useful.
+I often write software to automatically collect and use data from the web and other sources. In this chapter I have collected utility code that I have written over the years into a small library supporting two approaches to web scraping, DBPedia lookup, and GeoNames lookup. This code is simple but I hope you will find useful.
 
 The following UML class diagram shows the public APIs the libraries developed in this chapter:
 
@@ -20,19 +20,19 @@ I tend to use one of three general techniques for scraping web sites. Only the f
 
 - Use an HTML parsing library that strips all HTML markup and Javascript from a page and returns a "pure text" block of text. The text in navigation menus, headers, etc. will be interspersed with what we might usually think of a "content" from a web site.
 - Exploit HTML DOM (Document Object Model) formatting information on web sites to pick out headers, page titles, navigation menus, and large blocks of content text.
-- Use a tool like (Selenium)[http://docs.seleniumhq.org/] to programaticly control a web browser so your software agents can login to site and otherwise perform navigation. In other words your software agents can simulate a human using a web browser.
+- Use a tool like [Selenium](http://docs.seleniumhq.org/) to programatically control a web browser so your software agents can login to site and otherwise perform navigation. In other words your software agents can simulate a human using a web browser.
 
 I seldom need to use tools like Selenium but as the saying goes "when you need them, you need them." For simple sites I favor extracting all text as a single block and use DOM processing as needed.
 
 I am not going to cover the use of Selenium and the Java Selenium Web-Driver APIs in this chapter because, as I mentioned, I tend to not use it frequently and I think that you are unlikely to need to do so either. I refer you to the Selenium documentation if the first two approaches in the last list do not work for your application. Selenium is primarily intended for building automating testing of complex web applications, so my occasional use in web spidering is not the common use case.
 
-I assume that you have some experience with HTML and DOM. Since a DOM is a tree data structure it is useful to be able to collapse or to expand sub-trees in the DOM.
+I assume that you have some experience with HTML and DOM. DOM is a tree data structure.
 
-### Using the jsoup Library
+### Web Scraping Using the Jsoup Library
 
 We will use the MIT licensed library [jsoup](http://jsoup.org/). One reason I selected jsoup for the examples in this chapter out of many fine libraries that provide similar functionality is the particularly nice documentation, especially [The jsoup Cookbook](http://jsoup.org/cookbook/) which I urge you to bookmark as a general reference. In this chapter I will concentrate on just the most frequent web scraping use cases that I use in my own work.
 
-The following bit of code uses jsoup to get the text inside all P (paragraph) elements that are direct children of any DIV element. On line 14 we use the jsoup library to fetch my home web page:
+The following bit of example code uses jsoup to get the text inside all P (paragraph) elements that are direct children of any DIV element. On line 14 we use the jsoup library to fetch my home web page:
 
 
 {lang="java",linenos=on}
@@ -80,7 +80,7 @@ In line 18 I am selecting the pattern that returns all P elements that are direc
 
 For training data for machine learning it is useful to just grab all text on a web page and assume that common phrases dealing with web navigation, etc. will be dropped from learned models because they occur in many different training examples for different classifications. In the above listing, line 22 shows how to fetch the plain text from an entire web page. The code on line 24 fetched anchor elements and the loop in lines 25-29 prints out this anchor data as URI and text. The code in lines 30-35 does the same thing except we are converting relative URIs to absolute URIs.
 
-Output might look like (most of the output is not shown from running this example file **MySitesExamples.java**:
+Output might look like (most of the output is not shown from running this example file **MySitesExamples.java**):
 
 {linenos=off}
 ~~~~~~~~
@@ -118,6 +118,124 @@ Notice that there are different types of URIs like #, relative, and absolute. An
 
 I often require that URIs be absolute URIs (i.e., starts with a protocol like "http:" or "https:") and lines 28-33 show how to select just absolute URI anchors. In line 31 I am specifying the attribute as "abs:href" to be more selective.
 
+#
+## Web Spidering Using the Jericho Library
+
+Here is another web spidering example that is different than the earlier example using the **jsoup** library. Here we will implement a spider using built in Java standard library network classes and also the Jericho HTML parser library.
+
+{lang="java",linenos=off}
+~~~~~~~~
+package com.markwatson.info_spiders;
+
+import net.htmlparser.jericho.*;
+
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.*;
+
+/**
+ * This simple web spider returns a list of lists, each containing two strings
+ * representing "URL" and "text".
+ * Specifically, I do not return links on each page.
+ */
+
+/**
+ * Copyright Mark Watson 2008-2020. All Rights Reserved.
+ * License: Apache 2
+ */
+
+public class WebSpider {
+  public WebSpider(String root_url, int max_returned_pages) throws Exception {
+    String host = new URL(root_url).getHost();
+    System.out.println("+ host: " + host);
+    List<String> urls = new ArrayList<String>();
+    Set<String> already_visited = new HashSet<String>();
+    urls.add(root_url);
+    int num_fetched = 0;
+    while (num_fetched <= max_returned_pages && !urls.isEmpty()) {
+      try {
+        System.out.println("+ urls: " + urls);
+        String url_str = urls.remove(0);
+        System.out.println("+ url_str: " + url_str);
+        if (url_str.toLowerCase().indexOf(host) > -1 &&
+            !already_visited.contains(url_str)) {
+          already_visited.add(url_str);
+          URL url = new URL(url_str);
+          URLConnection connection = url.openConnection();
+          connection.setAllowUserInteraction(false);
+          InputStream ins = url.openStream();
+          Source source = new Source(ins);
+          num_fetched++;
+          TextExtractor te = new TextExtractor(source);
+          String text = te.toString();
+          // Skip any pages where text on page is identical to existing
+          // page (e.g., http://example.com and http://exaple.com/index.html
+          boolean process = true;
+          for (List<String> ls : url_content_lists) {
+            if (text.equals(ls.get(1))) {
+              process = false;
+              break;
+            }
+          }
+          if (process) {
+            try {
+              Thread.sleep(500);
+            } catch (Exception ignore) {
+            }
+            List<StartTag> anchorTags = source.getAllStartTags("a ");
+            ListIterator iter = anchorTags.listIterator();
+            while (iter.hasNext()) {
+              StartTag anchor = (StartTag) iter.next();
+              Attributes attr = anchor.parseAttributes();
+              Attribute link = attr.get("href");
+              String link_str = link.getValue();
+              if (link_str.indexOf("http:") == -1) {
+                String path = url.getPath();
+                if (path.endsWith("/")) path = path.substring(0, path.length() - 1);
+                int index = path.lastIndexOf("/");
+                if (index > -1) path = path.substring(0, index);
+                link_str = url.getHost() + "/" + path + "/" + link_str;
+                link_str = "http://" + link_str.replaceAll("///", "/").replaceAll("//", "/");
+              }
+              urls.add(link_str);
+            }
+            List<String> ls = new ArrayList<String>(2);
+            ls.add(url_str);
+            ls.add(text);
+            url_content_lists.add(ls);
+          }
+        }
+      } catch (Exception ex) {
+        System.out.println("Error: " + ex);
+        ex.printStackTrace();
+      }
+    }
+  }
+
+  public List<List<String>> url_content_lists = new ArrayList<List<String>>();
+}
+~~~~~~~~
+
+
+The test class **WebClientTest** shows how to use this class:
+
+{lang="java",linenos=off}
+~~~~~~~~
+    WebSpider client = new WebSpider("http://pbs.org", 10);
+    System.out.println("Found URIs: " + client.url_content_lists);
+~~~~~~~~
+
+Here is the output for the test class **WebClientTest**:
+
+{linenos=off}
+~~~~~~~~
++ host: pbs.org
++ urls: [http://pbs.org]
++ url_str: http://pbs.org
+Found URIs: [[http://pbs.org, ]]
+~~~~~~~~
+
 ## DBPedia Entity Lookup
 
 DBPedia contains structured data for the WikiPedia web site. In later chapters we will learn how to use the SPARQL query language to access DBPedia. Here we use a simple lookup service for any entity name. If an entity name is found in DBPedia then information on the entity is returned as an XML payload.
@@ -146,7 +264,7 @@ import java.util.*;
 // Use Georgi Kobilarov's DBpedia lookup web service
 //    ref: http://lookup.dbpedia.org/api/search.asmx?op=KeywordSearch
 //    example:
-// http://lookup.dbpedia.org/api/search.asmx/KeywordSearch?QueryString=Flagstaff&QueryClass=XML
+// http://lookup.dbpedia.org/api/search.asmx/KeywordSearch?QueryString=Flagstaff
 
 /**
  * Searches return results that contain any of the search terms. I am going to filter
@@ -157,11 +275,9 @@ import java.util.*;
 public class DBpediaLookupClient extends DefaultHandler {
   public DBpediaLookupClient(String query) throws Exception {
     this.query = query;
-    //System.out.println("\n query: " + query);
     CloseableHttpClient client = HttpClients.createDefault();
 
-    String query2 = query.replaceAll(" ", "+"); // URLEncoder.encode(query, "utf-8");
-    //System.out.println("\n query2: " + query2);
+    String query2 = query.replaceAll(" ", "+");
 
     SAXParserFactory factory = SAXParserFactory.newInstance();
     SAXParser sax = factory.newSAXParser();
@@ -178,7 +294,6 @@ public class DBpediaLookupClient extends DefaultHandler {
 
   public void startElement(String uri, String localName, String qName,
                            Attributes attributes) throws SAXException {
-    //System.out.println("startElement " + qName);
     if (qName.equalsIgnoreCase("result")) {
       tempBinding = new HashMap<String, String>();
     }
@@ -187,9 +302,9 @@ public class DBpediaLookupClient extends DefaultHandler {
 
   public void endElement(String uri, String localName, String qName)
          throws SAXException {
-    //System.out.println("endElement " + qName);
     if (qName.equalsIgnoreCase("result")) {
-      if (!variableBindings.contains(tempBinding) && containsSearchTerms(tempBinding))
+      if (!variableBindings.contains(tempBinding) &&
+           containsSearchTerms(tempBinding))
         variableBindings.add(tempBinding);
     }
   }
@@ -264,9 +379,9 @@ URI - http://dbpedia.org/resource/City_of_London_(UK_Parliament_constituency)
 
 ## Client for GeoNames Service
 
-The GeoNames service looks up information about locations. You need to sign up for a free account and the access key needs to be stored in an environment variable **GEONAMES** which is accessed in Java code using:
+The GeoNames service looks up information about locations. You need to [sign up for a free account])http://www.geonames.org/login) and the access key needs to be stored in an environment variable **GEONAMES** which is accessed in Java code using:
 
-{lang="java",linenos=on}
+{lang="java",linenos=off}
 ~~~~~~~~
   System.getenv("GEONAMES")
 ~~~~~~~~
@@ -392,17 +507,21 @@ public class GeoNameData {
     name = toponym.getName();
     countryCode = toponym.getCountryCode();
     if (toponym.getFeatureClassName().startsWith("city")) geoType = GeoType.CITY;
-    if (toponym.getFeatureClassName().startsWith("country")) geoType = GeoType.COUNTRY;
+    if (toponym.getFeatureClassName().startsWith("country"))
+       geoType = GeoType.COUNTRY;
     if (toponym.getFeatureClassName().startsWith("state")) geoType = GeoType.STATE;
     if (toponym.getFeatureClassName().startsWith("stream")) geoType = GeoType.RIVER;
-    if (toponym.getFeatureClassName().startsWith("mountain")) geoType = GeoType.MOUNTAIN;
+    if (toponym.getFeatureClassName().startsWith("mountain"))
+        geoType = GeoType.MOUNTAIN;
   }
 
   public GeoNameData() {
   }
 
   public String toString() {
-    return "[GeoNameData: " + name + ", type: " + geoType + ", country code: " + countryCode + ", ID: " + geoNameId + ", latitude: " + latitude + ", longitude: " + longitude + "]";
+    return "[GeoNameData: " + name + ", type: " + geoType + ", country code: " + countryCode +
+      ", ID: " + geoNameId + ", latitude: " + latitude +
+      ", longitude: " + longitude + "]";
   }
 }
 ~~~~~~~~
@@ -412,8 +531,8 @@ The test class **GeoNamesClientTest** shows how to use these two classes:
 {lang="java",linenos=on}
 ~~~~~~~~
     GeoNamesClient client = new GeoNamesClient();
-    System.out.println(client.getCityData("Paris"));        pause();
-    System.out.println(client.getCountryData("Canada")); pause();
+    System.out.println(client.getCityData("Paris"));    pause();
+    System.out.println(client.getCountryData("Canada"));   pause();
     System.out.println(client.getStateData("California")); pause();
     System.out.println(client.getRiverData("Amazon"));     pause();
     System.out.println(client.getMountainData("Whitney"));
@@ -423,7 +542,6 @@ The output from this test is shown below:
 
 {linenos=on}
 ~~~~~~~~
-/Library/Java/JavaVirtualMachines/adoptopenjdk-11.jdk/Contents/Home/bin/java -ea -Didea.test.cyclic.buffer.size=1048576 -javaagent:/Applications/IntelliJ IDEA CE.app/Contents/lib/idea_rt.jar=59391:/Applications/IntelliJ IDEA CE.app/Contents/bin -Dfile.encoding=UTF-8 -classpath /Applications/IntelliJ IDEA CE.app/Contents/lib/idea_rt.jar:/Applications/IntelliJ IDEA CE.app/Contents/plugins/junit/lib/junit5-rt.jar:/Applications/IntelliJ IDEA CE.app/Contents/plugins/junit/lib/junit-rt.jar:/Users/markw/GITHUB/javaai-new-code/info_gathering/target/test-classes:/Users/markw/GITHUB/javaai-new-code/info_gathering/target/classes:/Users/markw/.m2/repository/junit/junit/3.8.1/junit-3.8.1.jar:/Users/markw/.m2/repository/org/jsoup/jsoup/1.7.2/jsoup-1.7.2.jar:/Users/markw/.m2/repository/org/apache/httpcomponents/httpclient/4.5.10/httpclient-4.5.10.jar:/Users/markw/.m2/repository/org/apache/httpcomponents/httpcore/4.4.12/httpcore-4.4.12.jar:/Users/markw/.m2/repository/commons-logging/commons-logging/1.2/commons-logging-1.2.jar:/Users/markw/.m2/repository/commons-codec/commons-codec/1.11/commons-codec-1.11.jar:/Users/markw/.m2/repository/net/htmlparser/jericho/jericho-html/3.4/jericho-html-3.4.jar:/Users/markw/.m2/repository/org/jdom/jdom/1.1.3/jdom-1.1.3.jar com.intellij.rt.junit.JUnitStarter -ideVersion5 -junit4 com.markwatson.info_spiders.GeoNamesClientTest
 [[GeoNameData: Paris, type: CITY, country code: FR, ID: 2988507, latitude: 48.85341, longitude: 2.3488], [GeoNameData: Le Touquet-Paris-Plage, type: CITY, country code: FR, ID: 2999139, latitude: 50.52432, longitude: 1.58571], [GeoNameData: Paris, type: CITY, country code: US, ID: 4717560, latitude: 33.66094, longitude: -95.55551], [GeoNameData: Balneario Nuevo Paris, type: CITY, country code: UY, ID: 3441475, latitude: -34.85, longitude: -56.23333], [GeoNameData: Paris, type: CITY, country code: BY, ID: 8221628, latitude: 55.15464, longitude: 27.38456], [GeoNameData: Paris, type: CITY, country code: TG, ID: 2364431, latitude: 7.15, longitude: 1.08333]]
 [[GeoNameData: Canada, type: COUNTRY, country code: CA, ID: 6251999, latitude: 60.10867, longitude: -113.64258], [GeoNameData: Canada Bay, type: COUNTRY, country code: AU, ID: 7839706, latitude: -33.8659, longitude: 151.11591]]
 [[GeoNameData: Baja California Sur, type: STATE, country code: MX, ID: 4017698, latitude: 25.83333, longitude: -111.83333], [GeoNameData: Baja California, type: STATE, country code: MX, ID: 4017700, latitude: 30.0, longitude: -115.0], [GeoNameData: California, type: STATE, country code: US, ID: 5332921, latitude: 37.25022, longitude: -119.75126]]
@@ -432,123 +550,6 @@ The output from this test is shown below:
 ~~~~~~~~
 
 
-## Web Spidering
-
-Here is another web spidering example that is different than the earlier example using the **jsoup** library. Here we will implement a spider using built in Java standard library network classes and also the Jericho HTML parser library.
-
-{lang="java",linenos=off}
-~~~~~~~~
-package com.markwatson.info_spiders;
-
-import net.htmlparser.jericho.*;
-
-import java.io.InputStream;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.*;
-
-/**
- * This simple web spider returns a list of lists, each containing two strings
- * representing "URL" and "text".
- * Specifically, I do not return links on each page.
- */
-
-/**
- * Copyright Mark Watson 2008-2020. All Rights Reserved.
- * License: Apache 2
- */
-
-public class WebSpider {
-  public WebSpider(String root_url, int max_returned_pages) throws Exception {
-    String host = new URL(root_url).getHost();
-    System.out.println("+ host: " + host);
-    List<String> urls = new ArrayList<String>();
-    Set<String> already_visited = new HashSet<String>();
-    urls.add(root_url);
-    int num_fetched = 0;
-    while (num_fetched <= max_returned_pages && !urls.isEmpty()) {
-      try {
-        System.out.println("+ urls: " + urls);
-        String url_str = urls.remove(0);
-        System.out.println("+ url_str: " + url_str);
-        if (url_str.toLowerCase().indexOf(host) > -1 &&
-            !already_visited.contains(url_str)) {
-          already_visited.add(url_str);
-          URL url = new URL(url_str);
-          URLConnection connection = url.openConnection();
-          connection.setAllowUserInteraction(false);
-          InputStream ins = url.openStream();
-          Source source = new Source(ins);
-          num_fetched++;
-          TextExtractor te = new TextExtractor(source);
-          String text = te.toString();
-          // Skip any pages where text on page is identical to existing
-          // page (e.g., http://example.com and http://exaple.com/index.html
-          boolean process = true;
-          for (List<String> ls : url_content_lists) {
-            if (text.equals(ls.get(1))) {
-              process = false;
-              break;
-            }
-          }
-          if (process) {
-            try {
-              Thread.sleep(500);
-            } catch (Exception ignore) {
-            }
-            List<StartTag> anchorTags = source.getAllStartTags("a ");
-            ListIterator iter = anchorTags.listIterator();
-            while (iter.hasNext()) {
-              StartTag anchor = (StartTag) iter.next();
-              Attributes attr = anchor.parseAttributes();
-              Attribute link = attr.get("href");
-              String link_str = link.getValue();
-              if (link_str.indexOf("http:") == -1) {
-                String path = url.getPath();
-                if (path.endsWith("/")) path = path.substring(0, path.length() - 1);
-                int index = path.lastIndexOf("/");
-                if (index > -1) path = path.substring(0, index);
-                link_str = url.getHost() + "/" + path + "/" + link_str;
-                link_str = "http://" + link_str.replaceAll("///", "/").replaceAll("//", "/");
-              }
-              urls.add(link_str);
-            }
-            List<String> ls = new ArrayList<String>(2);
-            ls.add(url_str);
-            ls.add(text);
-            url_content_lists.add(ls);
-          }
-        }
-      } catch (Exception ex) {
-        System.out.println("Error: " + ex);
-        ex.printStackTrace();
-      }
-    }
-  }
-
-  public List<List<String>> url_content_lists = new ArrayList<List<String>>();
-}
-~~~~~~~~
-
-
-The test class **WebClientTest** shows how to use this class:
-
-{lang="java",linenos=off}
-~~~~~~~~
-    WebSpider client = new WebSpider("http://pbs.org", 10);
-    System.out.println("Found URIs: " + client.url_content_lists);
-~~~~~~~~
-
-Here is the output for the test class **WebClientTest**:
-
-{linenos=off}
-~~~~~~~~
-+ host: pbs.org
-+ urls: [http://pbs.org]
-+ url_str: http://pbs.org
-Found URIs: [[http://pbs.org, ]]
-~~~~~~~~
-
 ## Wrap-up for Information Gathering
 
 Access to data is an advantage large companies usually have over individuals and small organizations. That said, there is a lot of free information on the web and I hope my simple utility classes we have covered here will be of some use to you.
@@ -556,4 +557,4 @@ Access to data is an advantage large companies usually have over individuals and
 I respect the rights of people and organizations who put information on the web. This includes:
 
 - Read the terms of service on web sites to make sure your your of the site's data is compliant and also avoid accessing any one web site too frequently.
-- When you access services like DBpedia and Geonames consider caching the results so that you don't ask the service for the same information repeatedly. This is particularly important during development and testing. In a later chapter we will see how to use the Apache Derby database to cache SPARQL queries to DBPedia.
+- When you access services like DBpedia and Geonames consider caching the results so that you don't ask the service for the same information repeatedly. This is particularly important during development and testing. In a later chapter we will see how to use the Apache Derby database to cache SPARQL queries to the DBPedia service.
