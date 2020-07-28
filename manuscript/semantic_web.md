@@ -149,18 +149,51 @@ I promised you that the data in RDF data stores was easy to extend. As an exampl
 
 {lang="sparql",linenos=off}
 ~~~~~~~~
+@prefix kb:  <http://knowledgebooks.com/ontology#> .
+
 <http://news.com/201234/> kb:datePublished "2008-05-11" .
 ~~~~~~~~
 
-Furthermore, if we do not have dates for all news articles that is often acceptable because when constructing SPARQL queries you can match optional patterns. If for example you are looking up articles on a specific subject then some results may have a publication date attached to the results for that article and some might not. In practice RDF supports types and we would use a date type, not a string. However, in designing the example programs for this chapter I decided to simplify our representation of URIs and string literals as simple Java strings. For many applications this is not a real limitation.
+Here we just represent the date as a string. We can add a type to the object representing a specific date:
+
+{lang="sparql",linenos=off}
+~~~~~~~~
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix kb:  <http://knowledgebooks.com/ontology#> .
+ 
+ <http://news.com/201234/> kb:datePublished "2008-05-11"^^xsd:date .
+~~~~~~~~
+
+Furthermore, if we do not have dates for all news articles that is often acceptable because when constructing SPARQL queries you can match optional patterns. If for example you are looking up articles on a specific subject then some results may have a publication date attached to the results for that article and some might not. In practice RDF supports types and we would use a date type as seen in the last example, not a string. However, in designing the example programs for this chapter I decided to simplify our representation of URIs and often use string literals as simple Java strings. For many applications this isn't a real limitation.
 
 ## Extending RDF with RDF Schema {#rdfs}
 
-RDFS supports the definition of classes and properties based on set inclusion. In RDFS classes and properties are orthogonal. We will not simply be using properties to define data attributes for classes – this is different from object modeling and object oriented programming languages like Java. RDFS is encoded in RDF using the same syntax.
+RDF Schema (RDFS) supports the definition of classes and properties based on set inclusion. In RDFS classes and properties are orthogonal. Let's start with looking at an example using additional namespaces:
 
-Because the semantic web is intended to be processed automatically by software systems it is encoded as RDF. There is a problem that must be solved in implementing and using the semantic web: everyone who publishes semantic web data is free to create their own RDF schemas for storing data; for example, there is usually no single standard RDF schema definition for topics like news stories and stock market data. The [SKOS](https://www.w3.org/2009/08/skos-reference/skos.html) is a namespace containing standard schemas and the most widely used standard is [schema.org](https://schema.org/docs/schemas.html). Understanding the ways of integrating different data sources using different schemas helps to understand the design decisions behind the semantic web applications. In this chapter I use my own schemas in the knowledgebooks.com namespace for the simple examples you see here. When you build your own production systems part of the work is searching through **schema.org** and **SKOS** to use standard name spaces and schemas. The use of standard schemas helps when you link internal proprietary Knowledge Graphs used in organization with public open data from sources like [WikiData](https://www.wikidata.org/wiki/Wikidata:Main_Page) and [DBPedia](https://wiki.dbpedia.org/about).
+{lang="sparql",linenos=off}
+~~~~~~~~
+@prefix kb:  <http://knowledgebooks.com/ontology#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+@prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#>
+@prefix dbo: <http://dbpedia.org/ontology/>
 
-We will start with an example that is an extension of the example in the last section that also uses RDFS. We add a few additional RDF statements (that are RDFS):
+<http://news.com/201234/>
+  kb:containsCountry
+  <http://dbpedia.org/resource/China>  .
+  
+<http://news.com/201234/>
+  kb:containsCountry
+  <http://dbpedia.org/resource/United_States>  .
+  
+<http://dbpedia.org/resource/China>
+  rdfs:label "China"@en,
+  rdf:type dbo:Place ,
+  rdf:type dbo:Country .
+~~~~~~~~
+
+Because the semantic web is intended to be processed automatically by software systems it is encoded as RDF. There is a problem that must be solved in implementing and using the semantic web: everyone who publishes semantic web data is free to create their own RDF schemas for storing data; for example, there is usually no single standard RDF schema definition for topics like news stories and stock market data. The [SKOS](https://www.w3.org/2009/08/skos-reference/skos.html) is a namespace containing standard schemas and the most widely used standard is [schema.org](https://schema.org/docs/schemas.html). Understanding the ways of integrating different data sources using different schemas helps to understand the design decisions behind the semantic web applications. In this chapter I often use my own schemas in the knowledgebooks.com namespace for the simple examples you see here. When you build your own production systems part of the work is searching through **schema.org** and **SKOS** to use standard name spaces and schemas when possible. The use of standard schemas helps when you link internal proprietary Knowledge Graphs used in organization with public open data from sources like [WikiData](https://www.wikidata.org/wiki/Wikidata:Main_Page) and [DBPedia](https://wiki.dbpedia.org/about).
+
+We will start with an example that is an extension of the example in the last section that also uses RDFS. We add a few additional RDF statements:
 
 {lang="sparql",linenos=off}
 ~~~~~~~~
@@ -188,9 +221,9 @@ In addition to providing a vocabulary for describing properties and class member
 
 ## The SPARQL Query Language
 
-SPARQL is a query language used to query RDF data stores. While SPARQL may initially look like SQL, we will see that there are some important differences like support for RDFS and OWL inferencing (see Section [section:owl]) and graph-based instead of relational matching operations. We will cover the basics of SPARQL in this section and then see more examples later when we learn how to embed Jena in Java applications.
+SPARQL is a query language used to query RDF data stores. While SPARQL may initially look like SQL, we will see that there are some important differences like support for RDFS and OWL inferencing and graph-based instead of relational matching operations. We will cover the basics of SPARQL in this section and then see more examples later when we learn how to embed Jena in Java applications, and see more examples in the last chapter [Knowledge Graph Navigator](#kgn).
 
-We will use the N3 format RDF file test\_data/news.n3 for the examples. I created this file automatically by spidering Reuters news stories on the news.yahoo.com web site and automatically extracting named entities from the text of the articles. We saw techniques for extracting named entities from text in the chapter on Natural Language Processing and the chapter on Information Gathering. In this chapter we use these sample RDF files.
+We will use the N3 format RDF file test\_data/news.n3 for the examples. I created this file automatically by spidering Reuters news stories on the news.yahoo.com web site and automatically extracting named entities from the text of the articles. We saw techniques for extracting named entities from text in earlier chapters. In this chapter we use these sample RDF files.
 
 You have already seen snippets of this file and I list the entire file here for reference, edited to fit line width: you may find the file news.n3 easier to read if you are at your computer and open the file in a text editor so you will not be limited to what fits on a book page:
 
@@ -307,7 +340,7 @@ SELECT ?subject ?object
 
 It is important for you to understand what is happening when we apply the last SPARQL query to our sample data. Conceptually, all the triples in the sample data are scanned, keeping the ones where the predicate part of a triple is equal to **<http://knowledgebooks.com/ontology#containsCountry>**. In practice RDF data stores supporting SPARQL queries index RDF data so a complete scan of the sample data is not required. This is analogous to relational databases where indices are created to avoid needing to perform complete scans of database tables.
 
-In practice, when you are exploring a Knowledge Graph like DBPedia or WikiData (that are just very large collections of RDF triples), you might run a query and discover a useful or interesting entity URI in the triple store, then drill down to find out more about the entity. In a later chapter *Knowledge Graph Explorer* we attempt to automate this exploration process using the DBPedia Knowledge Graph.
+In practice, when you are exploring a Knowledge Graph like DBPedia or WikiData (that are just very large collections of RDF triples), you might run a query and discover a useful or interesting entity URI in the triple store, then drill down to find out more about the entity. In a later chapter [Knowledge Graph Navigator](#kgn) we attempt to automate this exploration process using the DBPedia data as a Knowledge Graph.
 
 We will be using the same code to access the small example of RDF statements in our sample data as we will for accessing DBPedia or WikiData.
 
@@ -497,7 +530,7 @@ We are finished with our quick tutorial on using the SELECT query form. There ar
     any triples
 -   [DESCRIBE](https://www.w3.org/TR/rdf-sparql-query/#describe) – returns a new RDF graph containing matched resources
 
-A common matching pattern that I don't cover in this chapter is [optional](https://www.w3.org/TR/rdf-sparql-query/#optionals) but the **optional** matching pattern is used in the examples in the later chapter *Knowledge Graph Navigator*.
+A common matching pattern that I don't cover in this chapter is [optional](https://www.w3.org/TR/rdf-sparql-query/#optionals) but the **optional** matching pattern is used in the examples in the later chapter [Knowledge Graph Navigator](#kgn).
 
 ## Using Jena
 
@@ -505,7 +538,7 @@ Apache Jena is a complete Java library for developing RDF/RDFS/OWL applications 
 
 The following figure shows a UML diagram for the wrapper classes and interface that I wrote for Jena to make it easier for you to get started. My wrapper uses an in-memory RDF repository that supports inference, loading RDF/RDFS/OWL files, and performing both local and remote SPARQL queries. If you decide to use semantic web technologies in your development you will eventually want to use the full Jena APIs for programmatically creating new RDF triples, finer control of the type of repository (options are in-memory, disk based, and database), [type definitions](https://www.w3.org/TR/swbp-xsch-datatypes/) and inferencing, and programmatically using query results. That said, using my wrapper library is a good place for you to start experimenting.
 
-Referring to the following figure, the class constructor **JenaApis** opens a new in-memory RDF triple store and supplies the public APIs we will use later. The data class **QueryResults** has public class variables for variable names used in a query and a list or rows, one row for each query result. The class **Cache** is used internally to cache SPARQL query results for later use without having to require a remote SPARQL endpoint like DBPedia or WikiData.
+Referring to the following figure, the class constructor **JenaApis** opens a new in-memory RDF triple store and supplies the public APIs we will use later. The data class **QueryResults** has public class variables for variable names used in a query and a list or rows, one row for each query result. The class **Cache** is used internally to cache SPARQL query results for later to improve performance and use without having online access a remote SPARQL endpoint like DBPedia or WikiData.
 
 ![UML Class Diagram for Apache Jena Wrapper Classes](images/jenaapis-uml.png)
 
@@ -573,7 +606,7 @@ import java.util.Scanner;
 public class JenaApis {
 
   public JenaApis() {
-     //model = ModelFactory.createDefaultModel(); // if OWL reasoning not required
+    //model = ModelFactory.createDefaultModel(); // if OWL reasoning not required
     model = ModelFactory.createOntologyModel(); // use OWL reasoner
  }
 
@@ -822,7 +855,7 @@ kb:containedIn owl:inverseOf kb:containsPlace .
 
 Given an RDF container that supported extended OWL DL SPARQL queries, we can now execute SPARQL queries matching the property kb:containedIn and “match” triples in the RDF triple store that have never been asserted but are inferred by the OWL reasoner.
 
-OWL DL is a very large subject and OWL is an even larger subject. From reading the chapter on Reasoning and the very light coverage of OWL in this section, you should understand the concept of class membership not by explicitly stating that an object (or individual) is a member of a class, but rather because an individual has properties that can be used to infer class membership.
+OWL DL is a very large subset of full OWL. From reading the chapter on Reasoning and the very light coverage of OWL in this section, you should understand the concept of class membership not by explicitly stating that an object (or individual) is a member of a class, but rather because an individual has properties that can be used to infer class membership.
 
 The World Wide Web Consortium has defined three versions of the OWL language that are in increasing order of complexity: OWL Lite, OWL DL, and OWL Full. OWL DL (supports Description Logic) is the most widely used (and recommended) version of OWL. OWL Full is not computationally decidable since it supports full logic, multiple class inheritance, and other things that probably make it computationally intractable for all but smaller problems.
 
@@ -914,7 +947,8 @@ Rows:
 	[Spain, 1^^http://www.w3.org/2001/XMLSchema#integer]
 ~~~~~~~~
 
-Note that the integer values bound to the variable **count** are specified to be of type **http://www.w3.org/2001/XMLSchema#integer** using the **^^** notation.
+Note the type **http://www.w3.org/2001/XMLSchema#integer** using the **^^** notation
+for integer values bound to the variable **count**.
 
 ## Semantic Web Wrap-up
 
