@@ -1,4 +1,4 @@
-# Resolve Entity Names to DBPedia References
+# Resolve Entity Names to DBPedia References {#ner}
 
 As a personal research project I have collected a large data set that maps entity names (e.g., people's names, city names, names of music groups, company names, etc.) to the DBPedia URI for each entity. I have developed libraries to use this data in [Common Lisp](https://leanpub.com/lovinglisp), [Haskell](https://leanpub.com/haskell-cookbook), and Java. Here we use the Java version of this library.
 

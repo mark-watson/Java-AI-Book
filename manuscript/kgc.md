@@ -1,18 +1,18 @@
 # Automatically Generating Data for Knowledge Graphs {#kgcreator}
 
-Here we develop a complete application using the package developed in the earlier chapter *Resolve Entity Names to DBPedia References*. The Knowledge Graph Creator (KGcreator) is a tool for automating the generation of data for Knowledge Graphs from raw text data. Here we generate RDF data for a Knowledge Graph. You might also be interested in the Knowledge Graph Creator implementation in [my Common Lisp book](https://leanpub.com/lovinglisp) that generates data for the Neo4J open source graph database in addition to generating RDF data.
+Here we develop a complete application using the package developed in the earlier chapter [Resolve Entity Names to DBPedia References](#ner). The Knowledge Graph Creator (KGcreator) is a tool for automating the generation of data for Knowledge Graphs from raw text data. Here we generate RDF data for a Knowledge Graph. You might also be interested in the Knowledge Graph Creator implementation in [my Common Lisp book](https://leanpub.com/lovinglisp) that generates data for the Neo4J open source graph database in addition to generating RDF data.
 
 Data created by KGcreator generates data in RDF triples suitable for loading into any linked data/semantic web data store.
 
 This example application works by identifying entities in text. Example entity types are people, companies, country names, city names, broadcast network names, political party names, and university names. We saw earlier code for detecting entities in the chapter on making named entities to DBPedia URIs and we will reuse this code.
 
-I originally wrote KGCreator as two research prototypes, one in Common Lisp (the example in this chapter) and one in [Haskell](https://leanpub.com/haskell-cookbook/). The example in this chapter is a port of these systems to Java.
+I originally wrote KGCreator as two research prototypes, one in Common Lisp (see my [Common Lisp book](https://leanpub.com/lovinglisp)) and one in [Haskell](https://leanpub.com/haskell-cookbook/). The example in this chapter is a port of these systems to Java.
 
 ## Implementation Notes
 
 The implementation is contained in a single Java class **KGC** and the **junit** test class **KgcTest** is used to process the test files included with this example.
 
-As can be seen in the following figure I have defined final static strings for each type of entity type URI. For example, **personTypeUri** has the value **"<http://www.w3.org/2000/01/rdf-schema#person>"**.
+As can be seen in the following figure I have defined final static strings for each type of entity type URI. For example, **personTypeUri** has the value **<http://www.w3.org/2000/01/rdf-schema#person>**.
 
 ![Overview of Java Class UML Diagram for the Knowledge Graph Creator](images/kgc-uml.png)
 
@@ -20,7 +20,7 @@ The following figure shows a screen shot of this example project in the free Com
 
 ![IDE View of Project](images/kgc-ide.png)
 
-Notice in this screen shot that there are several test files in the directory **test_data**. The files with the file extension **.meta** contain a single line which is the URI for the source of the text in the machine text file. For example, the meta file **test1.meta** provides the URI for the source of the text in the file **test1.txt**.
+Notice in this screen shot that there are several test files in the directory **test_data**. The files with the file extension **.meta** contain a single line which is the URI for the source of the text in the matching text file. For example, the meta file **test1.meta** provides the URI for the source of the text in the file **test1.txt**.
 
 
 ## Generating RDF Data
@@ -171,12 +171,12 @@ If specific entity names occur in multiple input files there will be a few dupli
 ~~~~~~~~
 create_data_and_remove_duplicates:
 	mvn test
-	echo "Removing duplicate Cypher statements"
+	echo "Removing duplicate RDF statements"
 	awk '!visited[$$0]++' output_with_duplicates.rdf > output.rdf
 	rm -f output_with_duplicates.rdf
 ~~~~~~~~
 
-If you are not familiar with **awk** and want to learn the basic then I recommend [this short tutorial](http://www.hcs.harvard.edu/~dholland/computers/awk.html).
+If you are not familiar with **awk** and want to learn the basics then I recommend [this short tutorial](http://www.hcs.harvard.edu/~dholland/computers/awk.html).
 
 ## KGCreator Wrap Up
 
