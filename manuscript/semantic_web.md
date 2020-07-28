@@ -1,10 +1,11 @@
 # Semantic Web {#semantic-web}
 
-We will start with a tutorial on semantic web data standards like RDF, RDFS, and OWL, then implement a wrapper for the Apache Jena library, and finally take a deeper dive into using OWL for reasoning over subclass types and hints of using multiple data sources that might use different schemas. You will learn how to do the following:
+We will start with a tutorial on semantic web data standards like RDF, RDFS, and OWL, then implement a wrapper for the Apache Jena library, and finally take a deeper dive into some examples. You will learn how to do the following:
 
 - Understand RDF data formats.
 - Understand SPARQL queries for RDF data stores (both local and remote).
 - Use the Apache Jena library to use local RDF data and perform SPARQL queries that return pure Java data structures.
+- Use the Apache Jena library to query remote SPARQL endpoints like DBPedia and WikiData.
 - Use the Apache Derby relational database to cache SPARQL remote queries for both efficiency and for building systems that may have intermittent access to the Internet.
 - Take a deeper dive into RDF, RDFS, and OWL reasoners.
 
@@ -59,7 +60,7 @@ In the next chapter we will use the entity recognition library we developed in a
 
 We will use either URIs or string literals as values for objects. We will always use URIs for representing subjects and predicates. In any case URIs are usually preferred to string literals. We will see an example of this preferred use but first we need to learn the N-Triple and N3 RDF formats.
 
-I proposed the idea that RDF was more flexible than Object Modeling in programming languages, relational databases, and XML with schemas. If we can tag new attributes on the fly to existing data, how do we prevent what I might call “data chaos” as we modify existing data sources? It turns out that the solution to this problem is also the solution for encoding real semantics (or meaning) with data: we usually use unique URIs for RDF subjects, predicates, and objects, and usually with a preference for not using string literals. The definitions of predicates are tied to a namespace and later with OWL we will state the equivalence of predicates in different name spaces with the same semantic meaning. I will try to make this idea more clear with some examples and [Wikipedia has a good writeup on RDF](https://en.wikipedia.org/wiki/Resource_Description_Framework).
+I proposed the idea that RDF was more flexible than Object Modeling in programming languages, relational databases, and XML with schemas. If we can tag new attributes on the fly to existing data, how do we prevent what I might call “data chaos” as we modify existing data sources? It turns out that the solution to this problem is also the solution for encoding real semantics (or meaning) with data: we usually use unique URIs for RDF subjects, predicates, and objects, and usually with a preference for not using string literals. The definitions of predicates are tied to a namespace and later with OWL we will state the equivalence of predicates in different namespaces with the same semantic meaning. I will try to make this idea more clear with some examples and [Wikipedia has a good writeup on RDF](https://en.wikipedia.org/wiki/Resource_Description_Framework).
 
 Any part of a triple (subject, predicate, or object) is either a URI or a string literal. URIs encode namespaces. For example, the containsPerson predicate in the last example could be written as:
 
@@ -94,18 +95,23 @@ My preference is to use N-Triple format files as output from programs that I wri
 <http://news.com/201234/> kb:containsCountry "China" .
 ~~~~~~~~
 
-The N3 format adds prefixes (abbreviations) to the N-Triple format.
+The N3 format adds prefixes (abbreviations) to the N-Triple format. In practice it would be better to use the URI **<http://dbpedia.org/resource/China>** instead of the literal value "China."
 
 Here we see the use of an abbreviation prefix “kb:” for the namespace for my company KnowledgeBooks.com ontologies. The first term in the RDF statement (the subject) is the URI of a news article. The second term (the predicate) is “containsCountry” in the “kb:” namespace. The last item in the statement (the object) is a string literal “China.” I would describe this RDF statement in English as, “The news article at URI http://news.com/201234 mentions the country China.”
 
-This was a very simple N3 example which we will expand to show additional features of the N3 notation. As another example, consider the case if this news article also mentions the USA. Instead of adding a whole new statement like this we can combine them using N3 notation. Here we have two separate RDF statements:
+This was a very simple N3 example which we will expand to show additional features of the N3 notation. As another example, let's look at the case if this news article also mentions the USA. Instead of adding a whole new statement like this we can combine them using N3 notation. Here we have two separate RDF statements:
 
 {lang="sparql",linenos=off}
 ~~~~~~~~
 @prefix kb:  <http://knowledgebooks.com/ontology#> .
 
-<http://news.com/201234/> kb:containsCountry "China"  .
-<http://news.com/201234/> kb:containsCountry "USA"  .
+<http://news.com/201234/>
+  kb:containsCountry
+  <http://dbpedia.org/resource/China>  .
+  
+<http://news.com/201234/>
+  kb:containsCountry
+  <http://dbpedia.org/resource/United_States>  .
 ~~~~~~~~
 
 We can collapse multiple RDF statements that share the same subject and optionally the same predicate:
@@ -114,11 +120,13 @@ We can collapse multiple RDF statements that share the same subject and optional
 ~~~~~~~~
 @prefix kb:  <http://knowledgebooks.com/ontology#> .
 
-<http://news.com/201234/> kb:containsCountry "China" ,
-                                              "USA" .
+<http://news.com/201234/>
+  kb:containsCountry
+    <http://dbpedia.org/resource/China> ,
+    <http://dbpedia.org/resource/United_States>  .
 ~~~~~~~~
 
-We can also add in additional predicates that use the same subject:
+The indentation and placement on separate lines is arbitrary - use whatever style you like that is readable. We can also add in additional predicates that use the same subject (I am going to use string literals here instead of URIs for objects to make the following example more concise but in practice prefer using URIs):
 
 {lang="sparql",linenos=off}
 ~~~~~~~~
