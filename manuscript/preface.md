@@ -1,7 +1,7 @@
 Preface
 =======
 
-The latest edition of this book is always available at [https://leanpub.com/javaai](https://leanpub.com/javaai). Currently the latest edition was released in the summer of 2020. It had been seven years since the previous edition and this is largely a rewrite, dropping some material like Drools based expert systems, Weka for machine learning, and the implementation of an RDF server with geolocation support. I am now placing a heavier emphasis on neural networks and deep learning, a greatly expanded discussion of the semantic web and linked data including examples to generate knowledge graphs automatically from text documents and also a system to help navigate public Knowledge Graphs like DBPedia and WikiData.
+The latest edition of this book is always available at [https://leanpub.com/javaai](https://leanpub.com/javaai).  You can also download a free copy from [my website](https://markwatson.com/books). Currently the latest edition was released in the summer of 2020. It had been seven years since the previous edition and this is largely a rewrite, dropping some material like Drools based expert systems, Weka for machine learning, and the implementation of an RDF server with geolocation support. I am now placing a heavier emphasis on neural networks and deep learning, a greatly expanded discussion of the semantic web and linked data including examples to generate knowledge graphs automatically from text documents and also a system to help navigate public Knowledge Graphs like DBPedia and WikiData.
 
 The code and PDF for the 4th edition from 2013 can be [found here](https://github.com/mark-watson/Java-AI-Book-Code_4th_edition).
 
