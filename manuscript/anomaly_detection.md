@@ -53,6 +53,7 @@ Please note in the code example that I prepend class variables used in methods w
 
 The following UML class diagram will give you an overview before we dive into the code:
 
+{width: "80%"}
 ![UML class diagram for the anomaly detection example](images/anomaly-uml.png)
 
 

@@ -22,6 +22,7 @@ There are several very good semantic web toolkits for the Java language and plat
 The following figure shows a layered hierarchy of data models that are used to implement semantic web applications. To design and implement these applications we need to think in terms of physical models (storage and access of RDF, RDFS, and perhaps OWL data), logical models (how we use RDF and RDFS to define relationships between data represented as unique URIs and string literals and how we logically combine data from different sources) and conceptual modeling (higher level knowledge representation and reasoning using OWL). Originally RDF data was serialized as XML data but other formats have become much more popular because they are easier to read and manually create. The top three layers in the figure might be represented as XML, or as LD-JSON (linked data JSON) or formats like N-Triples and N3 that we will use later.
 
 {#semantic-web-data-models}
+{width: "60%"}
 ![Semantic Web Data Models](images/semantic_web_data.png)
 
 This chapter is meant to get you interested in this technology but is not intended as a complete guide. RDF data is the bedrock of the semantic web. I am also lightly covering RDFS/OWL modeling, and Descriptive Logic Reasoners which are important topics for more advanced semantic web projects.
@@ -540,12 +541,14 @@ The following figure shows a UML diagram for the wrapper classes and interface t
 
 Referring to the following figure, the class constructor **JenaApis** opens a new in-memory RDF triple store and supplies the public APIs we will use later. The data class **QueryResults** has public class variables for variable names used in a query and a list or rows, one row for each query result. The class **Cache** is used internally to cache SPARQL query results for later to improve performance and use without having online access a remote SPARQL endpoint like DBPedia or WikiData.
 
+{width: "80%"}
 ![UML Class Diagram for Apache Jena Wrapper Classes](images/jenaapis-uml.png)
 
 We will look in some detail at the code in this UML Class Diagram. To improve portability to alternative RDF libraries, I wrote two wrapper classes for Jena, one class to represent query results and the other to wrap the Jena APIs that I use.
 
 The following screen shot shows the free IntelliJ Community Edition IDE used to edit one of the unit tests and run it:
 
+{width: "80%"}
 ![Example query in the unit test class](images/jena-ide-sparql-example.png)
 
 We will now look at the Java implementation of the examples for this chapter.

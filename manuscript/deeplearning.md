@@ -24,6 +24,7 @@ In general, simpler network architectures are better than unnecessarily complica
 
 The following screen shot shows an IntelliJ project (you can use the free community or professional version for the examples in this book) for the example in this chapter:
 
+{width: "90%"}
 ![IntelliJ project view for the examples in this chapter](images/intellij_dl.png)
 
 The Deeplearning4j library can use user-written Java classes to import training and testing data into a form that the Deeplearning4j library can use. Some of the examples at [https://github.com/eclipse/deeplearning4j-examples](https://github.com/eclipse/deeplearning4j-examples) use custom data loaders but in this simple example we use built-in utilities for reading spreadsheet data (see lines 46-56 in the following listing).

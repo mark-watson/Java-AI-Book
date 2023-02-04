@@ -85,6 +85,7 @@ the Weka GUI application, change directory to test\_data and type:
 ~~~~~~~~
 
 {#weka-explorer-1}
+{width: "80%"}
 ![First Screenshot of Weka Explorer](images/weka_explorer_1.png)
 
 Once you have loaded (and possibly browsed) the data as seen in Figure
@@ -94,6 +95,7 @@ and click the “Start” button. The results can be seen in the
 [Second Weka Explorer Screenshot](#weka-explorer-2).
 
 {#weka-explorer-2}
+{width: "80%"}
 ![Second Screenshot of Weka Explorer](images/weka_explorer_2.png)
 
 

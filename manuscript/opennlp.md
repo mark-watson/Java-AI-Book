@@ -9,6 +9,7 @@ Currently, OpenNLP has support for Danish, German, English, Spanish, Portuguese,
 The following figure shows the project for this chapter in the Community Edition of IntelliJ:
 
 
+{width: "80%"}
 ![IntelliJ project view for the examples in this chapter](images/intellij_opennlp_proj.png)
 
 We will use pre-trained models for tokenizing text, recognizing the names of organizations, people, locations, and parts of speech for words in input text. We will also train a new model (the file **opennlp/models/en-newscat.bin** in the github repository) for recognizing the category of input text. The section on training new maximum entropy classification models using your own training data may be the material in this chapter that you will use the most in your own projects. We will train one model to recognize the categories of **COMPUTERS**, **ECONOMY**, **HEALTH**, and **POLITICS**. You should then have the knowledge for training your own models using your own training texts for the categories that you need for your applications. The [OpenNLP documentation](https://opennlp.apache.org/docs/1.9.2/manual/opennlp.html#opennlp) has additional detail on custom models. We will also use both some pre-trained models that are included with the OpenNLP distribution in the next chapter when we combine using OpenNLP with the WordNet lexical database developed at Princeton University.
@@ -17,6 +18,7 @@ After building a classification model we finish up this chapter with an interest
 
 The following UML class diagrams will give you an overview of my wrapper for the OpenNLP library and for the unit test class:
 
+{width: "80%"}
 ![UML class diagram for wrapper code for OpenNLP examples](images/opennlp-uml.png)
 
 

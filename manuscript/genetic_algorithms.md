@@ -28,6 +28,8 @@ The GA toolkit developed in this chapter treats genes as a single bit; while you
 We will describe a simple example problem (that can be better solved using Newton's method) in this section, write a general purpose library in the section [Java Library for Genetic Algorithms](#java-ga-lib), and finish the chapter in the section [Java Genetic Algorithm Example](#java-ga-example) by solving this problem.
 
 {#ga-sample-function}
+
+{width: "70%"}
 ![Example Function](images/ga_sample_function.png)
 
 For a sample problem, let's suppose that we want to find the maximum value of the function **F** with one independent variable **x** in the following equation and as seen in last figure:
@@ -37,6 +39,7 @@ For a sample problem, let's suppose that we want to find the maximum value of th
 The problem that we want to solve is finding a good value of **x** to find a near to possible maximum value of **F(x)**. To be clear: we encode a floating point number as a chromosome made up of a specific number of bits so any chromosome with randomly set bits will represent some random number in the interval [0, 10]. The fitness function is simply the function in the last equation.
 
 {#ga-crossover}
+{width: "70%"}
 ![Crosssover Operation](images/ga_crossover.png)
 
 This figure shows an example of a crossover operation that we will implement later in the program example. A random chromosome bit index is chosen, and two chromosomes are “cut” at this index and swap cut parts. The two original chromosomes in **generation_n** are shown on the left of the figure and after the crossover operation they produce two new chromosomes in **generation n + 1** where **n** is the current generation number. The two new chromosomes are shown on the right of the figure.

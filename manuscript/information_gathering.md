@@ -4,6 +4,7 @@ I often write software to automatically collect and use data from the web and ot
 
 The following UML class diagram shows the public APIs the libraries developed in this chapter:
 
+{width: "80%"}
 ![UML class diagram for DBPedia lookup, Geonames, and web spiders](images/info-spider-uml.png)
 
 ## Web Scraping Examples

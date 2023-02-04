@@ -51,11 +51,12 @@ Before diving into the code I want to show you what the generated synonym and hy
 
 The following two figures show the generated structured output data in a IntelliJ Community Edition debug session, in particular look at the structure of **synonymMap**. While I rarely use the debugger to actually debug code, I frequently us it to inspect data.
 
+{width: "80%"}
 ![WordNet example: examining generated synonym data](images/wordnet-synonym.png)
 
 Here is a closeup showing generated data in the variable **hypernymMap**:
 
-![WordNet example: examining generated hypernym data using the IntelliJ debugger](images/wordnet-hypernym.png)
+{width: "80%"}![WordNet example: examining generated hypernym data using the IntelliJ debugger](images/wordnet-hypernym.png)
 
 ## Installing the Libraries and Linguistic Data for this Example
 
@@ -135,6 +136,7 @@ static public Map<String, List<List<String>>> getSynonyms(String s)
   
 The following UML class diagram shows this public API for the example code. There is only one source file in this example **WordNetAndOpenNlpExample.java** because our goal here is not building a reusable library, rather to provide a short example and a "starter project" for your own experiments. That said this project does get installed as a local Maven library so you can require the library and call **getHypernyms** and **getSynonyms** in other projects. I will later suggest further projects in the wrap-up.
 
+{width: "80%"}
 ![UML class diagram for WordNet example](images/wordnet-uml.png)
 
 The values returned from both **getHypernyms** and **getSynonyms** are maps where the keys are nouns in the input text. The map value for each key (a noun) will be a list, one element for each word sense for the noun. Each of these sub-lists is a list of strings where the first element is the gloss for the word sense and the remaining strings are either hypernyms or synonyms depending of which function is called.

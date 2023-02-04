@@ -21,6 +21,7 @@ intervention.
 We will start this chapter by discussing human neuron cells and which features of real neurons that we will model. Unfortunately, we do not yet understand all of the biochemical processes that occur in neurons, but there are fairly accurate models available (web search “neuron biochemical”). Neurons are surrounded by thin hair-like structures called dendrites which serve to accept activation from other neurons. Neurons sum up activation from their dendrites and each neuron has a threshold value; if the activation summed over all incoming dendrites exceeds this threshold, then the neuron fires, spreading its activation to other neurons. Dendrites are very localized around a neuron. Output from a neuron is carried by an axon, which is thicker than dendrites and potentially much longer than dendrites in order to affect remote neurons. The following figure shows the physical structure of a neuron; in general, the neuron’s axon would be much longer than is seen in this figure. The axon terminal buttons transfer activation to the dendrites of neurons that are close to the individual button. An individual neuron is connected to up to ten thousand other neurons in this way.
 
 {#nn-neuron}
+{width: "80%"}
 ![Neuron](images/nn_neuron.png)
 
 The activation absorbed through dendrites is summed together, but the firing of a neuron only occurs when a threshold is passed. In neural network simulations there are several common ways to model neurons and connections between neurons that we will see in both this and the next chapter.
@@ -29,10 +30,12 @@ The activation absorbed through dendrites is summed together, but the firing of 
 
 The following UML class diagram will give you an overview all of the neural network library classes in this chapter before we dive into the code:
 
+{width: "80%"}
 ![UML class diagram for neural network code](images/neuralnetwork-uml.png)
 
 There are three parts to the code base: main backpropagation library, GUI examples, and text-only tests. The following screen show of the project open in an IDE is useful to see the file layout for the project:
 
+{width: "80%"}
 ![IDE view of code showing main library, GUI examples, and text-only tests](images/neural-ide.png)
 
 
@@ -55,6 +58,7 @@ Initially, weights are set to small random values. You will get a general idea f
 In the figure showing a [Backpropagation network with No Hidden Layer](#nn-backprop-no-hidden), we have only two neuron layers, one for the input neurons and one for the output neurons. Networks with no hidden layers are not generally useful - I am using the network in  the figure showing a [Backpropagation network with No Hidden Layer](#nn-backprop-no-hidden) just to demonstrate layer to layer connections through a weights array.
 
 {#nn-backprop-no-hidden}
+{width: "80%"}
 ![Example Backpropagation network with No Hidden Layer](images/nn_backprop2d.png)
 
 
@@ -69,6 +73,7 @@ O2 = Sigmoid (I2 * W[1,2] + I2 * W[2,2])
 The figure showing the [Sigmoid Function](#nn-sigmoid) shows a plot of the **Sigmoid** function and the derivative of the sigmoid function (**SigmoidP**). We will use the derivative of the **Sigmoid** function when training a neural network (with at least one hidden neuron layer) with classified data examples.
 
 {#nn-sigmoid}
+{width: "60%"}
 ![Sigmoid Function and Derivative of Sigmoid Function (SigmoidP)](images/nn_sigmoid.png)
 
 
@@ -94,6 +99,7 @@ In order to train the network in the figure for a [Backpropagation network with 
 This process is continued to either a maximum number of learning cycles or until the calculated output errors get very small. We will see later that the algorithm is similar but slightly more complicated when we have hidden neuron layers; the difference is that we will “back propagate” output errors to the hidden layers in order to estimate errors for hidden neurons. We will cover more on this later. This type of neural network is too simple to solve very many interesting problems, and in practical applications we almost always use either one additional hidden neuron layer or two additional hidden neuron layers. The figure showing [mappings supported by zero hidden layer, one hidden layer, and two hidden hidden layer networks](#nn-mapping) shows the types of problems that can be solved by networks with different numbers of hidden layers.
 
 {#nn-mapping}
+{width: "80%"}
 ![Mappings supported by 0, 1, and 2 hidden layer neural networks](images/nn_maping.png)
 
 
@@ -106,11 +112,13 @@ We will concentrate in this section on implementing a back-prop learning algorit
 showing mappings supported by zero hidden layer, one hidden layer, and two hidden layer networks](#nn-mapping), a network with two hidden layers is capable of arbitrary mappings of input to output values. It used to be a common (and incorrect) opinion that there was no theoretical reason for using networks with three hidden layers. With recent projects using Deep Learning as I mentioned at the beginning of this chapter, neural networks with many hidden layers are now common practice. Here is one of the example programs that helps visualize a 1\one hidden layer network:
 
 {#example-1-hidden-layer-1}
+{width: "80%"}
 ![Example showing 1 hidden layer](images/nn_1d_example_1.png)
 
 With each layer having three neurons, the weight matrices are **3 x 3** arrays and are easy to display. When you run the examples you can see the weight matches changing in time. Here is another example program that adds an additional hidden layer:
 
 {#example-2-hidden-layer1-1}
+{width: "80%"}
 ![Example showing 2 hidden layers](images/nn_2d_example_1.png)
 
 Please note, dear reader, that simple networks like these examples are *explainable* in the sense that you can understand how they work after they are trained because they have so few parameters. We can characterize the complexity of models as the number of layers and the total number of connection weights. We might say that the one hidden layer model has 9 parameters and the two hidden layer model has 18 parameters (i.e., the total number of weights that we must learn effective values for). In general large neural models, especially deep learning models, are *not explainable*. There are some applications that are required by law to be explainable for which neural networks are not appropriate to use. Another issue is fairness of models if they are trained on biased data.

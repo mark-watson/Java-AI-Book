@@ -9,6 +9,7 @@ I decided which material to keep from old editions and which new material to add
 
 I have been developing commercial Artificial Intelligence (AI) tools and applications since the 1980s.
 
+{width: "80%"}
 ![Mark Watson](images/Mark.png "Mark Watson")
 
 I wrote this book for both professional programmers and home hobbyists who already know how to program in Java and who want to learn practical AI programming and information processing techniques. I have tried to make this an enjoyable book to work through. In the style of a “cook book,” the chapters can be studied in any order. When an example depends on a library developed in a previous chapter this is stated clearly. Most chapters follow the same pattern: a motivation for learning a technique, some theory for the technique, and a Java example program that you can experiment with.

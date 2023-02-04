@@ -41,6 +41,7 @@ The URI for each entity defines a unique identifier for real world entities as w
 
 The following UML class diagram shows the APIs and fields for the two classes in the package **com.markwatson.ner_dbpedia** for this example: **NerMaps** and **TextToDbpediaUris**:
 
+{width: "80%"}
 ![Overview of Java Class UML Diagram for this Example](images/nerdbpedia-uml.png)
 
 As you see in the following figure showing the IntelliJ Community Edition project for this example, there are nine text files, one for each entity type in the directory **src/main/resources**. Later we will look at the code required to read these files in two cases:
@@ -48,6 +49,7 @@ As you see in the following figure showing the IntelliJ Community Edition projec
 - During development these files are read from **target/classes**.
 - During client application use of the JAR file (created using *mvn install*) these files are read as resources from the Java class loader.
 
+{width: "80%"}
 ![IDE View of Project](images/nerdbpedia-ide.png)
 
 The class **com.markwatson.ner_dbpedia.NerMaps** is a utility for reading the raw entity mapping data files and creating hash tables for these mappings:

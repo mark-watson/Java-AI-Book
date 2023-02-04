@@ -55,6 +55,7 @@ and as a two-dimensional grid with arrows indicating possible movement
 from a reference point denoted by **R**.
 
 {#searchspace}
+{width: "80%"}
 ![Search Space Representations](images/search_space.png)
 
 When we specify a search space as a two-dimensional array, search
@@ -79,6 +80,7 @@ static short integer values used to indicate obstacles, the starting location, a
 
 
 {#search-uml}
+{width: "80%"}
 ![UML Diagram for Search Classes](images/search_uml.png)
 
 
@@ -169,6 +171,7 @@ The [figure showing the depth-first search in a maze](#search-depth-maze) shows 
 breadth-first search is that the depth-first search requires much less memory. We will see that possible moves for depth-first search are stored on a stack (last in, first out data structure) and possible moves for a breadth-first search are stored in a queue (first in, first out data structure).
 
 {#search-depth-maze}
+{width: "60%"}
 ![Depth-first search of a maze](images/search_depth.png)
 
 
@@ -301,6 +304,7 @@ array in reverse order, starting with the goal location:
 The [figure of breadth search of a maze](#search-breadth-maze) shows a good path solution between starting and goal nodes. Starting from the initial position, the breadth-first search engine adds all possible moves to the back of a queue data structure. For each possible move added to this queue in one search cycle, all possible moves are added to the queue for each new move recorded. Visually, think of possible moves added to the queue as “fanning out” like a wave from the starting location. The breadth-first search engine stops when this “wave” reaches the goal location. In general, I prefer breadth-first search techniques to depth-first search techniques when memory storage for the queue used in the search process is not an issue. In general, the memory requirements for performing depth-first search is much less than breadth-first search.
 
 {#search-breadth-maze}
+{width: "70%"}
 ![Beadth-first Search of a Maze](images/search_breadth.png)
 
 Note that the classes **MazeDepthFirstSearch** and
@@ -319,6 +323,7 @@ Links between nodes are often called edges. The algorithms used for finding path
 The [figure showing UML Diagram for Search Classes](#search-uml) shows the UML class diagram for the graph search Java classes that we will use in this section. The abstract class **AbstractGraphSearch** class is the base class for both **DepthFirstSearch** and **BreadthFirstSearch**. The classes **GraphDepthFirstSearch** and **GraphBreadthFirstSearch** and test programs also provide a Java Foundation Class (JFC) or Swing based user interface. These two test programs produced figures [Search Depth-First](#gsearch-depth-maze) and [Search Breadth-First](#gsearch-breadth-maze).
 
 {#gsearch-uml}
+{width: "80%"}
 ![UML Diagram for Graphics Search Demo](images/gsearch_uml.png)
 
 As seen in the previous figure, most of the data for the search
@@ -544,11 +549,13 @@ In order to run both the depth-first and breadth-first graph search examples, ch
 The following figure shows the results of finding a route from node 1 to node 9 in the small test graph. Like the depth-first results seen in the maze search, this path is not optimal.
 
 {#gsearch-depth-graph}
+{width: "70%"}
 ![Depth-first Search in a Graph](images/gsearch_depth.png)
 
 The next figure shows an optimal path found using a breadth-first search. As we saw in the maze search example, we find optimal solutions using breadth-first search at the cost of extra memory required for the breadth-first search.
 
 {#gsearch-breadth-graph}
+{width: "80%"}
 ![Breadth-first Search in a Graph](images/gsearch_breadth.png)
 
 
@@ -588,6 +595,7 @@ Note that the value of any board position for X is the negative of the
 value for O.
 
 {#alphabeta-tictactoe}
+{width: "80%"}
 ![Alpha Beta Search for Tic-Tac-Toe](images/alphabeta_tictactoe.png)
 
 
@@ -873,6 +881,7 @@ Using the Java class framework of **GameSearch**, **Position**, and **Move**, it
 **TicTacToe** (derived from **GameSearch**), **TicTacToeMove** (derived from **Move**), and **TicTacToePosition** (derived from **Position**).
 
 {#alphabaeta-tictactoe-classes}
+{width: "80%"}
 ![UML Diagram for Tic-Tac-Toe Classes](images/alphabaeta_tictactoe_classes.png)
 
 I assume that the reader has the book example code installed and available for viewing. In this section, I will only discuss the most interesting details of the tic-tac-toe class refinements; I assume that the reader can look at the source code. We will start by looking at the
@@ -1070,6 +1079,7 @@ both the general purpose GameSearch framework and the classes derived to
 implement chess specific data and behavior.
 
 {#alphabeta-chess-classes}
+{width: "80%"}
 ![UML Diagram for Chess Game Classes](images/alphabeta_chess_classes.png)
 
 
@@ -1109,6 +1119,7 @@ squares have a value of “7”:
 ~~~~~~~~
 
 {#chessgame1a}
+{width: "80%"}
 ![First example chess board](images/chess_game_1a.png)
 
 It is difficult to see from this listing of the board square values but
@@ -1120,6 +1131,7 @@ the continuation of this same game in the next figure.The
 lookahead is limited to 2 moves (4 ply).
 
 {#chessgame1b}
+{width: "80%"}
 ![Second example chess board](images/chess_game_1b.png)
 
 The class **ChessPosition** contains data for this representation and
@@ -1306,8 +1318,10 @@ two seconds per move and plays a better game. Increasing the lookahead
 to 3 full moves yields a better game but then the program can take up to
 about ten seconds per move.
 
+{width: "80%"}
 ![After 1 d4 e6 2 e4 Qh4 Black (the computer) increases the mobility of its pieces by bringing out the queen early but we will see that this soon gets black in trouble.](images/chess_game_2a.png)
 
+{width: "80%"}
 ![After 3 Nc3 Nf6 4 Bd3 Bb4 5 Nf3 Qh5 Black continues to develop pieces and puts pressure on the pawn on E4 but the vulnerable queen makes this a weak position for black.](images/chess_game_2b.png)
 
 The method **setControlData** is very similar to this method; I leave it

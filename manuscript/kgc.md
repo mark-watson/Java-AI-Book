@@ -14,10 +14,12 @@ The implementation is contained in a single Java class **KGC** and the **junit**
 
 As can be seen in the following figure I have defined final static strings for each type of entity type URI. For example, **personTypeUri** has the value **<http://www.w3.org/2000/01/rdf-schema#person>**.
 
+{width: "80%"}
 ![Overview of Java Class UML Diagram for the Knowledge Graph Creator](images/kgc-uml.png)
 
 The following figure shows a screen shot of this example project in the free Community Edition of IntelliJ.
 
+{width: "80%"}
 ![IDE View of Project](images/kgc-ide.png)
 
 Notice in this screen shot that there are several test files in the directory **test_data**. The files with the file extension **.meta** contain a single line which is the URI for the source of the text in the matching text file. For example, the meta file **test1.meta** provides the URI for the source of the text in the file **test1.txt**.

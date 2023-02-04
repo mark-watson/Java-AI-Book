@@ -148,6 +148,7 @@ The KGN user interface loop allows you to enter queries and see the results. The
 
 The following UML Class Diagram for KGN shows you an overview of the Java classes we use and their public methods and fields.
 
+{width: "80%"}
 ![UML Class Diagram for KGN Example Application](images/kgn-uml.png)
 
 

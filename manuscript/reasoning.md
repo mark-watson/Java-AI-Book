@@ -15,6 +15,7 @@ PowerLoom is a newer version of the classic Loom Descriptive Logic reasoning sys
 While we will look at an example of embedding the PowerLoom runtime and a PowerLoom model in a Java example program, I want to make a general comment on PowerLoom development: you will spend most of your time interactively running PowerLoom in an interactive shell that lets you type in concepts, relations, rules, and queries and immediately see the results. If you have ever programmed in Lisp, then this mode of interactive programming will be familiar to you. As seen in the next figure, after interactive development you can deploy in a Java application. This style of development supports entering facts and trying rules and relations interactively and as you get things working you can paste what works into a PowerLoom source file. If you have only worked with compiled languages like Java and C++ this development style may take a while to get used to and appreciate. As seen in the next figure the PowerLoom runtime system, with relations and rules, can be embedded in Java applications that typically clear PowerLoom data memory, assert facts from other live data sources, and then use PowerLoom for inferencing.
 
 {#reasoning~overview}
+{width: "80%"}
 ![Developing Reasoning Systems](images/reasoning_overview.png)
 
 
@@ -256,6 +257,7 @@ Once you interactively develop concepts, rules and relations then it is likely t
 
 These packages can be seen in this screen shot:
 
+{width: "80%"}
 ![Powerloom example in IntelliJ IDE](images/powerloom-ide1.png)
 
 
@@ -263,6 +265,7 @@ If you download the PowerLoom manual (a PDF file) from the PowerLoom web site, y
 
 The following UML class diagram will give you an overview before we dive into the code:
 
+{width: "80%"}
 ![UML class diagram for the Powerloom example](images/powerloom.png)
 
 My wrapper class has the follow public methods:
