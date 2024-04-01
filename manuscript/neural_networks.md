@@ -140,32 +140,9 @@ The GUI files are for demonstration purposes only, and we will not discuss the c
 
 It is common to implement back-prop libraries to handle either zero, one, or two hidden layers in the same code base. At the risk of having to repeat similar code in two different classes, I decided to make the **Neural\_1H** and **Neural\_2H** classes distinct. I think that this makes the code a little easier to understand. As a practical point, you will almost always start solving a neural network problem using only one hidden layer and only progress to trying two hidden layers if you can't train a one hidden layer network to solve the problem at-hand with sufficiently small error when tested with data that is different from the original training data. Networks with only one hidden layer require less storage space and run faster in simulation than two hidden layer networks.
 
-In this section we will look only at the implementation of the class **Neural\_2H** (class **Neural\_1H** is simpler and when you understand how **Neural\_2H** works, the simpler class is also easy to understand). This class implements the **Serializable** interface and contains a utility method **save** to write a trained network to a disk file:
+In this section we will look only at the implementation of the class **Neural\_2H** (class **Neural\_1H** is simpler and when you understand how **Neural\_2H** works, the simpler class is also easy to understand).
 
-{lang="java",linenos=off}
-~~~~~~~~
-     class Neural_2H implements Serializable { 
-~~~~~~~~
-
-There is a static factory method that reads a saved network file from disk and builds an instance of **Neural\_2H** and there is a class constructor that builds a new untrained network in memory, given the number of neurons in each layer:
-
-{lang="java",linenos=off}
-~~~~~~~~
-     public static Neural_2H Factory(String serialized_file_name)
-     public Neural_2H(int num_in,
-                      int num_hidden1,
-                      int num_hidden2, int num_output) 
-~~~~~~~~
-
-An instance of **Neural\_2H** contains training data as transient data that is not saved by method **save**.
-
-{lang="java",linenos=off}
-~~~~~~~~
-     transient protected ArrayList inputTraining = new Vector();
-     transient protected ArrayList outputTraining = new Vector(); 
-~~~~~~~~
-
-I want the training examples to be native float arrays so I used generic **ArrayList** containers. You will usually need to experiment with training parameters in order to solve difficult problems. The learning rate not only controls how large the weight corrections we make each
+I want the training examples to be native float arrays so I used generic **ArrayList<float[]>** containers. You will usually need to experiment with training parameters in order to solve difficult problems. The learning rate not only controls how large the weight corrections we make each
 learning cycle but this parameter also affects whether we can break out of local minimum. Other parameters that affect learning are the ranges of initial random weight values that are hardwired in the method **randomizeWeights()** and the small random values that we add to weights during the training cycles; these values are set in in **slightlyRandomizeWeights()**. I usually only need to adjust the learning rate when training back-prop networks:
 
 {lang="java",linenos=off}
