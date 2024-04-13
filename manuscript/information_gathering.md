@@ -1,11 +1,11 @@
 # Information Gathering
 
-I often write software to automatically collect and use data from the web and other sources. In this chapter I have collected utility code that I have written over the years into a small library supporting two approaches to web scraping, DBPedia lookup, and GeoNames lookup. This code is simple but I hope you will find useful.
+I often write software to automatically collect and use data from the web and other sources. In this chapter I have collected utility code that I have written over the years into a small library supporting two approaches to web scraping and GeoNames lookup. This code is simple but I hope you will find useful.
 
 The following UML class diagram shows the public APIs the libraries developed in this chapter:
 
 {width: "80%"}
-![UML class diagram for DBPedia lookup, Geonames, and web spiders](images/info-spider-uml.png)
+![UML class diagram for DBPedia lookup (example deprecated), Geonames, and web spiders](images/info-spider-uml.png)
 
 ## Web Scraping Examples
 
@@ -235,146 +235,6 @@ Here is the output for the test class **WebClientTest**:
 + urls: [http://pbs.org]
 + url_str: http://pbs.org
 Found URIs: [[http://pbs.org, ]]
-~~~~~~~~
-
-## DBPedia Entity Lookup
-
-DBPedia contains structured data for the WikiPedia web site. In later chapters we will learn how to use the SPARQL query language to access DBPedia. Here we use a simple lookup service for any entity name. If an entity name is found in DBPedia then information on the entity is returned as an XML payload.
-
-The implementation file is DBpediaLookupClient.java:
-
-{lang="java",linenos=off}
-~~~~~~~~
-package com.markwatson.info_spiders;
-
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
-
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-import java.util.*;
-
-/**
- * Copyright Mark Watson 2008-2020. All Rights Reserved.
- * License: Apache-2.0
- */
-
-// Use Georgi Kobilarov's DBpedia lookup web service
-//    ref: http://lookup.dbpedia.org/api/search.asmx?op=KeywordSearch
-//    example:
-// http://lookup.dbpedia.org/api/search.asmx/KeywordSearch?QueryString=Flagstaff
-
-/**
- * Searches return results that contain any of the search terms. I am going to filter
- * the results to ignore results that do not contain all search terms.
- */
-
-
-public class DBpediaLookupClient extends DefaultHandler {
-  public DBpediaLookupClient(String query) throws Exception {
-    this.query = query;
-    CloseableHttpClient client = HttpClients.createDefault();
-
-    String query2 = query.replaceAll(" ", "+");
-
-    SAXParserFactory factory = SAXParserFactory.newInstance();
-    SAXParser sax = factory.newSAXParser();
-    sax.parse(
-      "http://lookup.dbpedia.org/api/search.asmx/KeywordSearch?QueryString=" +
-      query2, this);
-
-  }
-
-  private List<Map<String, String>> variableBindings = 
-      new ArrayList<Map<String, String>>();
-  private Map<String, String> tempBinding = null;
-  private String lastElementName = null;
-
-  public void startElement(String uri, String localName, String qName,
-                           Attributes attributes) throws SAXException {
-    if (qName.equalsIgnoreCase("result")) {
-      tempBinding = new HashMap<String, String>();
-    }
-    lastElementName = qName;
-  }
-
-  public void endElement(String uri, String localName, String qName)
-         throws SAXException {
-    if (qName.equalsIgnoreCase("result")) {
-      if (!variableBindings.contains(tempBinding) &&
-           containsSearchTerms(tempBinding))
-        variableBindings.add(tempBinding);
-    }
-  }
-
-  public void characters(char[] ch, int start, int length) throws SAXException {
-    String s = new String(ch, start, length).trim();
-    if (s.length() > 0) {
-      if ("Description".equals(lastElementName)) {
-        if (tempBinding.get("Description") == null) {
-          tempBinding.put("Description", s);
-        }
-        tempBinding.put("Description", "" + tempBinding.get("Description") +
-                        " " + s);
-      }
-      if ("URI".equals(lastElementName) && s.indexOf("Category")==-1 &&
-          tempBinding.get("URI") == null) {
-        tempBinding.put("URI", s);
-      }
-      if ("Label".equals(lastElementName)) tempBinding.put("Label", s);
-    }
-  }
-
-  public List<Map<String, String>> variableBindings() {
-    return variableBindings;
-  }
-  private boolean containsSearchTerms(Map<String, String> bindings) {
-    StringBuilder sb = new StringBuilder();
-    for (String value : bindings.values()) sb.append(value);  // no white space
-    String text = sb.toString().toLowerCase();
-    StringTokenizer st = new StringTokenizer(this.query);
-    while (st.hasMoreTokens()) {
-      if (text.indexOf(st.nextToken().toLowerCase()) == -1) {
-        return false;
-      }
-    }
-    return true;
-  }
-  private String query = "";
-}
-~~~~~~~~
-
-The unit test class **DBpediaLookupClientTest** shows how to call this library:
-
-{lang="java",linenos=off}
-~~~~~~~~
-    DBpediaLookupClient client =
-        new DBpediaLookupClient("London UK");
-    List<Map<String, String>> results = client.variableBindings();
-    System.out.println("# query results: " + results.size());
-    for (Map<String, String> map : results) {
-      for (Map.Entry<String, String> entry : map.entrySet()) {
-        System.out.println(entry.getKey() + " - " + entry.getValue());
-      }
-    }
-~~~~~~~~
-
-Here is the output from this test code (with some output not shown):
-
-{linenos=off}
-~~~~~~~~
-# query results: 2
-Description - The O2 Arena (visually typeset in branding as The O2 arena, referred to as North Greenwich Arena in context of the 2012 Summer Olympics and Paralympics) is a multi-purpose indoor arena located in the centre of The O2, a large entertainment complex on the Greenwich peninsula in London, England.
-  ...
-Label - Sports venues in London
-URI - http://dbpedia.org/resource/The_O2_Arena_(London)
-Description - The City of London was a United Kingdom Parliamentary constituency. It was a constituency of the House of Commons of the Parliament of England then of the Parliament of Great Britain from 1707 to 1800 and of the Parliament of the United Kingdom from 1801 to 1950. The City of London was a United Kingdom Parliamentary constituency.
-  ...
-Label - United Kingdom Parliamentary constituencies represented by a sitting Prime Minister
-URI - http://dbpedia.org/resource/City_of_London_(UK_Parliament_constituency)
 ~~~~~~~~
 
 
