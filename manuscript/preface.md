@@ -49,7 +49,6 @@ Now, the code in the OpenNLP example is installed on your system.
 
 My example programs (i.e., the code I wrote) are licensed under the LGPL version 3 and the Apache 2. Use whichever of these two licenses that works better for you. I also use several open source libraries in the book examples and their licenses are:
 
--   PowerLoom Reasoning: LGPL
 -   Jena Semantic Web: Apache 2
 -   OpenNlp: Apache 2
 -   WordNet: MIT style license ([link to license](https://wordnet.princeton.edu/license-and-commercial-use))
