@@ -3,6 +3,8 @@ Preface
 
 The latest edition of this book is always available at [https://leanpub.com/javaai](https://leanpub.com/javaai).  You can also download a free copy from [my website](https://markwatson.com/books). Currently the latest edition was released in the spring of 2024.
 
+If you read my eBooks free online then please consider tipping me [https://markwatson.com/#tip](https://markwatson.com/#tip).
+
 This edition supports Java version 21 but the example code may have been written in older Java versions and not updated.
 
 The older versions of this book contained examples that have been deprecated and removed. If you want any of those old examples (e.g., natural language interface to relational databses) then the code and PDF for the 4th edition from 2013 can be [found here](https://github.com/mark-watson/Java-AI-Book-Code_4th_edition).
