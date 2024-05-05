@@ -39,9 +39,108 @@ In summary, using local LLMs with Ollama not only makes powerful AI tools more a
 
 ## Java Library to Use Ollama's REST API
 
-TBD
+Te library defined in the directory ** Java-AI-Book-Code/ollama-llm-client** defines a class named **OllamaLlmClient** with a method **getCompletion** that sends a JSON payload to a server and reads the response. Here's an explanation of what each significant part of the method does:
+
+- Create JSON Payload: It constructs a JSON object (message) containing three key-value pairs: prompt (a string provided by the caller), model (also a string provided by the caller indicating the model name), and stream (a boolean value set to false).
+- Prepare HTTP Connection: It creates a URI object pointing to the server's URL (http://localhost:11434/api/generate), converts it to a URL object, and opens a connection to it. The connection is configured to send output and to use application/json as the content type.
+- Send JSON Payload: It converts the JSON object to a byte array using UTF-8 encoding and sends it to the server through the connection's output stream.
+- Read Server Response: It reads the server's response using a BufferedReader that wraps the connection's input stream, appending each line of the response to a StringBuilder object.
+- Disconnect: It explicitly disconnects the HTTP connection.
+- Process Server Response: It converts the response string back into a JSON object and extracts the value associated with the key response. This value is then returned by the method.
+
+In summary, this method sends a JSON payload containing a prompt and model name to a specified server endpoint, reads the JSON response from the server, extracts a specific field from the JSON response, and returns that field's value.
 
 
-## Example Applications
+```java
+package com.markwatson.openai;
 
-TBD
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URL;
+import java.net.URLConnection;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+public class OllamaLlmClient {
+
+    public static void main(String[] args) throws Exception {
+        String prompt = "Translate the following English text to French: 'Hello, how are you?'";
+        String completion = getCompletion(prompt, "mistral");
+        System.out.println("completion: " + completion);
+    }
+
+    public static String getCompletion(String prompt, String modelName) throws Exception {
+        System.out.println("prompt: " + prompt + ", modelName: " + modelName);
+ 
+        // New JSON message format
+        JSONObject message = new JSONObject();
+        message.put("prompt", prompt);
+        message.put("model", modelName);
+        message.put("stream", false);
+        URI uri = new URI("http://localhost:11434/api/generate");
+        URL url = uri.toURL();
+        //System.out.println("jsonBody: " + jsonBody);
+        URLConnection connection = url.openConnection();
+        connection.setDoOutput(true);
+        connection.setRequestProperty("Content-Type", "application/json");
+        // Send the JSON payload
+        try (OutputStream os = connection.getOutputStream()) {
+            byte[] input = message.toString().getBytes("utf-8");
+             os.write(input, 0, input.length);
+        }
+
+        StringBuilder response;
+        // Read the response from the server
+        try (BufferedReader br = new BufferedReader(
+                new InputStreamReader(connection.getInputStream(), "utf-8"))) {
+            response = new StringBuilder();
+            String responseLine;
+            while ((responseLine = br.readLine()) != null) {
+                response.append(responseLine.trim());
+            }
+            System.out.println(response.toString());
+        }
+
+        ((HttpURLConnection) connection).disconnect();
+
+        JSONObject jsonObject = new JSONObject(response.toString());
+        String s = jsonObject.getString("response");
+        return s;
+    }
+
+}
+```
+
+
+
+## Example Using the Library
+
+The Java library for getting local LLM text completions using Ollama contains a unit test that contains an example showing how to call the API:
+
+```java
+String r =
+  OllamaLlmClient.getCompletion(
+    "Translate the following English text to French: 'Hello, how are you?'",
+    "mistral");
+System.out.println("completion: " + r);
+```
+
+The output looks like:
+
+```console
+
+prompt: Translate the following English text to French: 'Hello, how are you?', modelName: mistral
+completion:  In French, "Hello, how are you?" can be translated as "Bonjour, comment allez-vous?" or simply "Comment allez-vous?" depending on the context.
+```
+
+For reference the JSON response object from the API call looks like this:
+
+```text
+{"model":"mistral","created_at":"2024-05-05T19:38:26.893374Z","response":" In French, \"Hello, how are you?\" can be translated as \"Bonjour, comment allez-vous?\" or simply \"Comment allez-vous?\" depending on the context.","done":true,"context":[733,16289,28793, ...],"total_duration":1777944500,"load_duration":563601792,"prompt_eval_count":25,"prompt_eval_duration":133415000,"eval_count":41,"eval_duration":1079766000}
+```
+
+
