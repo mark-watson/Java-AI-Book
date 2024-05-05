@@ -921,7 +921,7 @@ Rows:
 	[http://news.yahoo.com/s/nm/20080616/bs_nmglobal_economy_dc_4/, Germany]
 	[http://news.yahoo.com/s/nm/20080616/ts_nm/usa_flooding_dc_16/, United States]
 ~~~~~~~~
-	
+
 We now group (aggregate) query results and count the number of times each place name has occurred in the result (this query requires an OWL reasoner):
 
 {lang="java",linenos=off}
