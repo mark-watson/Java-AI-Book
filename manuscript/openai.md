@@ -124,3 +124,14 @@ For reference, the JSON response object returned from the OpenAI completion API 
 {"id": "chatcmpl-7LbgN6PJxHAfycOuHmGkw8nbpQMm1","object": "chat.completion","created": 1714936767,"model": "gpt-3.5-turbo-0125","choices": [{"index": 0,"message": {"role": "assistant","content": "Bonjour, comment vas-tu ?"},"logprobs": null,"finish_reason": "stop"}],"usage": {"prompt_tokens": 22,"completion_tokens": 7,"total_tokens": 29},"system_fingerprint": "fp_b410720239"}
 ```
 
+## Extraction of Facts and Relationships from Text Data
+
+Traditional methods for extracting email addresses, names, addresses, etc. from text included the use of hand-crafted regular expressions and custom software. LLMs are text processing engines with knowledge of grammar, sentence structure, and some real world embedded knowledge. Using LLMs can reduce the development time of information extraction systems.
+
+TBD: list extraction prompt text and write example Java code
+
+## Using LLMs to Summarize Text
+
+LLMs bring a new level of ability to text summarization tasks. With their ability to process massive amounts of information and "understand" natural language, they're able to capture the essence of lengthy documents and distill them into concise summaries. Two main types of summarization dominate with LLMs: extractive and abstractive. Extractive summarization pinpoints the most important sentences within the original text, while abstractive summarization  requires the LLM to paraphrase or generate new text to represent the core ideas. If you are interested in extractive summarization there is a chapter on this topic in my [Common Lisp AI book](https://leanpub.com/lovinglisp/read) (link to read online).
+
+TBD: list extraction prompt text and write example Java code

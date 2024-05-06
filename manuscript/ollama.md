@@ -144,3 +144,14 @@ For reference the JSON response object from the API call looks like this:
 ```
 
 
+## Extraction of Facts and Relationships from Text Data
+
+Traditional methods for extracting email addresses, names, addresses, etc. from text included the use of hand-crafted regular expressions and custom software. LLMs are text processing engines with knowledge of grammar, sentence structure, and some real world embedded knowledge. Using LLMs can reduce the development time of information extraction systems.
+
+TBD: list extraction prompt text and write example Java code
+
+## Using LLMs to Summarize Text
+
+LLMs bring a new level of ability to text summarization tasks. With their ability to process massive amounts of information and "understand" natural language, they're able to capture the essence of lengthy documents and distill them into concise summaries.
+
+TBD: list extraction prompt text and write example Java code
