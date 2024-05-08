@@ -4,17 +4,16 @@ Large Language Models (LLMs) signify a significant leap forward in the progressi
 
 The utility of LLMs extends across a broad spectrum of applications including but not limited to text generation, translation, summarization, question answering, and sentiment analysis. Their ability to understand and process natural language makes them indispensable tools in modern AI-driven solutions. However, with great power comes great responsibility. The deployment of LLMs raises imperative considerations regarding ethics, bias, and the potential for misuse. Moreover, the black-box nature of these models presents challenges in interpretability and control, which are active areas of research in the quest to make LLMs more understandable and safe. The advent of LLMs has undeniably propelled the field of NLP to new heights, yet the journey towards fully responsible and transparent utilization of these powerful models is an ongoing endeavor. 
 
-In the development of practical AI systems, LLMs like those provided by OpenAI, Anthropic, and Hugging Face have emerged as pivotal tools for numerous applications including natural language processing, generation, and understanding. These models, powered by deep learning architectures, encapsulate a wealth of knowledge and computational capabilities. As a Racket Scheme enthusiast embarking on the journey of intertwining the elegance of Racket with the power of these modern language models, you are opening a gateway to a realm of possibilities that we begin to explore here.
-
+In the development of practical AI systems, LLMs like those provided by OpenAI, Anthropic, and Hugging Face have emerged as pivotal tools for numerous applications including natural language processing, generation, and understanding. These models, powered by deep learning architectures, encapsulate a wealth of knowledge and computational capabilities. Here we look at the basics for getting you, dear reader, started using the OpenAI APIs for text completion tasks in Java code. In the next chapter we do the same ex pet we will run local LLMs on our laptops using the [Ollama](https://ollama.ai) platform.
 
 ## Java Library to Use OpenAI's APIs
 
-The library code defined in the directory ** Java-AI-Book-Code/openai-llm-client** is designed to interact with the OpenAI API to accept a prompt string and get a text completion. Here's a breakdown of what each part of the code does:
+The library code defined in the directory **Java-AI-Book-Code/openai-llm-client** is designed to interact with the OpenAI API to accept a prompt string and get a text completion. Here's a breakdown of what each part of the code does:
 
 The **getCompletion** method performs the following steps:
 
 - Initialization: This method takes a prompt as input and retrieves the OpenAI API key from the environment variables.
-- JSON Object Creation: Constructs a JSON object to define the user's role and the content (the prompt). This is added to a JSON array, which is then included in another JSON object along with the model name (gpt-3.5-turbo).
+- JSON Object Creation: Constructs a JSON object to define the user's role and the content (the prompt). This is added to a JSON array, which is then included in another JSON object along with the model name (here we are using gpt-3.5-turbo but you can also try gpt-4 that is more expensive but more capable.).
 - API Request Setup: Constructs a URI for the OpenAI API endpoint and sets up a URL connection. It configures the connection to send data (output) and sets the request headers for content type (JSON) and authorization (using the retrieved API key).
 - Sending the Request: Converts the JSON object to bytes and sends it through the connection's output stream.
 - Response Handling: Reads the response from the API using a BufferedReader. The response is built into a string using a StringBuilder.
@@ -36,7 +35,7 @@ import java.net.URLConnection;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-public class OpenAICompletionsExample {
+public class OpenAICompletions {
 
     public static void main(String[] args) throws Exception {
         String prompt = "Translate the following English text to French: 'Hello, how are you?'";
@@ -97,7 +96,7 @@ public class OpenAICompletionsExample {
 }
 ```
 
-
+In the next section we write a unit test for this Java class to demonstrate text completion.
 
 ## Example Applications
 
@@ -105,7 +104,7 @@ There is a unit test provided with this library that shows how to call the compl
 
 ```java
 String r =
-  OpenAICompletionsExample.getCompletion("Translate the following English text to French: 'Hello, how are you?'");
+  OpenAICompletions.getCompletion("Translate the following English text to French: 'Hello, how are you?'");
 System.out.println("completion: " + r);
 ```
 
