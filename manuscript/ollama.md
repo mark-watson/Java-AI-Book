@@ -1,6 +1,8 @@
 # Using Local LLMs Using Ollama in Java Applications
 
-Using local Large Language Models (LLMs) with [Ollama](https://ollama.ai) offers a range of advantages and applications that significantly enhance the accessibility and functionality of these powerful AI tools in various settings. Ollama is like the Docker system, but for easily downloading, running, and managing LLMs on your local computer. Ollama was originlly written to support Apple Silicon Macs, but now supports Intel Macs, Linux, and Windows.
+*Note: May 14, 2024: this chapter is only 80% complete.*
+
+Using local Large Language Models (LLMs) with [Ollama](https://ollama.ai) offers a range of advantages and applications that significantly enhance the accessibility and functionality of these powerful AI tools in various settings. Ollama is like the Docker system, but for easily downloading, running, and managing LLMs on your local computer. Ollama was originally written to support Apple Silicon Macs, but now supports Intel Macs, Linux, and Windows.
 
 ## Advantages of Using Local LLMs with Ollama
 
@@ -148,10 +150,90 @@ For reference the JSON response object from the API call looks like this:
 
 Traditional methods for extracting email addresses, names, addresses, etc. from text included the use of hand-crafted regular expressions and custom software. LLMs are text processing engines with knowledge of grammar, sentence structure, and some real world embedded knowledge. Using LLMs can reduce the development time of information extraction systems.
 
-TBD: list extraction prompt text and write example Java code
+There are sample text prompts in the directory **Java-AI-Book-Code/prompts** and we will specifically use the file ** two-shot-2-var.txt** that is listed here:
+
+```text
+Given the two examples below, extract the names, addresses, and email addresses of individuals mentioned later as Process Text. Format the extracted information in JSON, with keys for "name", "address", and "email". If any information is missing, use "null" for that field. Be very concise in your output by providing only the output JSON.
+
+Example 1:
+Text: "John Doe lives at 1234 Maple Street, Springfield. His email is johndoe@example.com."
+Output: 
+{
+  "name": "John Doe",
+  "address": "1234 Maple Street, Springfield",
+  "email": "johndoe@example.com"
+}
+
+Example 2:
+Text: "Jane Smith has recently moved to 5678 Oak Avenue, Anytown. She hasn't updated her email yet."
+Output: 
+{
+  "name": "Jane Smith",
+  "address": "5678 Oak Avenue, Anytown",
+  "email": null
+}
+
+Process Text: "{input_text}"
+Output:
+```
+
+The example code is a test method in **OllamaLlmClientTest. testTwoShotTemplate()** that is shown here:
+
+```java
+String input_text = "Mark Johnson enjoys living in Berkeley California at 102 Dunston Street and use mjess@foobar.com for contacting him.";
+String prompt0 = OllamaLlmClient.readFileToString("../prompts/two-shot-2-var.txt");
+System.out.println("prompt0: " + prompt0);
+String prompt = OllamaLlmClient.promptVar(prompt0, "{input_text}", input_text);
+System.out.println("prompt: " + prompt);
+String r =
+  OllamaLlmClient.getCompletion(prompt, "llama3:instruct");
+System.out.println("two shot extraction completion:\n" + r);
+```
+
+The output is (edited for brevity):
+
+```text
+two shot extraction completion:
+{
+  "name": "Mark Johnson",
+  "address": "102 Dunston Street, Berkeley, California",
+  "email": "mjess@foobar.com"
+}
+```
+
 
 ## Using LLMs to Summarize Text
 
 LLMs bring a new level of ability to text summarization tasks. With their ability to process massive amounts of information and "understand" natural language, they're able to capture the essence of lengthy documents and distill them into concise summaries.
 
-TBD: list extraction prompt text and write example Java code
+Here is a listing or the prompt file:
+
+```text
+Summarize the following text: "{input_text}"
+Output:
+```
+
+The example code is in the test **OllamaLlmClientTest. testSummarization()** listed here:
+
+```java
+String input_text = "Jupiter is the fifth planet from the Sun and the largest in the Solar System. It is a gas giant with a mass one-thousandth that of the Sun, but two-and-a-half times that of all the other planets in the Solar System combined. Jupiter is one of the brightest objects visible to the naked eye in the night sky, and has been known to ancient civilizations since before recorded history. It is named after the Roman god Jupiter. When viewed from Earth, Jupiter can be bright enough for its reflected light to cast visible shadows, and is on average the third-brightest natural object in the night sky after the Moon and Venus.";
+
+String prompt0 = OllamaLlmClient.readFileToString("../prompts/summarization_prompt.txt");
+System.out.println("prompt0: " + prompt0);
+String prompt = OllamaLlmClient.promptVar(prompt0, "{input_text}", input_text);
+System.out.println("prompt: " + prompt);
+String r =
+  OllamaLlmClient.getCompletion(prompt, "llama3:instruct");
+System.out.println("summarization completion:\n" + r);
+```
+
+The output is (edited for brevity):
+
+```text
+summarization completion:
+
+Here is a summary of the text:
+
+Jupiter is the 5th planet from the Sun and the largest gas giant in our Solar System, with a mass 1/1000 that of the Sun and 2.5 times that of all other planets combined. It's one of the brightest objects visible to the naked eye and has been known since ancient times. On average, it's the 3rd-brightest natural object in the night sky after the Moon and Venus.
+```
+
