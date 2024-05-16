@@ -1,6 +1,6 @@
 # Using the OpenAI Large Language Model APIs in Java
 
-*Note: May 14, 2024: this chapter is only 60% complete.*
+*Note: May 15, 2024: this chapter is about 90% complete*
 
 Large Language Models (LLMs) signify a significant leap forward in the progression of artificial intelligence, with a pronounced impact on the field of natural language processing (NLP), data transformation, translation, and serve as a source of real world knowledge in AI applications. They are trained on vast corpora of text data (literally most published books and most of the web), learning to predict subsequent words in a sequence, which imbues them with the ability to generate human-like text, comprehend the semantics of language, and perform a variety of language-related tasks. The architecture of these models, typically based on deep learning paradigms such as Transformer, empowers them to encapsulate intricate patterns and relationships within language. These models are trained utilizing substantial computational resources.
 
@@ -95,6 +95,23 @@ public class OpenAICompletions {
         return content;
     }
 
+    /***
+     * Utilities for using the OpenAI API
+     */
+
+    // read the contents of a file path into a Java string
+    public static String readFileToString(String filePath) throws IOException {
+        Path path = Paths.get(filePath);
+        return new String(Files.readAllBytes(path));
+    }
+
+    public static String replaceSubstring(String originalString, String substringToReplace, String replacementString) {
+        return originalString.replace(substringToReplace, replacementString);
+    }
+    public static String promptVar(String prompt0, String varName, String varValue) {
+        String prompt = replaceSubstring(prompt0, varName, varValue);
+        return replaceSubstring(prompt, varName, varValue);
+    } 
 }
 ```
 
@@ -129,10 +146,88 @@ For reference, the JSON response object returned from the OpenAI completion API 
 
 Traditional methods for extracting email addresses, names, addresses, etc. from text included the use of hand-crafted regular expressions and custom software. LLMs are text processing engines with knowledge of grammar, sentence structure, and some real world embedded knowledge. Using LLMs can reduce the development time of information extraction systems.
 
-TBD: list extraction prompt text and write example Java code
+The template we will use if in the file **Java-AI-Book-Code /prompts/two-shot-2-var.txt**:
+
+```text
+Given the two examples below, extract the names, addresses, and email addresses of individuals mentioned later as Process Text. Format the extracted information in JSON, with keys for "name", "address", and "email". If any information is missing, use "null" for that field. Be very concise in your output by providing only the output JSON.
+
+Example 1:
+Text: "John Doe lives at 1234 Maple Street, Springfield. His email is johndoe@example.com."
+Output: 
+{
+  "name": "John Doe",
+  "address": "1234 Maple Street, Springfield",
+  "email": "johndoe@example.com"
+}
+
+Example 2:
+Text: "Jane Smith has recently moved to 5678 Oak Avenue, Anytown. She hasn't updated her email yet."
+Output: 
+{
+  "name": "Jane Smith",
+  "address": "5678 Oak Avenue, Anytown",
+  "email": null
+}
+
+Process Text: "{input_text}"
+Output:
+```
+
+
+The example code for this section is in a Java Unit Test method **testTwoShotTemplate()**:
+
+```java
+String input_text = "Mark Johnson enjoys living in Berkeley California at 102 Dunston Street and use mjess@foobar.com for contacting him.";
+
+String prompt0 = OpenAICompletions.readFileToString("../prompts/two-shot-2-var.txt");
+System.out.println("prompt0: " + prompt0);
+String prompt = OpenAICompletions.promptVar(prompt0, "{input_text}", input_text);
+System.out.println("prompt: " + prompt);
+String r =
+OpenAICompletions.getCompletion(prompt);
+System.out.println("two shot extraction completion:\n" + r);
+```
+
+The output looks like:
+
+```console
+two shot extraction completion:
+{
+  "name": "Mark Johnson",
+  "address": "102 Dunston Street, Berkeley California",
+  "email": "mjess@foobar.com"
+}
+```
+
 
 ## Using LLMs to Summarize Text
 
 LLMs bring a new level of ability to text summarization tasks. With their ability to process massive amounts of information and "understand" natural language, they're able to capture the essence of lengthy documents and distill them into concise summaries. Two main types of summarization dominate with LLMs: extractive and abstractive. Extractive summarization pinpoints the most important sentences within the original text, while abstractive summarization  requires the LLM to paraphrase or generate new text to represent the core ideas. If you are interested in extractive summarization there is a chapter on this topic in my [Common Lisp AI book](https://leanpub.com/lovinglisp/read) (link to read online).
 
-TBD: list extraction prompt text and write example Java code
+Here we use the prompt template file **Java-AI-Book-Code/prompts/summarization_prompt.txt**:
+
+```text
+Summarize the following text: "{input_text}"
+Output:
+```
+
+The example code is in the Java Unit Test **testSummarization()**:
+
+```java
+String input_text = "Jupiter is the fifth planet from the Sun and the largest in the Solar System. It is a gas giant with a mass one-thousandth that of the Sun, but two-and-a-half times that of all the other planets in the Solar System combined. Jupiter is one of the brightest objects visible to the naked eye in the night sky, and has been known to ancient civilizations since before recorded history. It is named after the Roman god Jupiter.[19] When viewed from Earth, Jupiter can be bright enough for its reflected light to cast visible shadows,[ and is on average the third-brightest natural object in the night sky after the Moon and Venus.";
+        String prompt0 = OpenAICompletions.readFileToString("../prompts/summarization_prompt.txt");
+        System.out.println("prompt0: " + prompt0);
+        String prompt = OpenAICompletions.promptVar(prompt0, "{input_text}", input_text);
+        System.out.println("prompt: " + prompt);
+        String r =
+        OpenAICompletions.getCompletion(prompt);
+        System.out.println("summarization completion:\n\n" + r);
+```
+
+The output is:
+
+```console
+summarization completion:
+
+Jupiter is the largest planet in the Solar System and the fifth from the Sun. It is a gas giant with a mass one-thousandth that of the Sun. It is visible to the naked eye and has been known since ancient times. Jupiter is named after the Roman god Jupiter and is the third-brightest natural object in the night sky.
+```
