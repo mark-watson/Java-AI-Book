@@ -1,0 +1,8 @@
+# LangChain for Java as an Abstraction for Different Large Language Models
+
+*note: as of May 22, 2024 this chapter is 5% complete*
+
+LangChain4j aims to streamline the integration of AI and large language model (LLM) capabilities into Java applications by providing a unified API. This API supports various LLM providers, such as OpenAI, Mistral, and Google Vertex AI, and embedding stores like Pinecone and Vespa, eliminating the need to learn and implement specific APIs for each provider. We wrote Java code to interact with OpenAI APIs and local LLMs running on Ollama in the last two chapters. LangChain4j  provides abstract interfaces for many more models. This flexibility allows developers to switch between different LLMs or embedding stores without rewriting their code. LangChain4j currently supports over 10 popular LLM providers and more than 15 embedding stores, functioning similarly to Hibernate but for LLMs and embedding stores.
+
+The framework also offers a comprehensive toolbox that encapsulates the community's collective experience in building LLM-powered applications over the past year. This toolbox includes tools for low-level prompt templating, memory management, and output parsing, as well as high-level patterns like Agents and Retrieval-Augmented Generation (RAGs). LangChain4j provides interfaces and multiple ready-to-use implementations for each pattern and abstraction, based on proven techniques. This makes it suitable for a wide range of applications, from chatbots to complete RAG pipelines, offering developers a variety of options to build sophisticated LLM-powered solutions efficiently.
+

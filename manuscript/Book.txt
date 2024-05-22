@@ -2,6 +2,7 @@ preface.md
 search.md
 openai.md
 ollama.md
+langchain4j.md
 anomaly_detection.md
 genetic_algorithms.md
 neural_networks.md
