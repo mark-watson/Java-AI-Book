@@ -28,6 +28,17 @@ My goal is to introduce you to common AI techniques and to provide you with Java
 
 This book is released with a [Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)](https://creativecommons.org/licenses/by-nc-nd/4.0/) license. Feel free to share copies of this book with friends and colleagues at work. This book is also available to [read free online or to purchase](https://leanpub.com/javaai) if you want to support my writing activities.
 
+## Requests from the Author
+
+This book will always be available to read free online at [https://leanpub.com/javaai/read](https://leanpub.com/ollama/read).
+
+That said, I appreciate it when readers purchase my books because the income enables me to spend more time writing.
+
+### Hire the Author as a Consultant
+
+I am available for short consulting projects. Please see [https://markwatson.com](https://markwatson.com).
+
+
 ## Personal Artificial Intelligence Journey
 
 I have been interested in AI since reading Bertram Raphael’s excellent book *Thinking Computer: Mind Inside Matter* in the early 1980s. I have also had the good fortune to work on many interesting AI projects including the development of commercial expert system tools for the Xerox LISP machines and the Apple Macintosh, development of commercial neural network tools, application of natural language and expert systems technology, medical information systems, application of AI technologies to Nintendo and PC video games, and the application of AI technologies to the financial markets. I have also applied statistical natural language processing techniques to analyzing social media data from Twitter and Facebook. I worked at Google on their Knowledge Graph and I managed a deep learning team at Capital One.
