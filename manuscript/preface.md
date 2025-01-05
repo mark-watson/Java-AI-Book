@@ -30,7 +30,7 @@ This book is released with a [Attribution-NonCommercial-NoDerivatives 4.0 Intern
 
 ## Requests from the Author
 
-This book will always be available to read free online at [https://leanpub.com/javaai/read](https://leanpub.com/ollama/read).
+This book will always be available to read free online at [https://leanpub.com/javaai/read](https://leanpub.com/javaai/read).
 
 That said, I appreciate it when readers purchase my books because the income enables me to spend more time writing.
 
