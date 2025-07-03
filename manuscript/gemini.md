@@ -6,16 +6,14 @@ This example is very similar to OpenAI API examples in the previous chapter. We 
 
 The library code defined in the directory **Java-AI-Book-Code/gemini-llm-client** is designed to interact with the Gemini API to accept a prompt string and get a text completion. Here's a breakdown of what each part of the code does:
 
-======================================================
-  CLASS: com.markwatson.gemini.GeminiCompletions
-======================================================
+### CLASS: com.markwatson.gemini.GeminiCompletions
+
 Provides a set of static methods for interacting
 with the Google Gemini API and for performing related
 string and file utility operations.
 
-------------------------------------------------------
-  FUNCTION: main(String[] args)
-------------------------------------------------------
+#### FUNCTION: main(String[] args)
+
 The main program entry point. Serves as a simple
 demonstration of the getCompletion() function.
 
@@ -24,9 +22,8 @@ demonstration of the getCompletion() function.
       prompt "How much is 11 + 22?".
     - Prints the returned result to standard output.
 
-------------------------------------------------------
-  FUNCTION: getCompletion(String prompt)
-------------------------------------------------------
+#### FUNCTION: getCompletion(String prompt)
+
 Sends a text prompt to the Gemini API and returns
 the generated text completion.
 
@@ -47,9 +44,8 @@ the generated text completion.
     - Throws an IOException if the API key is
       not found.
 
-------------------------------------------------------
-  FUNCTION: readFileToString(String filePath)
-------------------------------------------------------
+#### FUNCTION: readFileToString(String filePath)
+
 Reads the entire contents of a specified file into
 a single string.
 
@@ -65,9 +61,8 @@ a single string.
     - Throws an IOException if the file cannot
       be found or read.
 
-------------------------------------------------------
-  FUNCTION: replaceSubstring(...)
-------------------------------------------------------
+#### FUNCTION: replaceSubstring(...)
+
 A utility function that replaces all occurrences of a
 substring within a string.
 
@@ -78,9 +73,8 @@ substring within a string.
   * OUTPUT:
     - Returns the new string with replacements made.
 
-------------------------------------------------------
-  FUNCTION: promptVar(...)
-------------------------------------------------------
+#### FUNCTION: promptVar(...)
+
 A simple templating utility for substituting a
 placeholder in a string.
 
@@ -92,6 +86,7 @@ placeholder in a string.
     - Returns the new string with the placeholder
       replaced by the value.
 
+#### Code Listing
 
 ```java
 package com.markwatson.gemini;
