@@ -1,6 +1,7 @@
 preface.md
 search.md
 openai.md
+gemini.md
 ollama.md
 langchain4j.md
 anomaly_detection.md
