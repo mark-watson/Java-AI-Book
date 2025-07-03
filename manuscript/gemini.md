@@ -12,16 +12,6 @@ Provides a set of static methods for interacting
 with the Google Gemini API and for performing related
 string and file utility operations.
 
-#### FUNCTION: main(String[] args)
-
-The main program entry point. Serves as a simple
-demonstration of the getCompletion() function.
-
-  * ACTION:
-    - Calls getCompletion() with the hardcoded
-      prompt "How much is 11 + 22?".
-    - Prints the returned result to standard output.
-
 #### FUNCTION: getCompletion(String prompt)
 
 Sends a text prompt to the Gemini API and returns
