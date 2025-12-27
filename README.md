@@ -1,4 +1,4 @@
-# Code for the December 2025 edition of "Practical Artificial Intelligence With Java"
+# Source Code and Manuscript Files for the December 2025 edition of "Practical Artificial Intelligence With Java"
 
 The new December 2025 edition is largely a rewrite of older material with the addition of new material (mostly Large Language Models)
 
