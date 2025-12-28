@@ -21,33 +21,34 @@ Anomaly detection should be used when you have many negative ("normal") examples
 
 ## Math Primer for Anomaly Detection
 
-We are trying to model "normal" behavior and we do this by taking each feature and fitting a Gaussian (bell curve) distribution to each feature. The learned parameters for a Gaussian distribution are the mean of the data (where the bell shaped curve is centered) and the variance. You might be more familiar with the term standard deviation, {$$}\sigma{/$$}. Variance is defined as {$$} \sigma ^2{/$$}.
+We are trying to model "normal" behavior and we do this by taking each feature and fitting a Gaussian (bell curve) distribution to each feature. The learned parameters for a Gaussian distribution are the mean of the data (where the bell shaped curve is centered) and the variance. You might be more familiar with the term standard deviation, $\sigma$. 
+Variance is defined as $\sigma^2$.
 
-We will need to calculate the probability of a value **x** given the mean and variance of a probability distribution: {$$}P(x : \mu, \sigma ^2){/$$} where {$$}\mu{/$$} is the mean and {$$} \sigma ^2{/$$}
- is the squared variance:
+We will need to calculate the probability...: $P(x : \mu, \sigma ^2)$ 
+where $\mu$ is the mean and $\sigma ^2$ is the squared variance:
 
-{$$}
-P(x : \mu, \sigma ^2) = \frac{1}{{\sigma \sqrt {2\pi } }}e^{{{ - \left( {x - \mu } \right)^2 } \mathord{\left/ {\vphantom {{ - \left( {x - \mu } \right)^2 } {2\sigma ^2 }}} \right. \kern-\nulldelimiterspace} {2\sigma ^2 }}}
-{/$$}
+$$
+P(x : \mu, \sigma ^2) = \frac{1}{{\sigma \sqrt {2\pi } }}e^{{{ - \left( {x - \mu } \right)^2 } \dots }}
+$$
 
-where {$$}x_i{/$$} are the samples and we can calculate the squared variance as:
+where $x_i$ are the samples and we can calculate the squared variance as:
 
-{$$}
+$$
 \sigma^2 = \frac{\displaystyle\sum_{i=1}^{m}(x_i - \mu)^2} {m}
-{/$$}
+$$
 
-We calculate the parameters of {$$}\mu{/$$} and {$$} \sigma ^2{/$$} for each feature. A bell shaped distribution in two dimensions is easy to visualize as is an inverted bowl shape in three dimentions. What if we have many features? Well, the math works and don't worry about not being able to picture it in your mind.
+We calculate the parameters of $$\mu$ and $$\sigma ^2$$ for each feature. A bell shaped distribution in two dimensions is easy to visualize as is an inverted bowl shape in three dimensions. What if we have many features? Well, the math works and don't worry about not being able to picture it in your mind.
  
 
 ## AnomalyDetection Utility Class
 
-The class **AnomalyDetection** developed in this section is fairly general purpose. It processes a set of training examples and for each feature calculates {$$}\mu{/$$} and {$$} \sigma ^2{/$$}. We are also training for a third parameter: an epsilon "cutoff" value: if for a given input vector if {$$}P(x : \mu, \sigma ^2){/$$} evaluates to a value greater than epsilon then the input vector is "normal", less than epsilon implies that the input vector is an "anomaly." The math for calulating these three features from training data is fairly easy but the code is not: we need to organize the training data and search for a value of epsilon that minimizes the error for a cross validaton data set.
+The class **AnomalyDetection** developed in this section is fairly general purpose. It processes a set of training examples and for each feature calculates $$\mu$$ and $$\sigma ^2$$. We are also training for a third parameter: an epsilon "cutoff" value: if for a given input vector if $$P(x : \mu, \sigma ^2)$$ evaluates to a value greater than epsilon then the input vector is "normal", less than epsilon implies that the input vector is an "anomaly." The math for calculating these three features from training data is fairly easy but the code is not: we need to organize the training data and search for a value of epsilon that minimizes the error for a cross validation data set.
 
 To be clear: we separate the input examples into three separate sets of training, cross validation, and testing data. We use the training data to set the model parameters, use the cross validation data to learn an epsilon value, and finally use the testing data to get precision, recall, and F1 scores that indicate how well the model detects anomalies in data not used for training and cross validation.
 
 I present the example program as one long listing, with more code explanation after the listing. Please note the long loop over each input training example starting at line 28 and ending on line 74. The code in lines 25 through 44 processes the input training data sample into three disjoint sets of training, cross validation, and testing data. Then the code in lines 45 through 63 copies these three sets of data to Java arrays.
 
-The code in lines 65 through 73 calculates, for a training example, the value of {$$}\mu{/$$} (the varible **mu** in the code).
+The code in lines 65 through 73 calculates, for a training example, the value of $$\mu$$ (the variable **mu** in the code).
 
 Please note in the code example that I prepend class variables used in methods with "this." even when it is not required. I do this for legibility and is a personal style.
 
