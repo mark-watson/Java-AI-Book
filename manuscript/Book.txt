@@ -4,6 +4,7 @@ openai.md
 gemini.md
 ollama.md
 langchain4j.md
+agentscope.md
 anomaly_detection.md
 genetic_algorithms.md
 neural_networks.md
