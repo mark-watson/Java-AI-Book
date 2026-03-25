@@ -25,7 +25,7 @@ We are trying to model "normal" behavior and we do this by taking each feature a
 You might be more familiar with the term standard deviation, `\sigma`$. 
 Variance is defined as `\sigma^2`$.
 
-We will need to calculate the probability: P(x : \mu, \sigma ^2)`$
+We will need to calculate the probability: `P(x : \mu, \sigma ^2)`$
 where `\mu`$ is the mean and `\sigma ^2`$  is the squared variance:
 
 `P(x : \mu, \sigma ^2) = \frac{1}{{\sigma \sqrt {2\pi } }}e^{{{ - \left( {x - \mu } \right)^2 } \dots }}`$
