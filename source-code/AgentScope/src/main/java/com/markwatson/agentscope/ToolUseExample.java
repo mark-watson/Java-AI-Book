@@ -7,11 +7,24 @@ import io.agentscope.core.tool.Tool;
 import io.agentscope.core.tool.ToolParam;
 import io.agentscope.core.tool.Toolkit;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 /**
- * Demonstrates AgentScope tool use with a stub "get weather" tool.
+ * Demonstrates AgentScope tool use with a stub "get weather" tool plus two
+ * real filesystem tools: {@code list_dir} and {@code read_file}.
  *
- * <p>The agent will call {@code getWeather(city)} when it needs weather data,
- * which returns a hard-coded stub response.
+ * <p>The agent is asked two things:
+ * <ol>
+ *   <li>What is the weather in Tokyo and Paris?</li>
+ *   <li>List the current directory and display the first 10 lines of every
+ *       {@code .md} file found there.</li>
+ * </ol>
  *
  * <pre>
  *   export GEMINI_API_KEY=your_key_here
@@ -21,8 +34,7 @@ import io.agentscope.core.tool.Toolkit;
 public class ToolUseExample {
 
     // ------------------------------------------------------------------ //
-    //  Stub tool class – annotated with @Tool / @ToolParam so AgentScope  //
-    //  can auto-generate the JSON schema the LLM uses for tool calling.   //
+    //  Stub weather tool                                                   //
     // ------------------------------------------------------------------ //
     public static class WeatherService {
 
@@ -31,6 +43,40 @@ public class ToolUseExample {
                 @ToolParam(name = "city", description = "The name of the city") String city) {
             // Stub: in a real app you would call a weather API here
             return String.format("%s weather: Sunny, 25°C", city);
+        }
+    }
+
+    // ------------------------------------------------------------------ //
+    //  Filesystem tools                                                    //
+    // ------------------------------------------------------------------ //
+    public static class FileService {
+
+        @Tool(description = "List the files and sub-directories inside a directory")
+        public String listDir(
+                @ToolParam(name = "path", description = "Absolute or relative path of the directory to list") String path) {
+            try (Stream<Path> entries = Files.list(Paths.get(path))) {
+                String listing = entries
+                        .map(p -> (Files.isDirectory(p) ? "[DIR]  " : "[FILE] ") + p.getFileName())
+                        .sorted()
+                        .collect(Collectors.joining("\n"));
+                return listing.isEmpty() ? "(empty directory)" : listing;
+            } catch (IOException e) {
+                return "Error listing directory: " + e.getMessage();
+            }
+        }
+
+        @Tool(description = "Read the first N lines of a text file")
+        public String readFile(
+                @ToolParam(name = "path",       description = "Path to the file to read") String path,
+                @ToolParam(name = "max_lines",  description = "Maximum number of lines to return (default 10)") int maxLines) {
+            try {
+                List<String> lines = Files.readAllLines(Paths.get(path));
+                return lines.stream()
+                        .limit(maxLines <= 0 ? 10 : maxLines)
+                        .collect(Collectors.joining("\n"));
+            } catch (IOException e) {
+                return "Error reading file: " + e.getMessage();
+            }
         }
     }
 
@@ -50,26 +96,39 @@ public class ToolUseExample {
                 .modelName("gemini-2.5-flash")
                 .build();
 
-        // Register the stub weather tool
+        // Register all tools
         Toolkit toolkit = new Toolkit();
         toolkit.registerTool(new WeatherService());
+        toolkit.registerTool(new FileService());
 
         // Build the ReActAgent with the toolkit attached
         ReActAgent agent = ReActAgent.builder()
-                .name("WeatherAssistant")
-                .sysPrompt("You are a helpful weather assistant. Use the getWeather tool to look up weather information.")
+                .name("AssistantAgent")
+                .sysPrompt("You are a helpful assistant with access to weather data and the local filesystem.")
                 .model(model)
                 .toolkit(toolkit)
                 .build();
 
-        // Ask about the weather – the agent will invoke the tool automatically
-        Msg response = agent.call(
+        // --- Query 1: weather ---
+        Msg weatherResponse = agent.call(
                 Msg.builder()
                         .textContent("What is the weather like in Tokyo and Paris?")
                         .build()
         ).block();
 
-        System.out.println("Agent response:");
-        System.out.println(response.getTextContent());
+        System.out.println("=== Weather Query ===");
+        System.out.println(weatherResponse.getTextContent());
+
+        // --- Query 2: filesystem ---
+        String cwd = System.getProperty("user.dir");
+        Msg fsResponse = agent.call(
+                Msg.builder()
+                        .textContent("List the directory \"" + cwd + "\" and for every .md file you find there, " +
+                                     "display its name followed by its first 10 lines.")
+                        .build()
+        ).block();
+
+        System.out.println("\n=== Filesystem Query ===");
+        System.out.println(fsResponse.getTextContent());
     }
 }
