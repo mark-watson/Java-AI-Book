@@ -1,3 +1,5 @@
+clean:
+	rm -rf */target */*/target
 install:
 	cd genetic-algorithms ; make install
 	cd neuralnetworks ; make install
