@@ -1,5 +1,8 @@
 # AgentScope + Gemini Example
 
+**Book Chapter:** [AgentScope Agent Oriented Framework.](https://leanpub.com/read/javaai/agentscope-agent-oriented-framework) — *Practical Artificial Intelligence Programming With Java* (free to read online).
+
+
 AgentScope is a framework for building LLM-powered applications and multi-agent systems on the JVM. Here we only look at two simple examples: a hello world example and a tool use example.
 
 Please refer to [AgentScope](https://java.agentscope.io) for more information.

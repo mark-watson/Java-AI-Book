@@ -1,5 +1,8 @@
 # Notes for Mark Watson's NLP library
 
+**Book Chapter:** [Natural Language Processing](https://leanpub.com/read/javaai/natural-language-processing) — *Practical Artificial Intelligence Programming With Java* (free to read online).
+
+
 TBD: history
 
 ## ExtractNames - named entity recognition

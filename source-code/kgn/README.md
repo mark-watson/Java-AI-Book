@@ -1,3 +1,7 @@
+# Knowledge Graph Navigator
+
+**Book Chapter:** [Knowledge Graph Navigator](https://leanpub.com/read/javaai/kgn) — *Practical Artificial Intelligence Programming With Java* (free to read online).
+
 This exmample will only work when run as a junit test or in an IDE.
 
 Trying to run using:
