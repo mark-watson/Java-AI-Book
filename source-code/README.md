@@ -1,14 +1,34 @@
-# Code for the April 2024 edition of "Practical Artificial Intelligence With Java"
+# Source Code for "Practical Artificial Intelligence With Java"
 
-The new 2024 edition is largely a rewrite of older material with the addition of new material (mostly Large Language Models)
+Book URI: https://leanpub.com/javaai
 
-[Leanpub Link for latest edition](https://leanpub.com/javaai)
+You can read my book for free online at: https://leanpub.com/javaai/read
 
-This book is a combination of
+This directory contains the companion source code for each chapter of the book.
 
-- new coverage of LLMs
-- new coverage of deep learning
-- new material: creating and using knowledge graphs
-- examples from my discontinued book "Power Java": anomaly detection, linked data, using DBPedia, OpenNLP, and web scraping
-- examples from the original editions of this book: genetic algorithms and search algorithms 
-- a few examples updated from my discontinued book "Practical Semantic Web and Linked Data Applications, Java Edition"
+## Projects
+
+| Directory | Description |
+|---|---|
+| `AgentScope_gemini` | Multi-agent framework using AgentScope + Google Gemini |
+| `anomaly_detection` | Anomaly detection using statistical methods |
+| `gemini-llm-client` | Direct Google Gemini REST API client |
+| `genetic-algorithms` | Genetic algorithm optimization framework |
+| `info_gathering` | Web scraping and GeoNames API integration |
+| `kgc` | Knowledge Graph Creator — generates RDF from text |
+| `kgn` | Knowledge Graph Navigator — queries DBPedia via SPARQL |
+| `langchain4j-ollama` | LangChain4j abstraction layer with local Ollama LLM |
+| `ner_dbpedia` | Named entity recognition with DBPedia linking |
+| `neuralnetworks` | Backpropagation neural networks (from scratch) |
+| `nlp` | Natural language processing toolkit |
+| `ollama-llm-client` | Direct Ollama local LLM REST API client |
+| `openai-llm-client` | Direct OpenAI REST API client |
+| `prompts` | Example prompt templates for LLM examples |
+| `search` | Graph, maze, and game-tree search algorithms |
+| `semantic_web_apache_jena` | Semantic Web / SPARQL with Apache Jena |
+
+## Book Cover Material, Copyright, and License
+
+This example code is released using the Apache 2 license.
+
+Copyright 2022-2026 Mark Watson. All rights reserved.

@@ -1,24 +1,46 @@
-# Knowledge Graph Navigator
+# Knowledge Graph Navigator — Example for Mark Watson's book "Practical Artificial Intelligence With Java"
 
-**Book Chapter:** [Knowledge Graph Navigator](https://leanpub.com/read/javaai/kgn) — *Practical Artificial Intelligence Programming With Java* (free to read online).
+Book URI: https://leanpub.com/javaai
 
-This exmample will only work when run as a junit test or in an IDE.
+You can read my book for free online at: https://leanpub.com/javaai/read
 
-Trying to run using:
+This example implements a Knowledge Graph Navigator that queries DBPedia's SPARQL endpoint to discover relationships between entities. Given a natural-language query, it extracts entity names, resolves them to DBPedia URIs, runs SPARQL queries to find connections, and presents the results. It combines the `ner_dbpedia` (entity recognition) and `semantic_web_apache_jena` (SPARQL querying) libraries from earlier chapters.
 
-    mvn exec:java -Dexec.mainClass="com.knowledgegraphnavigator.KGN"
+## Prerequisites
 
-will not work because "mvn exec" works by only having the
-jar file plexus-classworlds-2.6.0.jar (or some other version)
-on the CLASSPATH. This prevents the dependency
+- Java 11+
+- Maven 3.6+
+- **You must build and install these local dependencies first**:
 
-       <dependency>
-          <groupId>com.markwatson</groupId>
-          <artifactId>nerdbpedia</artifactId>
-          <version>1.1-SNAPSHOT</version>
-        </dependency>
-     
-from a previous chapter from being able to load entity definition
-text files from its packaged jar file.
+```bash
+cd ../ner_dbpedia && make install
+cd ../semantic_web_apache_jena && make install
+```
 
+## Build & Run
 
+> **Note:** This example must be run as a JUnit test (or from an IDE), not via `mvn exec:java`. This is because `mvn exec` uses a limited classpath that prevents the `ner_dbpedia` dependency from loading its bundled entity-name data files.
+
+```bash
+# Install and run via JUnit
+make install
+mvn test
+```
+
+## Key Dependencies
+
+| Artifact | Purpose |
+|---|---|
+| `com.markwatson:nerdbpedia` | Named entity recognition + DBPedia linking (local) |
+| `com.markwatson:semanticweb` | SPARQL query wrapper using Apache Jena (local) |
+| `org.apache.jena:apache-jena-libs` | RDF/SPARQL processing |
+
+## Book Cover Material, Copyright, and License
+
+This example is released using the Apache 2 license.
+
+Copyright 2022-2026 Mark Watson. All rights reserved.
+
+## This Book is Licensed with Creative Commons Attribution CC BY Version 3
+
+You are free to share and adapt this content, with attribution.
