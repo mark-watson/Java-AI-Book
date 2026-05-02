@@ -4,6 +4,8 @@ The new December 2025 edition is largely a rewrite of older material with the ad
 
 [Leanpub Link for latest edition](https://leanpub.com/javaai)
 
+![Book Cover](manuscript/resources/images/title_page.jpg)
+
 This book is a combination of
 
 - new coverage of LLMs
