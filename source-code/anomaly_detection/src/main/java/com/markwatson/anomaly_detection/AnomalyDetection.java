@@ -82,10 +82,10 @@ public class AnomalyDetection {
    */
   public void train() {
     double best_error_count = 1e10;
-    for (int epsilon_loop=0; epsilon_loop<40; epsilon_loop++) {
-      double epsilon = 0.05 + 0.01 * epsilon_loop;
+    for (int epsilon_loop=0; epsilon_loop<200; epsilon_loop++) {
+      double epsilon = 0.001 + 0.005 * epsilon_loop;
       double error_count = train_helper(epsilon);
-      if (error_count < best_error_count) {
+      if (error_count <= best_error_count) {
         best_error_count = error_count;
         best_epsilon = epsilon;
       }
@@ -101,16 +101,20 @@ public class AnomalyDetection {
   }
 
   /**
-   * calculate probability p(x; mu, sigma_squared)
+   * Calculate probability p(x; mu, sigma_squared) using the
+   * Gaussian PDF:  p(x_i) = (1 / (sqrt(2*pi) * sigma))
+   *                         * exp(-(x_i - mu)^2 / (2 * sigma^2))
    *
    * @param x - example vector
-   * @return
+   * @return average probability across features
    */
   private double p(double [] x) {
     double sum = 0;
     // use (num_features - 1) to skip target output:
     for (int nf=0; nf<num_features - 1; nf++) {
-      sum += (1.0 / (SQRT_2_PI * sigma_squared[nf])) * Math.exp(- (x[nf] - mu[nf]) * (x[nf] - mu[nf]));
+      double sigma = Math.sqrt(sigma_squared[nf]);
+      double exponent = - (x[nf] - mu[nf]) * (x[nf] - mu[nf]) / (2.0 * sigma_squared[nf]);
+      sum += (1.0 / (SQRT_2_PI * sigma)) * Math.exp(exponent);
     }
     return sum / num_features;
   }
@@ -125,7 +129,9 @@ public class AnomalyDetection {
     double sum = 0;
     // use (num_features - 1) to skip target output:
     for (int nf=0; nf<num_features - 1; nf++) {
-      sum += (1.0 / (SQRT_2_PI * sigma_squared[nf])) * Math.exp(- (x[nf] - mu[nf]) * (x[nf] - mu[nf]));
+      double sigma = Math.sqrt(sigma_squared[nf]);
+      double exponent = - (x[nf] - mu[nf]) * (x[nf] - mu[nf]) / (2.0 * sigma_squared[nf]);
+      sum += (1.0 / (SQRT_2_PI * sigma)) * Math.exp(exponent);
     }
     return (sum / num_features) < best_epsilon;
   }
@@ -137,7 +143,7 @@ public class AnomalyDetection {
       for (int nt=0; nt<this.num_training_examples; nt++) {
         sum += (this.training_examples[nt][nf] - mu[nf]) * (this.training_examples[nt][nf] - mu[nf]);
       }
-      sigma_squared[nf] = (1.0 / num_features) * sum;
+      sigma_squared[nf] = sum / this.num_training_examples;
     }
     double cross_validation_error_count = 0;
     for (int nt=0; nt<this.num_cross_validation_examples; nt++) {

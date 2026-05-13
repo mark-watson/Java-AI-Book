@@ -57,14 +57,8 @@ public class WisconsinAnomalyDetection {
     double best_epsilon = detector.bestEpsilon();
     double [] mean_values = detector.muValues();
     double [] sigma_squared = detector.sigmaSquared();
-
-    // to use this model, use the method AnomalyDetection.isAnamoly(double []):
-
-    double [] test_malignant = new double[] {0.5,1,1,0.8,0.5,0.5,0.7,1,0.1};
-    double [] test_benign = new double[] {0.5,0.4,0.5,0.1,0.8,0.1,0.3,0.6,0.1};
-    boolean malignant_result = detector.isAnamoly(test_malignant);
-    boolean benign_result = detector.isAnamoly(test_benign);
-    System.out.println("\n\nUsing the trained model:");
-    System.out.println("malignant result = " + malignant_result + ", benign result = " + benign_result);
+    System.out.println("\nModel parameters:");
+    System.out.println("  best epsilon = " + best_epsilon);
+    System.out.println("  num features = " + mean_values.length);
   }
 }
