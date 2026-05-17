@@ -53,3 +53,7 @@ Copyright 2022-2026 Mark Watson. All rights reserved.
 ## This Book is Licensed with Creative Commons Attribution CC BY Version 3
 
 You are free to share and adapt this content, with attribution.
+
+## Architecture
+
+![Architecture diagram](architecture.png)

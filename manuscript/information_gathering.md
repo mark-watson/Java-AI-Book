@@ -7,6 +7,9 @@ The following UML class diagram shows the public APIs the libraries developed in
 {width: "80%"}
 ![UML class diagram for DBPedia lookup (example deprecated), Geonames, and web spiders](images/info-spider-uml.png)
 
+{width: "80%"}
+![Architecture diagram](images/information_gathering-architecture.png)
+
 ## Web Scraping Examples
 
 As a practical matter, much of the data that many people use for machine learning either comes from the web or from internal data sources. This section provides some guidance and examples for getting text data from the web.

@@ -8,6 +8,9 @@ Deep learning is apparently "eating" the AI world but I firmly believe that hybr
 
 We will cover a wide variety of techniques for processing text in this chapter. The part of speech tagger (POS), text categorization, and entity extraction examples are all derived from either my open source projects or my commercial projects that I developed in the 1990-2010 time frame.
 
+{width: "80%"}
+![Architecture diagram](images/nlp-architecture.png)
+
 The following UML class diagrams will give you an overview of my NLP library code:
 
 {width: "80%"}

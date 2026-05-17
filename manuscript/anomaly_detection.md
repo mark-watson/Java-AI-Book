@@ -57,6 +57,9 @@ The following UML class diagram will give you an overview before we dive into th
 {width: "80%"}
 ![UML class diagram for the anomaly detection example](images/anomaly-uml.png)
 
+{width: "80%"}
+![Architecture diagram](images/anomaly_detection-architecture.png)
+
 
 {lang="java",linenos=on}
 ~~~~~~~~

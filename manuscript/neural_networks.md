@@ -28,6 +28,9 @@ The activation absorbed through dendrites is summed together, but the firing of 
 
 ## Road Map for the Neural Network Example Code
 
+{width: "80%"}
+![Architecture diagram](images/neural_networks-architecture.png)
+
 The following UML class diagram will give you an overview all of the neural network library classes in this chapter before we dive into the code:
 
 {width: "80%"}

@@ -8,6 +8,9 @@ The utility of LLMs extends across a broad spectrum of applications including bu
 
 In the development of practical AI systems, LLMs like those provided by OpenAI, Anthropic, and Hugging Face have emerged as pivotal tools for numerous applications including natural language processing, generation, and understanding. These models, powered by deep learning architectures, encapsulate a wealth of knowledge and computational capabilities. Here we look at the basics for getting you, dear reader, started using the OpenAI APIs for text completion tasks in Java code. In the next chapter we do the same ex pet we will run local LLMs on our laptops using the [Ollama](https://ollama.ai) platform.
 
+{width: "80%"}
+![Architecture diagram](images/openai-architecture.png)
+
 ## Java Library to Use OpenAI's APIs
 
 The library code defined in the directory **Java-AI-Book-Code/openai-llm-client** is designed to interact with the OpenAI API to accept a prompt string and get a text completion. Here's a breakdown of what each part of the code does:

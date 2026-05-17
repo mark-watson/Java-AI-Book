@@ -2,6 +2,9 @@
 
 This example is very similar to OpenAI API examples in the previous chapter. We use the Google Developer's documentation as a reference: [https://ai.google.dev/gemini-api/docs](https://ai.google.dev/gemini-api/docs). We implement methods for completions and completions also using Google’s search tool.
 
+{width: "80%"}
+![Architecture diagram](images/gemini-architecture.png)
+
 ## Java Library to Use OpenAI's APIs
 
 The library code defined in the directory **Java-AI-Book-Code/gemini-llm-client** is designed to interact with the Gemini API to accept a prompt string and get a text completion. Here's a breakdown of what each part of the code does:

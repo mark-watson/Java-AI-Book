@@ -4,6 +4,9 @@
 
 Using local Large Language Models (LLMs) with [Ollama](https://ollama.ai) offers a range of advantages and applications that significantly enhance the accessibility and functionality of these powerful AI tools in various settings. Ollama is like the Docker system, but for easily downloading, running, and managing LLMs on your local computer. Ollama was originally written to support Apple Silicon Macs, but now supports Intel Macs, Linux, and Windows.
 
+{width: "80%"}
+![Architecture diagram](images/ollama-architecture.png)
+
 ## Advantages of Using Local LLMs with Ollama
 
 ### Accessibility and Ease of Use

@@ -20,3 +20,7 @@ This directory contains example prompt templates used by the OpenAI and Ollama L
 This example is released using the Apache 2 license.
 
 Copyright 2022-2026 Mark Watson. All rights reserved.
+
+## Architecture
+
+![Architecture diagram](architecture.png)

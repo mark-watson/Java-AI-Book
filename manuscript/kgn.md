@@ -25,6 +25,9 @@ For the rest of this chapter we will just use DBPedia.
 
 After looking an interactive session using the example program for this chapter (that also includes listing automatically generated SPARQL queries) we will look at the implementation.
 
+{width: "80%"}
+![Architecture diagram](images/kgn-architecture.png)
+
 ## Entity Types Handled by KGN
 
 To keep this example simple we handle just four entity types:

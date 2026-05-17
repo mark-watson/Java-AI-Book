@@ -4,6 +4,9 @@ AgentScope is an agent oriented programming framework for building LLM powered a
 
 Here we only use a subset of the Java implementation of AgentScope. For reference this is the [home web page for Agentscope](https://agentscope.io).
 
+{width: "80%"}
+![Architecture diagram](images/agentscope-architecture.png)
+
 ## Using the Java Implementation of AgentScope: Hello World
 
 For reference here is the [GitHub repository for Java AgentScope](https://github.com/agentscope-ai/agentscope-java) and [here is the documentation](https://java.agentscope.io/en/intro.html).

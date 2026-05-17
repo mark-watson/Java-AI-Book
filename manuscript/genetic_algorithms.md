@@ -27,6 +27,9 @@ The GA toolkit developed in this chapter treats genes as a single bit; while you
 
 We will describe a simple example problem (that can be better solved using Newton's method) in this section, write a general purpose library in the section [Java Library for Genetic Algorithms](#java-ga-lib), and finish the chapter in the section [Java Genetic Algorithm Example](#java-ga-example) by solving this problem.
 
+{width: "80%"}
+![Architecture diagram](images/genetic_algorithms-architecture.png)
+
 {#ga-sample-function}
 
 {width: "70%"}

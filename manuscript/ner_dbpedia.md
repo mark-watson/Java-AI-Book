@@ -37,6 +37,10 @@ ner_dbpedia: $ wc -l ./src/main/resources/*.txt
 ~~~~~~~~
 
 The URI for each entity defines a unique identifier for real world entities as well as concepts. 
+
+{width: "80%"}
+![Architecture diagram](images/ner_dbpedia-architecture.png)
+
 ## Library Implementation
 
 The following UML class diagram shows the APIs and fields for the two classes in the package **com.markwatson.ner_dbpedia** for this example: **NerMaps** and **TextToDbpediaUris**:

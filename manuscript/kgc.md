@@ -12,6 +12,9 @@ I originally wrote KGCreator as two research prototypes, one in Common Lisp (see
 
 The implementation is contained in a single Java class **KGC** and the **junit** test class **KgcTest** is used to process the test files included with this example.
 
+{width: "80%"}
+![Architecture diagram](images/kgc-architecture.png)
+
 As can be seen in the following figure I have defined final static strings for each type of entity type URI. For example, **personTypeUri** has the value **<http://www.w3.org/2000/01/rdf-schema#person>**.
 
 {width: "80%"}

@@ -25,6 +25,9 @@ The following figure shows a layered hierarchy of data models that are used to i
 {width: "60%"}
 ![Semantic Web Data Models](images/semantic_web_data.png)
 
+{width: "80%"}
+![Architecture diagram](images/semantic_web-architecture.png)
+
 This chapter is meant to get you interested in this technology but is not intended as a complete guide. RDF data is the bedrock of the semantic web. I am also lightly covering RDFS/OWL modeling, and Descriptive Logic Reasoners which are important topics for more advanced semantic web projects.
 
 ## Available Tools
