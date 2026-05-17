@@ -1,7 +1,5 @@
 # Using the OpenAI Large Language Model APIs in Java
 
-*Note: May 15, 2024: this chapter is about 90% complete*
-
 Large Language Models (LLMs) signify a significant leap forward in the progression of artificial intelligence, with a pronounced impact on the field of natural language processing (NLP), data transformation, translation, and serve as a source of real world knowledge in AI applications. They are trained on vast corpora of text data (literally most published books and most of the web), learning to predict subsequent words in a sequence, which imbues them with the ability to generate human-like text, comprehend the semantics of language, and perform a variety of language-related tasks. The architecture of these models, typically based on deep learning paradigms such as Transformer, empowers them to encapsulate intricate patterns and relationships within language. These models are trained utilizing substantial computational resources.
 
 The utility of LLMs extends across a broad spectrum of applications including but not limited to text generation, translation, summarization, question answering, and sentiment analysis. Their ability to understand and process natural language makes them indispensable tools in modern AI-driven solutions. However, with great power comes great responsibility. The deployment of LLMs raises imperative considerations regarding ethics, bias, and the potential for misuse. Moreover, the black-box nature of these models presents challenges in interpretability and control, which are active areas of research in the quest to make LLMs more understandable and safe. The advent of LLMs has undeniably propelled the field of NLP to new heights, yet the journey towards fully responsible and transparent utilization of these powerful models is an ongoing endeavor. 
@@ -18,7 +16,7 @@ The library code defined in the directory **Java-AI-Book-Code/openai-llm-client*
 The **getCompletion** method performs the following steps:
 
 - Initialization: This method takes a prompt as input and retrieves the OpenAI API key from the environment variables.
-- JSON Object Creation: Constructs a JSON object to define the user's role and the content (the prompt). This is added to a JSON array, which is then included in another JSON object along with the model name (here we are using gpt-3.5-turbo but you can also try gpt-4 that is more expensive but more capable.).
+- JSON Object Creation: Constructs a JSON object to define the user's role and the content (the prompt). This is added to a JSON array, which is then included in another JSON object along with the model name (here we are using gpt-5-mini.
 - API Request Setup: Constructs a URI for the OpenAI API endpoint and sets up a URL connection. It configures the connection to send data (output) and sets the request headers for content type (JSON) and authorization (using the retrieved API key).
 - Sending the Request: Converts the JSON object to bytes and sends it through the connection's output stream.
 - Response Handling: Reads the response from the API using a BufferedReader. The response is built into a string using a StringBuilder.
@@ -51,7 +49,7 @@ public class OpenAICompletions {
     public static String getCompletion(String prompt) throws Exception {
         System.out.println("prompt: " + prompt);
         String apiKey = System.getenv("OPENAI_API_KEY");
-        String model = "gpt-3.5-turbo"; // Replace with the desired model
+        String model = "gpt-5-mini"; // Replace with the desired model
 
         // New JSON message format
         JSONObject message = new JSONObject();

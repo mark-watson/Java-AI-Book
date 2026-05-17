@@ -26,7 +26,7 @@ public class OpenAICompletions {
     public static String getCompletion(String prompt) throws Exception {
         System.out.println("prompt: " + prompt);
         String apiKey = System.getenv("OPENAI_API_KEY");
-        String model = "gpt-4o-mini"; // Replace with the desired model
+        String model = "gpt-5-mini"; // Replace with the desired model
 
         // New JSON message format
         JSONObject message = new JSONObject();

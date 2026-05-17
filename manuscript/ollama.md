@@ -1,7 +1,5 @@
 # Using Local LLMs Using Ollama in Java Applications
 
-*Note: May 15, 2024: this chapter is only 90% complete.*
-
 Using local Large Language Models (LLMs) with [Ollama](https://ollama.ai) offers a range of advantages and applications that significantly enhance the accessibility and functionality of these powerful AI tools in various settings. Ollama is like the Docker system, but for easily downloading, running, and managing LLMs on your local computer. Ollama was originally written to support Apple Silicon Macs, but now supports Intel Macs, Linux, and Windows.
 
 {width: "80%"}

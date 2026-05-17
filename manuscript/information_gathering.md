@@ -122,7 +122,6 @@ Notice that there are different types of URIs like #, relative, and absolute. An
 
 I often require that URIs be absolute URIs (i.e., starts with a protocol like "http:" or "https:") and lines 28-33 show how to select just absolute URI anchors. In line 31 I am specifying the attribute as "abs:href" to be more selective.
 
-#
 ## Web Spidering Using the Jericho Library
 
 Here is another web spidering example that is different than the earlier example using the **jsoup** library. Here we will implement a spider using built in Java standard library network classes and also the Jericho HTML parser library.
