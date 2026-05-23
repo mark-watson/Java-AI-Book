@@ -1,6 +1,6 @@
 # Resolve Entity Names to DBPedia References {#ner}
 
-As a personal research project I have collected a large data set that maps entity names (e.g., people's names, city names, names of music groups, company names, etc.) to the DBPedia URI for each entity. I have developed libraries to use this data in [Common Lisp](https://leanpub.com/lovinglisp), [Haskell](https://leanpub.com/haskell-cookbook), and Java. Here we use the Java version of this library.
+Dear reader, the material in this chapter is somewhat *dated* but I still use DBPedia as a public information source so I decided to leave this older chapter in this book (for now). As a personal research project I have collected a large data set that maps entity names (e.g., people's names, city names, names of music groups, company names, etc.) to the DBPedia URI for each entity. I have developed libraries to use this data in [Common Lisp](https://leanpub.com/lovinglisp), [Haskell](https://leanpub.com/haskell-cookbook), and Java. Here we use the Java version of this library.
 
 The Java library is found in the directory **ner_dbpedia** in the GitHub repository. The raw data for these entity to URI mappings are found in the directory **ner_dbpedia/dbpedia_as_text**.
 
@@ -42,19 +42,6 @@ The URI for each entity defines a unique identifier for real world entities as w
 ![Architecture diagram](images/ner_dbpedia-architecture.png)
 
 ## Library Implementation
-
-The following UML class diagram shows the APIs and fields for the two classes in the package **com.markwatson.ner_dbpedia** for this example: **NerMaps** and **TextToDbpediaUris**:
-
-{width: "80%"}
-![Overview of Java Class UML Diagram for this Example](images/nerdbpedia-uml.png)
-
-As you see in the following figure showing the IntelliJ Community Edition project for this example, there are nine text files, one for each entity type in the directory **src/main/resources**. Later we will look at the code required to read these files in two cases:
-
-- During development these files are read from **target/classes**.
-- During client application use of the JAR file (created using *mvn install*) these files are read as resources from the Java class loader.
-
-{width: "80%"}
-![IDE View of Project](images/nerdbpedia-ide.png)
 
 The class **com.markwatson.ner_dbpedia.NerMaps** is a utility for reading the raw entity mapping data files and creating hash tables for these mappings:
 

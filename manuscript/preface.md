@@ -1,7 +1,10 @@
 Preface
 =======
 
-The latest edition of this book is always available at [https://leanpub.com/javaai](https://leanpub.com/javaai).  Please visit my [website](https://markwatson.com/books) to see my other books. Currently the latest edition was released in the spring of 2026.
+The latest edition of this book is always available at [https://leanpub.com/javaai](https://leanpub.com/javaai).
+The latest edition was released in the spring of 2026.
+
+Please visit my [website](https://markwatson.com/books) to see my other books.
 
 This edition supports Java version 21 but some of the example code may have been written in older Java versions and not updated.
 
@@ -11,7 +14,7 @@ I decided which material to keep from old editions and which new material to add
 
 I have been developing commercial Artificial Intelligence (AI) tools and applications since the 1980s.
 
-{width: "80%"}
+{width: "50%"}
 ![Mark Watson](images/Mark.png "Mark Watson")
 
 I wrote this book for both professional programmers and home hobbyists who already know how to program in Java and who want to learn practical AI programming and information processing techniques. I have tried to make this an enjoyable book to work through. In the style of a “cook book,” the chapters can be studied in any order. When an example depends on a library developed in a previous chapter this is stated clearly. Most chapters follow the same pattern: a motivation for learning a technique, some theory for the technique, and a Java example program that you can experiment with.
@@ -25,7 +28,7 @@ The code for the example programs is available on **github**:
 
 My Java code in this book can be used under either or both the LGPL3 and Apache 2 licenses - choose whichever of these two licenses that works best for you. Git pull requests with code improvements will be appreciated by me and the readers of this book.
 
-My goal is to introduce you to common AI techniques and to provide you with Java source code to save you some time and effort. Even though I have worked almost exclusively in the field of deep learning in the last six years, I urge you, dear reader, to look at the field of AI as being far broader than machine learning and deep learning in particular. Just as it is wrong to consider the higher level fields of Category Theory or Group Theory to "be" mathematics, there is far more to AI than machine learning. Here we will take a more balanced view of AI, and indeed, my own current research is in hybrid AI, that is, the fusion of deep learning with good old fashioned symbolic AI, probabilistic reasoning, and explainability. 
+My goal is to introduce you to common AI techniques and to provide you with Java source code to save you some time and effort. Even though I have worked almost exclusively in the fields of deep learning and then Large Language Models (LLMs) for the last ten years, I urge you, dear reader, to look at the field of AI as being far broader than machine learning and deep learning in particular. Just as it is wrong to consider the higher level fields of Category Theory or Group Theory to "be" mathematics, there is far more to AI than machine learning. Here we will take a more balanced view of AI, and indeed, my own current research is in hybrid AI, that is, the fusion of deep learning with good old fashioned symbolic AI, probabilistic reasoning, and explainability. 
 
 This book is released with a [Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)](https://creativecommons.org/licenses/by-nc-nd/4.0/) license. Feel free to share copies of this book with friends and colleagues at work. This book is also available to [read free online or to purchase](https://leanpub.com/javaai) if you want to support my writing activities.
 
@@ -35,9 +38,11 @@ This book will always be available to read free online at [https://leanpub.com/j
 
 That said, I appreciate it when readers purchase my books because the income enables me to spend more time writing.
 
-### Hire the Author as a Consultant
+### Hire the Author as a Consultant or Use My Free Mentoring Services
 
 I am available for short consulting projects. Please see [https://markwatson.com](https://markwatson.com).
+
+I also provide up to one hour of free mentoring to help you with technical problems, talk about your career, etc.
 
 
 ## Personal Artificial Intelligence Journey
@@ -58,15 +63,6 @@ Code sharing is achieved by installing the code in your local maven repository, 
         mvn install
 
 Now, the code in the OpenNLP example is installed on your system.
-
-## Software Licenses for Example Programs in this Book
-
-My example programs (i.e., the code I wrote) are licensed under the LGPL version 3 and the Apache 2. Use whichever of these two licenses that works better for you. I also use several open source libraries in the book examples and their licenses are:
-
--   Jena Semantic Web: Apache 2
--   OpenNlp: Apache 2
--   WordNet: MIT style license ([link to license](https://wordnet.princeton.edu/license-and-commercial-use))
--   Deep Learning for Java (DL4J): Apache 2
 
 My desire is for you to be able to use my code examples and data in your projects with no hassles.
 

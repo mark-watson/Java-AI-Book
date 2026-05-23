@@ -13,15 +13,7 @@ We will cover a wide variety of techniques for processing text in this chapter. 
 {width: "80%"}
 ![Architecture diagram](images/nlp-architecture.png)
 
-The following UML class diagrams will give you an overview of my NLP library code:
-
-{width: "80%"}
-![UML class diagram for top level NLP code](images/nlp-uml.png)
-
 The XML parsing code is for reading the file **test_data/classification_tags.xml** that contains ranked word terms for various categories we cover (e.g., politics, economy, etc.), often referred to as term frequency–inverse document frequency ([tf-idf](https://en.wikipedia.org/wiki/Tf%E2%80%93idf)).
-
-{width=50%}
-![UML class diagram for low-level utilities](images/nlp-utils-uml.png)
 
 Each main class in this library has a **main** method that provides a short demonstration of using the class. The *Makefile* has targets for running the **main** method for each of the top level classes:
 

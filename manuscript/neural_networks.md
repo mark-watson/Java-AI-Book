@@ -33,18 +33,6 @@ The activation absorbed through dendrites is summed together, but the firing of 
 {width: "80%"}
 ![Architecture diagram](images/neural_networks-architecture.png)
 
-The following UML class diagram will give you an overview all of the neural network library classes in this chapter before we dive into the code:
-
-{width: "80%"}
-![UML class diagram for neural network code](images/neuralnetwork-uml.png)
-
-There are three parts to the code base: main backpropagation library, GUI examples, and text-only tests. The following screen show of the project open in an IDE is useful to see the file layout for the project:
-
-{width: "80%"}
-![IDE view of code showing main library, GUI examples, and text-only tests](images/neural-ide.png)
-
-
-
 
 ## Backpropagation Neural Networks  {#backprop}
 

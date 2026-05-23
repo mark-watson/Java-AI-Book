@@ -2,19 +2,15 @@
 
 I often write software to automatically collect and use data from the web and other sources. In this chapter I have collected utility code that I have written over the years into a small library supporting two approaches to web scraping and GeoNames lookup. This code is simple but I hope you will find useful.
 
-The following UML class diagram shows the public APIs the libraries developed in this chapter:
-
-{width: "80%"}
-![UML class diagram for DBPedia lookup (example deprecated), Geonames, and web spiders](images/info-spider-uml.png)
-
-{width: "80%"}
-![Architecture diagram](images/information_gathering-architecture.png)
-
 ## Web Scraping Examples
 
 As a practical matter, much of the data that many people use for machine learning either comes from the web or from internal data sources. This section provides some guidance and examples for getting text data from the web.
 
 Before we start a technical discussion about web scraping I want to point out to you that much of the information on the web is copyright and the first thing that you should do is to read the terms of service for web sites to insure that your use of "scraped" or "spidered" data conforms with the wishes of the persons or organizations who own the content and pay to run scraped web sites.
+
+
+{width: "80%"}
+![Architecture diagram](images/information_gathering-architecture.png)
 
 ### Motivation for Web Scraping
 
