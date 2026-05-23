@@ -25,7 +25,7 @@ import java.util.*;
  */
 public class FastTag {
 
-    private static Hashtable<String, String[]> lexicon = new Hashtable<String, String[]>();
+    private static final Map<String, String[]> lexicon = new HashMap<>();
 
     static {
         //System.out.println("Starting to load FastTag data...");
@@ -36,17 +36,13 @@ public class FastTag {
                 ins = new FileInputStream("test_data/lexicon.txt");
             }
             if (ins == null) {
-                System.out.println("Failed to open 'lexicon.txt'");
-                System.exit(1);
-            } else {
-                Scanner scanner =
-                        new Scanner(ins);
-                scanner.useDelimiter
-                        (System.getProperty("line.separator"));
+                throw new IllegalStateException("Failed to open 'lexicon.txt' — file not found on classpath or in test_data/");
+            }
+            try (var scanner = new Scanner(ins)) {
+                scanner.useDelimiter(System.getProperty("line.separator"));
                 while (scanner.hasNext()) {
                     parseLine(scanner.next());
                 }
-                scanner.close();
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -66,13 +62,9 @@ public class FastTag {
      * @return true if the input word is in the lexicon, otherwise return false
      */
     public boolean wordInLexicon(String word) {
-        String[] ss = lexicon.get(word);
-        if (ss != null) return true;
+        if (lexicon.containsKey(word)) return true;
         // 1/22/2002 mod (from Lisp code): if not in hash, try lower case:
-        if (ss == null)
-            ss = lexicon.get(word.toLowerCase());
-        if (ss != null) return true;
-        return false;
+        return lexicon.containsKey(word.toLowerCase());
     }
 
     /**
@@ -81,9 +73,9 @@ public class FastTag {
      * @return list of strings for part of speech tokens
      */
     public List<String> tag(List<String> words) {
-        List<String> ret = new ArrayList<String>(words.size());
+        var ret = new ArrayList<String>(words.size());
         for (int i = 0, size = words.size(); i < size; i++) {
-            String[] ss = (String[]) lexicon.get(words.get(i));
+            String[] ss = lexicon.get(words.get(i));
             // 1/22/2002 mod (from Lisp code): if not in hash, try lower case:
             if (ss == null)
                 ss = lexicon.get(words.get(i).toLowerCase());
@@ -115,7 +107,7 @@ public class FastTag {
                 try {
                     Float.parseFloat(words.get(i));
                     ret.set(i, "CD");
-                } catch (Exception e) {  // ignore: exception OK: this just means that the string could not parse as a number
+                } catch (NumberFormatException e) {  // ignore: exception OK: this just means that the string could not parse as a number
                 }
             }
             // rule 3: convert a noun to a past participle if words.get(i) ends with "ed"
@@ -151,24 +143,24 @@ public class FastTag {
     public static void main(String[] args) {
         if (args.length == 0) {
             System.out.println("Usage: argument is a string like \"The ball rolled down the street.\"\n\nSample run:\n");
-            List<String> words = com.markwatson.nlp.util.Tokenizer.wordsToList("The ball rolled down the street.");
-            List<String> tags = (new FastTag()).tag(words);
+            var words = com.markwatson.nlp.util.Tokenizer.wordsToList("The ball rolled down the street.");
+            var tags = (new FastTag()).tag(words);
             for (int i = 0; i < words.size(); i++) System.out.println(words.get(i) + "/" + tags.get(i));
         } else {
-            List<String> words = com.markwatson.nlp.util.Tokenizer.wordsToList(args[0]);
-            List<String> tags = (new FastTag()).tag(words);
+            var words = com.markwatson.nlp.util.Tokenizer.wordsToList(args[0]);
+            var tags = (new FastTag()).tag(words);
             for (int i = 0; i < words.size(); i++) System.out.println(words.get(i) + "/" + tags.get(i));
         }
     }
 
     private static void parseLine(String line) {
         int count = 0;
-        for (int i=0, size=line.length(); i<size; i++) if (line.charAt(i)==' ') count++;
-        if (count==0) return;
-        String[] ss = new String[count];
-        Scanner lineScanner = new Scanner(line);
+        for (int i = 0, size = line.length(); i < size; i++) if (line.charAt(i) == ' ') count++;
+        if (count == 0) return;
+        var ss = new String[count];
+        var lineScanner = new Scanner(line);
         lineScanner.useDelimiter(" ");
-        String word = lineScanner.next();    count=0;
+        String word = lineScanner.next();    count = 0;
         while (lineScanner.hasNext()) {
             ss[count++] = lineScanner.next();
         }

@@ -1,236 +1,162 @@
 package com.markwatson.ner_dbpedia;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 public class TextToDbpediaUris {
-  private TextToDbpediaUris() {
+
+  /**
+   * Represents a named-entity category with its lookup map and matched results.
+   */
+  private record EntityCategory(String name, Map<String, String> lookupMap,
+                                Set<String> uriSet, List<String> uris, List<String> names) {
+    void addIfAbsent(String uri, String ngram) {
+      if (uriSet.add(uri)) {
+        uris.add(uri);
+        names.add(ngram);
+      }
+    }
   }
 
-  public List<String> personUris = new ArrayList<String>();
-  public List<String> personNames = new ArrayList<String>();
-  public List<String> companyUris = new ArrayList<String>();
-  public List<String> companyNames = new ArrayList<>();
-  public List<String> cityUris = new ArrayList<>();
-  public List<String> cityNames = new ArrayList<String>();
-  public List<String> countryUris = new ArrayList<String>();
-  public List<String> countryNames = new ArrayList<String>();
+  // Precompiled patterns for tokenization
+  private static final Pattern DOT   = Pattern.compile("\\.");
+  private static final Pattern COMMA = Pattern.compile(",");
+  private static final Pattern QMARK = Pattern.compile("\\?");
+  private static final Pattern SEMI  = Pattern.compile(";");
+  private static final Pattern NL    = Pattern.compile("\n");
+  private static final Pattern MULTI_SPACE = Pattern.compile(" +");
 
-  public List<String> broadcastNetworkUris = new ArrayList<String>();
-  public List<String> broadcastNetworkNames = new ArrayList<String>();
+  // Entity categories — order matters for priority
+  private final List<EntityCategory> categories;
 
-  public List<String> musicGroupUris = new ArrayList<String>();
-  public List<String> musicGroupNames = new ArrayList<String>();
+  // Public accessors preserving the original API
+  public final List<String> personUris;
+  public final List<String> personNames;
+  public final List<String> companyUris;
+  public final List<String> companyNames;
+  public final List<String> cityUris;
+  public final List<String> cityNames;
+  public final List<String> countryUris;
+  public final List<String> countryNames;
+  public final List<String> broadcastNetworkUris;
+  public final List<String> broadcastNetworkNames;
+  public final List<String> musicGroupUris;
+  public final List<String> musicGroupNames;
+  public final List<String> politicalPartyUris;
+  public final List<String> politicalPartyNames;
+  public final List<String> tradeUnionUris;
+  public final List<String> tradeUnionNames;
+  public final List<String> universityUris;
+  public final List<String> universityNames;
 
-  public List<String> politicalPartyUris = new ArrayList<String>();
-  public List<String> politicalPartyNames = new ArrayList<String>();
-
-  public List<String> tradeUnionUris = new ArrayList<String>();
-  public List<String> tradeUnionNames = new ArrayList<String>();
-
-  public List<String> universityUris = new ArrayList<String>();
-  public List<String> universityNames = new ArrayList<String>();
+  @SuppressWarnings("unused")
+  private TextToDbpediaUris() {
+    this("");
+  }
 
   public TextToDbpediaUris(String text) {
+    // Initialize entity categories with their lookup maps
+    var person           = makeCat("person",           NerMaps.personNames);
+    var city             = makeCat("city",             NerMaps.cityNames);
+    var company          = makeCat("company",          NerMaps.companyNames);
+    var country          = makeCat("country",          NerMaps.countryNames);
+    var broadcastNetwork = makeCat("broadcastNetwork", NerMaps.broadcastNetworks);
+    var musicGroup       = makeCat("musicGroup",       NerMaps.musicGroupNames);
+    var politicalParty   = makeCat("politicalParty",   NerMaps.politicalPartyNames);
+    var tradeUnion       = makeCat("tradeUnion",       NerMaps.tradeUnionNames);
+    var university       = makeCat("university",       NerMaps.universityNames);
+
+    categories = List.of(person, city, company, country,
+        broadcastNetwork, musicGroup, politicalParty, tradeUnion, university);
+
+    // Wire public fields to category lists for backward compatibility
+    personUris              = person.uris();
+    personNames             = person.names();
+    companyUris             = company.uris();
+    companyNames            = company.names();
+    cityUris                = city.uris();
+    cityNames               = city.names();
+    countryUris             = country.uris();
+    countryNames            = country.names();
+    broadcastNetworkUris    = broadcastNetwork.uris();
+    broadcastNetworkNames   = broadcastNetwork.names();
+    musicGroupUris          = musicGroup.uris();
+    musicGroupNames         = musicGroup.names();
+    politicalPartyUris      = politicalParty.uris();
+    politicalPartyNames     = politicalParty.names();
+    tradeUnionUris          = tradeUnion.uris();
+    tradeUnionNames         = tradeUnion.names();
+    universityUris          = university.uris();
+    universityNames         = university.names();
+
+    processText(text);
+  }
+
+  private static EntityCategory makeCat(String name, Map<String, String> lookupMap) {
+    return new EntityCategory(name, lookupMap,
+        new LinkedHashSet<>(), new ArrayList<>(), new ArrayList<>());
+  }
+
+  private void processText(String text) {
     String[] tokens = tokenize(text + " . . .");
-    String uri = "";
     for (int i = 0, size = tokens.length - 2; i < size; i++) {
+      String n3gram = tokens[i] + " " + tokens[i + 1] + " " + tokens[i + 2];
       String n2gram = tokens[i] + " " + tokens[i + 1];
-      String n3gram = n2gram + " " + tokens[i + 2];
-      // check for 3grams:
-      if ((uri = NerMaps.personNames.get(n3gram)) != null) {
-        log("person", i, i + 2, n3gram, uri);
-        i += 2;
-        continue;
-      }
-      if ((uri = NerMaps.cityNames.get(n3gram)) != null) {
-        log("city", i, i + 2, n3gram, uri);
-        i += 2;
-        continue;
-      }
-      if ((uri = NerMaps.companyames.get(n3gram)) != null) {
-        log("company", i, i + 2, n3gram, uri);
-        i += 2;
-        continue;
-      }
-      if ((uri = NerMaps.countryNames.get(n3gram)) != null) {
-        log("country", i, i + 2, n3gram, uri);
-        i += 2;
-        continue;
-      }
-      if ((uri = NerMaps.broadcastNetworks.get(n3gram)) != null) {
-        log("broadcastNetwork", i, i + 2, n3gram, uri);
-        i += 2;
-        continue;
-      }
-      if ((uri = NerMaps.politicalPartyNames.get(n3gram)) != null) {
-        log("politicalParty", i, i + 2, n3gram, uri);
-        i += 2;
-        continue;
-      }
-      if ((uri = NerMaps.tradeUnionNames.get(n3gram)) != null) {
-        log("tradeUnion", i, i + 2, n3gram, uri);
-        i += 2;
-        continue;
-      }
-      if ((uri = NerMaps.universityNames.get(n3gram)) != null) {
-        log("unitersity", i, i + 2, n3gram, uri);
-        i += 2;
-        continue;
-      }
-      if ((uri = NerMaps.musicGroupNames.get(n3gram)) != null) {
-        log("musicGroup", i, i + 2, n3gram, uri);
-        i += 2;
-        continue;
-      }
 
-      // check for 2grams:
-      if ((uri = NerMaps.personNames.get(n2gram)) != null) {
-        log("person", i, i + 1, n2gram, uri);
-        i += 1;
-        continue;
-      }
-      if ((uri = NerMaps.cityNames.get(n2gram)) != null) {
-        log("city", i, i + 1, n2gram, uri);
-        i += 1;
-        continue;
-      }
-      if ((uri = NerMaps.companyames.get(n2gram)) != null) {
-        log("company", i, i + 1, n2gram, uri);
-        i += 1;
-        continue;
-      }
-      if ((uri = NerMaps.countryNames.get(n2gram)) != null) {
-        log("country", i, i + 1, n2gram, uri);
-        i += 1;
-        continue;
-      }
-      if ((uri = NerMaps.musicGroupNames.get(n2gram)) != null) {
-        log("musicGroup", i, i + 1, n2gram, uri);
-        i += 1;
-        continue;
-      }
-      if ((uri = NerMaps.broadcastNetworks.get(n2gram)) != null) {
-        log("broadCastNetwork", i, i + 1, n2gram, uri);
-        i += 1;
-        continue;
-      }
-      if ((uri = NerMaps.politicalPartyNames.get(n2gram)) != null) {
-        log("politicalParty", i, i + 1, n2gram, uri);
-        i += 1;
-        continue;
-      }
-      if ((uri = NerMaps.tradeUnionNames.get(n2gram)) != null) {
-        log("tradeUnion", i, i + 1, n2gram, uri);
-        i += 1;
-        continue;
-      }
-      if ((uri = NerMaps.universityNames.get(n2gram)) != null) {
-        log("unitersity", i, i + 1, n2gram, uri);
-        i += 1;
-        continue;
-      }
+      // Check 3-grams first (longest match wins)
+      int skip = tryMatch(n3gram, 3, i);
+      if (skip > 0) { i += skip - 1; continue; }
 
-      // check for 1grams:
-      if ((uri = NerMaps.personNames.get(tokens[i])) != null) {
-        log("person", i, i + 1, tokens[i], uri);
-        continue;
-      }
-      if ((uri = NerMaps.cityNames.get(tokens[i])) != null) {
-        log("city", i, i + 1, tokens[i], uri);
-        continue;
-      }
-      if ((uri = NerMaps.companyames.get(tokens[i])) != null) {
-        log("company", i, i + 1, tokens[i], uri);
-        continue;
-      }
-      if ((uri = NerMaps.countryNames.get(tokens[i])) != null) {
-        log("country", i, i + 1, tokens[i], uri);
-        continue;
-      }
-      if ((uri = NerMaps.broadcastNetworks.get(tokens[i])) != null) {
-        log("broadCastNetwork", i, i + 1, tokens[i], uri);
-        continue;
-      }
-      if ((uri = NerMaps.musicGroupNames.get(tokens[i])) != null) {
-        log("musicGroup", i, i + 1, tokens[i], uri);
-        continue;
-      }
-      if ((uri = NerMaps.politicalPartyNames.get(tokens[i])) != null) {
-        log("politicalParty", i, i + 1, tokens[i], uri);
-        continue;
-      }
-      if ((uri = NerMaps.tradeUnionNames.get(tokens[i])) != null) {
-        log("tradeUnion", i, i + 1, tokens[i], uri);
-        continue;
-      }
-      if ((uri = NerMaps.universityNames.get(tokens[i])) != null) {
-        log("unitersity", i, i + 1, tokens[i], uri);
-      }
+      // Check 2-grams
+      skip = tryMatch(n2gram, 2, i);
+      if (skip > 0) { i += skip - 1; continue; }
+
+      // Check 1-grams
+      tryMatch(tokens[i], 1, i);
     }
   }
 
-  public void log(String nerType, int index1, int index2, String ngram, String uri) {
-    System.out.println(nerType + "\t" + index1 + "\t" + index2 + "\t" + ngram + "\t" + uri);
-    if (!uri.startsWith("<")) uri = "<" + uri + ">";
-    if (nerType.equals("person")) {
-      if (!personUris.contains(uri)) {
-        personUris.add(uri);
-        personNames.add(ngram);
+  /**
+   * Try to match an n-gram against all entity categories.
+   * @return the number of extra tokens to skip (n-1), or 0 if no match.
+   */
+  private int tryMatch(String ngram, int n, int startIndex) {
+    for (var cat : categories) {
+      String uri = cat.lookupMap().get(ngram);
+      if (uri != null) {
+        if (!uri.startsWith("<")) uri = "<" + uri + ">";
+        System.out.println(cat.name() + "\t" + startIndex + "\t" + (startIndex + n - 1) + "\t" + ngram + "\t" + uri);
+        cat.addIfAbsent(uri, ngram);
+        return n;
       }
     }
-    if (nerType.equals("company")) {
-      if (!this.companyUris.contains(uri)) {
-        companyUris.add(uri);
-        companyNames.add(ngram);
-      }
-    }
-    if (nerType.equals("city")) {
-      if (!cityUris.contains(uri)) {
-        cityUris.add(uri);
-        cityNames.add(ngram);
-      }
-    }
-    if (nerType.equals("country")) {
-      if (!countryUris.contains(uri)) {
-        countryUris.add(uri);
-        countryNames.add(ngram);
-      }
-    }
-    if (nerType.equals("broadCastNetwork")) {
-      if (!broadcastNetworkUris.contains(uri)) {
-        broadcastNetworkUris.add(uri);
-        broadcastNetworkNames.add(ngram);
-      }
-    }
-    if (nerType.equals("musicGroup")) {
-      if (!musicGroupUris.contains(uri)) {
-        musicGroupUris.add(uri);
-        musicGroupNames.add(ngram);
-      }
-    }
-    if (nerType.equals("politicalParty")) {
-      if (!politicalPartyUris.contains(uri)) {
-        politicalPartyUris.add(uri);
-        politicalPartyNames.add(ngram);
-      }
-    }
-    if (nerType.equals("tradeUnion")) {
-      if (!tradeUnionUris.contains(uri)) {
-        tradeUnionUris.add(uri);
-        tradeUnionNames.add(ngram);
-      }
-    }
-    if (nerType.equals("university")) {
-      if (!universityUris.contains(uri)) {
-        universityUris.add(uri);
-        universityNames.add(ngram);
-      }
-    }
+    return 0;
   }
 
   private String[] tokenize(String s) {
-    return s.replaceAll("\\.", " \\. ").replaceAll(",", " , ")
-        .replaceAll("\\?", " ? ").replaceAll("\n", " ").replaceAll(";", " ; ").split(" ");
+    String result = DOT.matcher(s).replaceAll(" . ");
+    result = COMMA.matcher(result).replaceAll(" , ");
+    result = QMARK.matcher(result).replaceAll(" ? ");
+    result = NL.matcher(result).replaceAll(" ");
+    result = SEMI.matcher(result).replaceAll(" ; ");
+    return MULTI_SPACE.matcher(result).replaceAll(" ").split(" ");
+  }
+
+  @Override
+  public String toString() {
+    var sb = new StringBuilder("TextToDbpediaUris {\n");
+    for (var cat : categories) {
+      if (!cat.names().isEmpty()) {
+        sb.append("  ").append(cat.name()).append(": ")
+            .append(cat.names()).append(" -> ").append(cat.uris())
+            .append('\n');
+      }
+    }
+    sb.append('}');
+    return sb.toString();
   }
 }

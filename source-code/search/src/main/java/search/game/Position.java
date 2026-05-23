@@ -1,4 +1,4 @@
 package search.game;
 
-abstract public class Position {
+public sealed interface Position permits ChessPosition, TicTacToePosition {
 }

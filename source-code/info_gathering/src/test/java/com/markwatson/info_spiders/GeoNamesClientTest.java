@@ -1,34 +1,70 @@
 package com.markwatson.info_spiders;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Unit test for NLP.
+ * Unit test for GeoNamesClient.
  */
-public class GeoNamesClientTest extends TestCase {
+class GeoNamesClientTest {
 
-  public GeoNamesClientTest(String testName) {
-    super(testName);
+  @Test
+  @DisplayName("Fetch and display geographic data for cities, countries, states, rivers, and mountains")
+  void testFetchAndDisplay() {
+    var client = new GeoNamesClient();
+
+    // Skip the test if GeoNames service is down or rate-limited
+    try {
+      List<GeoNameData> check = client.getCityData("Paris");
+      org.junit.jupiter.api.Assumptions.assumeTrue(check != null && !check.isEmpty(),
+          "GeoNames service is currently rate-limited or returned no results. Skipping test.");
+    } catch (Exception e) {
+      System.err.println("WARNING: GeoNames service is currently unavailable: " + e.getMessage());
+      org.junit.jupiter.api.Assumptions.assumeTrue(false,
+          "GeoNames service is currently unavailable. Skipping test.");
+    }
+
+    try {
+      List<GeoNameData> cities = client.getCityData("Paris");
+      System.out.println(cities);
+      assertFalse(cities.isEmpty(), "Should find at least one result for 'Paris'");
+      pause();
+
+      List<GeoNameData> countries = client.getCountryData("Canada");
+      System.out.println(countries);
+      assertFalse(countries.isEmpty(), "Should find at least one result for 'Canada'");
+      pause();
+
+      List<GeoNameData> states = client.getStateData("California");
+      System.out.println(states);
+      assertFalse(states.isEmpty(), "Should find at least one result for 'California'");
+      for (GeoNameData state : states) {
+        assertEquals(GeoNameData.GeoType.STATE, state.geoType, "State data should have STATE geo type");
+      }
+      pause();
+
+      List<GeoNameData> rivers = client.getRiverData("Amazon");
+      System.out.println(rivers);
+      assertFalse(rivers.isEmpty(), "Should find at least one result for 'Amazon'");
+      pause();
+
+      List<GeoNameData> mountains = client.getMountainData("Whitney");
+      System.out.println(mountains);
+      assertFalse(mountains.isEmpty(), "Should find at least one result for 'Whitney'");
+    } catch (Exception e) {
+      fail("GeoNames API call failed: " + e.getMessage(), e);
+    }
   }
 
-  public static Test suite() {
-    return new TestSuite(GeoNamesClientTest.class);
-  }
-
-  public void testFetchAndDisplay() throws Exception {
-    assertTrue(true);
-    GeoNamesClient client = new GeoNamesClient();
-    System.out.println(client.getCityData("Paris"));        pause();
-    System.out.println(client.getCountryData("Canada")); pause();
-    System.out.println(client.getStateData("California")); pause();
-    System.out.println(client.getRiverData("Amazon"));     pause();
-    System.out.println(client.getMountainData("Whitney"));
-  }
   private static void pause() {
-    try { Thread.sleep(2000);
-    } catch (Exception ignore) { }
+    try {
+      Thread.sleep(2000);
+    } catch (InterruptedException ie) {
+      Thread.currentThread().interrupt();
+    }
   }
 }
-

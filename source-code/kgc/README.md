@@ -8,7 +8,7 @@ This example automatically generates RDF knowledge graph data from plain-text in
 
 ## Prerequisites
 
-- Java 11+
+- Java 21+
 - Maven 3.6+
 - **You must build and install the `ner_dbpedia` project first** (it is a local Maven dependency):
 

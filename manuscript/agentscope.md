@@ -22,28 +22,20 @@ import io.agentscope.core.message.Msg;
 import io.agentscope.core.model.GeminiChatModel;
 
 /**
- * AgentScope ReActAgent demo using Google Gemini
- * (gemini-2.5-flash).
+ * AgentScope ReActAgent demo using Google Gemini (gemini-2.5-flash).
  *
- * Set the environment variable GEMINI_API_KEY before running:
- *
+ * <p>Set the environment variable GEMINI_API_KEY before running:
+ * <pre>
  *   export GEMINI_API_KEY=your_key_here
- *
+ *   mvn package
+ *   java -jar target/agentscope-gemini-1.0.0-SNAPSHOT.jar
+ * </pre>
  */
 public class Main {
 
     public static void main(String[] args) {
-        String apiKey = System.getenv("GEMINI_API_KEY");
-        if (apiKey == null || apiKey.isBlank()) {
-            System.err.println("ERROR: GEMINI_API_KEY environment variable is not set.");
-            System.exit(1);
-        }
-
-        // Build the Gemini chat model
-        GeminiChatModel model = GeminiChatModel.builder()
-                .apiKey(apiKey)
-                .modelName("gemini-2.5-flash")
-                .build();
+        // Build the Gemini chat model via shared config
+        GeminiChatModel model = GeminiConfig.createModel();
 
         // Build the ReActAgent
         ReActAgent agent = ReActAgent.builder()
@@ -59,7 +51,7 @@ public class Main {
                         .build()
         ).block();
 
-        System.out.println("Agent response:");
+        System.out.println("=== Agent Response ===");
         System.out.println(response.getTextContent());
     }
 }
@@ -93,6 +85,9 @@ Here is an example defining and using three tools that can be found in the file 
 In this section, we expand the capabilities of our agent by introducing the tool calling mechanism, enabling a Large Language Model to interact directly with external services and the local filesystem. The following code defines two service classes, `WeatherService` and `FileService`, which use the `@Tool` and `@ToolParam` annotations to provide the agent with semantic descriptions of available functions, specifically for retrieving weather data, listing directory contents, and reading file snippets. These tools are bundled into a `Toolkit` and attached to the `ReActAgent`, allowing the model to transition from simple text generation to an iterative "Reasoning and Acting" cycle. By processing complex, multi-step queries—such as searching for specific file types and summarizing their contents, and the agent demonstrates its ability to autonomously select the appropriate tool, pass the correct parameters, and synthesize the results into a coherent response.
 
 ```java
+package com.markwatson.agentscope;
+
+import io.agentscope.core.ReActAgent;
 import io.agentscope.core.message.Msg;
 import io.agentscope.core.model.GeminiChatModel;
 import io.agentscope.core.tool.Tool;
@@ -102,7 +97,6 @@ import io.agentscope.core.tool.Toolkit;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -134,7 +128,7 @@ public class ToolUseExample {
         public String getWeather(
                 @ToolParam(name = "city", description = "The name of the city") String city) {
             // Stub: in a real app you would call a weather API here
-            return String.format("%s weather: Sunny, 25°C", city);
+            return "%s weather: Sunny, 25°C".formatted(city);
         }
     }
 
@@ -146,7 +140,7 @@ public class ToolUseExample {
         @Tool(description = "List the files and sub-directories inside a directory")
         public String listDir(
                 @ToolParam(name = "path", description = "Absolute or relative path of the directory to list") String path) {
-            try (Stream<Path> entries = Files.list(Paths.get(path))) {
+            try (Stream<Path> entries = Files.list(Path.of(path))) {
                 String listing = entries
                         .map(p -> (Files.isDirectory(p) ? "[DIR]  " : "[FILE] ") + p.getFileName())
                         .sorted()
@@ -162,7 +156,7 @@ public class ToolUseExample {
                 @ToolParam(name = "path",       description = "Path to the file to read") String path,
                 @ToolParam(name = "max_lines",  description = "Maximum number of lines to return (default 10)") int maxLines) {
             try {
-                List<String> lines = Files.readAllLines(Paths.get(path));
+                List<String> lines = Files.readAllLines(Path.of(path));
                 return lines.stream()
                         .limit(maxLines <= 0 ? 10 : maxLines)
                         .collect(Collectors.joining("\n"));
@@ -176,17 +170,8 @@ public class ToolUseExample {
     //  Main                                                                //
     // ------------------------------------------------------------------ //
     public static void main(String[] args) {
-        String apiKey = System.getenv("GEMINI_API_KEY");
-        if (apiKey == null || apiKey.isBlank()) {
-            System.err.println("ERROR: GEMINI_API_KEY environment variable is not set.");
-            System.exit(1);
-        }
-
-        // Build the Gemini chat model
-        GeminiChatModel model = GeminiChatModel.builder()
-                .apiKey(apiKey)
-                .modelName("gemini-2.5-flash")
-                .build();
+        // Build the Gemini chat model via shared config
+        GeminiChatModel model = GeminiConfig.createModel();
 
         // Register all tools
         Toolkit toolkit = new Toolkit();
@@ -215,8 +200,9 @@ public class ToolUseExample {
         String cwd = System.getProperty("user.dir");
         Msg fsResponse = agent.call(
                 Msg.builder()
-                        .textContent("List the directory \"" + cwd + "\" and for every .md file you find there, " +
-                                     "display its name followed by its first 10 lines.")
+                        .textContent(
+                                "List the directory \"%s\" and for every .md file you find there, display its name followed by its first 10 lines."
+                                        .formatted(cwd))
                         .build()
         ).block();
 

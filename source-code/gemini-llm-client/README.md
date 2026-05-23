@@ -8,7 +8,7 @@ This example shows how to call the Google Gemini large language model API direct
 
 ## Prerequisites
 
-- Java 11+
+- Java 21+
 - Maven 3.6+
 - A valid `GOOGLE_API_KEY` environment variable ([get one here](https://aistudio.google.com/app/apikey))
 

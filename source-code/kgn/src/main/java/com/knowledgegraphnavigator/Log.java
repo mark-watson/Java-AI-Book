@@ -1,7 +1,8 @@
 package com.knowledgegraphnavigator;
 
 public class Log {
-  static public void out(String s) { System.out.println(s); }
-  static public StringBuilder sparql  = new StringBuilder();
-  static public void clearSparql() { sparql.delete(0, sparql.length()); }
+  public static void out(String s) { System.out.println(s); }
+  /** Accumulated SPARQL queries for inspection. Note: not thread-safe (single-threaded demo). */
+  public static final StringBuilder sparql = new StringBuilder();
+  public static void clearSparql() { sparql.delete(0, sparql.length()); }
 }

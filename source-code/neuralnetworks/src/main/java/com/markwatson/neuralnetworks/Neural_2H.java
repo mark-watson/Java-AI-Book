@@ -1,7 +1,10 @@
 package com.markwatson.neuralnetworks;
 
-import java.util.*;
-import java.io.*;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Back-propagation neural network with 2 hidden layers
@@ -23,23 +26,21 @@ public class Neural_2H implements Serializable {
   protected int numHidden2;
   protected int numOutputs;
 
-  protected int numTraining;
+  public float[] inputs;
+  public float[] hidden1;
+  public float[] hidden2;
+  public float[] outputs;
 
-  public float inputs[];
-  public float hidden1[];
-  public float hidden2[];
-  public float outputs[];
+  public float[][] W1;
+  public float[][] W2;
+  public float[][] W3;
 
-  public float W1[][];
-  public float W2[][];
-  public float W3[][];
+  protected float[] output_errors;
+  protected float[] hidden1_errors;
+  protected float[] hidden2_errors;
 
-  protected float output_errors[];
-  protected float hidden1_errors[];
-  protected float hidden2_errors[];
-
-  transient protected ArrayList<float[]> inputTraining = new ArrayList<>();
-  transient protected ArrayList<float[]> outputTraining = new ArrayList<>();
+  transient protected List<float[]> inputTraining = new ArrayList<>();
+  transient protected List<float[]> outputTraining = new ArrayList<>();
 
   public float TRAINING_RATE = 0.2f;
 
@@ -65,79 +66,64 @@ public class Neural_2H implements Serializable {
 
   public void addTrainingExample(float[] inputs, float[] outputs) {
     if (inputs.length != numInputs || outputs.length != numOutputs) {
-      System.out.println("addTrainingExample(): array size is wrong");
-      return;
+      throw new IllegalArgumentException(
+          "addTrainingExample(): expected " + numInputs + " inputs and " +
+          numOutputs + " outputs, but got " + inputs.length + " and " + outputs.length);
     }
     inputTraining.add(inputs);
     outputTraining.add(outputs);
   }
 
   public void randomizeWeights() {
-    // Randomize weights here:
+    var rng = ThreadLocalRandom.current();
     for (int ii = 0; ii < numInputs; ii++)
       for (int hh = 0; hh < numHidden1; hh++)
-        W1[ii][hh] =
-            (float) Math.random() - 0.1f;
+        W1[ii][hh] = rng.nextFloat() - 0.1f;
     for (int ii = 0; ii < numHidden1; ii++)
       for (int hh = 0; hh < numHidden2; hh++)
-        W2[ii][hh] =
-            2f * (float) Math.random() - 1f;
+        W2[ii][hh] = 2f * rng.nextFloat() - 1f;
     for (int hh = 0; hh < numHidden2; hh++)
       for (int oo = 0; oo < numOutputs; oo++)
-        W3[hh][oo] =
-            2f * (float) Math.random() - 1f;
+        W3[hh][oo] = 2f * rng.nextFloat() - 1f;
   }
 
   public void slightlyRandomizeWeights() {
-    // Randomize weights here:
+    var rng = ThreadLocalRandom.current();
     for (int ii = 0; ii < numInputs; ii++)
       for (int hh = 0; hh < numHidden1; hh++)
-        W1[ii][hh] +=
-            0.2f * (float) Math.random() - 0.1f;
+        W1[ii][hh] += 0.2f * rng.nextFloat() - 0.1f;
     for (int ii = 0; ii < numHidden1; ii++)
       for (int hh = 0; hh < numHidden2; hh++)
-        W2[ii][hh] +=
-            0.2f * (float) Math.random() - 0.1f;
+        W2[ii][hh] += 0.2f * rng.nextFloat() - 0.1f;
     for (int hh = 0; hh < numHidden2; hh++)
       for (int oo = 0; oo < numOutputs; oo++)
-        W3[hh][oo] +=
-            0.2f * (float) Math.random() - 0.1f;
+        W3[hh][oo] += 0.2f * rng.nextFloat() - 0.1f;
   }
 
   public float[] recall(float[] in) {
-    for (int i = 0; i < numInputs; i++) inputs[i] = in[i];
+    System.arraycopy(in, 0, inputs, 0, numInputs);
     forwardPass();
-    float[] ret = new float[numOutputs];
-    for (int i = 0; i < numOutputs; i++) ret[i] = outputs[i];
-    return ret;
+    return Arrays.copyOf(outputs, numOutputs);
   }
 
   public void forwardPass() {
     int i, h, o;
-    for (h = 0; h < numHidden1; h++) {
-      hidden1[h] = 0.0f;
-    }
-    for (h = 0; h < numHidden2; h++) {
-      hidden2[h] = 0.0f;
-    }
+    Arrays.fill(hidden1, 0.0f);
+    Arrays.fill(hidden2, 0.0f);
     for (i = 0; i < numInputs; i++) {
       for (h = 0; h < numHidden1; h++) {
-        hidden1[h] +=
-            inputs[i] * W1[i][h];
+        hidden1[h] += inputs[i] * W1[i][h];
       }
     }
     for (i = 0; i < numHidden1; i++) {
       for (h = 0; h < numHidden2; h++) {
-        hidden2[h] +=
-            hidden1[i] * W2[i][h];
+        hidden2[h] += hidden1[i] * W2[i][h];
       }
     }
-    for (o = 0; o < numOutputs; o++)
-      outputs[o] = 0.0f;
+    Arrays.fill(outputs, 0.0f);
     for (h = 0; h < numHidden2; h++) {
       for (o = 0; o < numOutputs; o++) {
-        outputs[o] +=
-            sigmoid(hidden2[h]) * W3[h][o];
+        outputs[o] += sigmoid(hidden2[h]) * W3[h][o];
       }
     }
   }
@@ -149,24 +135,18 @@ public class Neural_2H implements Serializable {
   private int current_example = 0;
   private int count_control_randomize_weights = 0;
 
-  public float train(ArrayList ins, ArrayList v_outs) {
+  public float train(List<float[]> ins, List<float[]> v_outs) {
     int i, h, o;
     float error = 0.0f;
     int num_cases = ins.size();
-    //for (int example=0; example<num_cases; example++) {
     // zero out error arrays:
-    for (h = 0; h < numHidden1; h++)
-      hidden1_errors[h] = 0.0f;
-    for (h = 0; h < numHidden2; h++)
-      hidden2_errors[h] = 0.0f;
-    for (o = 0; o < numOutputs; o++)
-      output_errors[o] = 0.0f;
+    Arrays.fill(hidden1_errors, 0.0f);
+    Arrays.fill(hidden2_errors, 0.0f);
+    Arrays.fill(output_errors, 0.0f);
     // copy the input values:
-    for (i = 0; i < numInputs; i++) {
-      inputs[i] = ((float[]) ins.get(current_example))[i];
-    }
+    System.arraycopy(ins.get(current_example), 0, inputs, 0, numInputs);
     // copy the output values:
-    float[] outs = (float[]) v_outs.get(current_example);
+    float[] outs = v_outs.get(current_example);
 
     // perform a forward pass through the network:
 
@@ -226,7 +206,6 @@ public class Neural_2H implements Serializable {
     }
     for (o = 0; o < numOutputs; o++) {
       error += Math.abs(outs[o] - outputs[o]);
-      //error += Math.abs(output_errors[o]);
     }
     current_example++;
     if (current_example >= num_cases) current_example = 0;
@@ -238,11 +217,8 @@ public class Neural_2H implements Serializable {
     return error;
   }
 
-  public float clampWeight(float weigth) {
-    float ret = weigth;
-    if (ret < -10) ret = -10;
-    if (ret > 10) ret = 10;
-    return ret;
+  public float clampWeight(float weight) {
+    return Math.clamp(weight, -10f, 10f);
   }
 
   protected float sigmoid(float x) {
@@ -251,7 +227,7 @@ public class Neural_2H implements Serializable {
   }
 
   protected float sigmoidP(float x) {
-    double z = sigmoid(x); //  + TRAINING_RATE;
+    double z = sigmoid(x);
     return (float) (z * (1.0f - z));
   }
 

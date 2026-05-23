@@ -55,22 +55,22 @@ public class MySitesExamples {
 
   public static void main(String[] args) throws Exception {
     Document doc = Jsoup.connect("https://markwatson.com")
-        .userAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10.0; rv:77.0) Gecko/20100101 Firefox/77.0")
-        .timeout(2000).get();
+        .userAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0; rv:120.0) Gecko/20100101 Firefox/120.0")
+        .timeout(5000).get();
     Elements newsHeadlines = doc.select("div p");
-    for (Element element : newsHeadlines) {
+    for (var element : newsHeadlines) {
       System.out.println(" next element text: " + element.text());
     }
-    String all_page_text = doc.text();
-    System.out.println("All text on web page:\n" + all_page_text);
+    String allPageText = doc.text();
+    System.out.println("All text on web page:\n" + allPageText);
     Elements anchors = doc.select("a[href]");
-    for (Element anchor : anchors) {
+    for (var anchor : anchors) {
       String uri = anchor.attr("href");
       System.out.println(" next anchor uri: " + uri);
       System.out.println(" next anchor text: " + anchor.text());
     }
-    Elements absolute_uri_anchors = doc.select("a[href]");
-    for (Element anchor : absolute_uri_anchors) {
+    Elements absoluteUriAnchors = doc.select("a[href]");
+    for (var anchor : absoluteUriAnchors) {
       String uri = anchor.attr("abs:href");
       System.out.println(" next anchor absolute uri: " + uri);
       System.out.println(" next anchor absolute text: " + anchor.text());
@@ -130,17 +130,22 @@ Here is another web spidering example that is different than the earlier example
 ~~~~~~~~
 package com.markwatson.info_spiders;
 
-import net.htmlparser.jericho.*;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
-import java.io.InputStream;
-import java.net.URL;
-import java.net.URLConnection;
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.*;
 
 /**
- * This simple web spider returns a list of lists, each containing two strings
- * representing "URL" and "text".
- * Specifically, I do not return links on each page.
+ * This simple web spider returns a list of lists, each containing two
+ * strings representing "URL" and "text". Specifically, I do not return links on each page.
  */
 
 /**
@@ -149,74 +154,83 @@ import java.util.*;
  */
 
 public class WebSpider {
-  public WebSpider(String root_url, int max_returned_pages) throws Exception {
-    String host = new URL(root_url).getHost();
+  public WebSpider(String rootUrl, int maxReturnedPages) throws Exception {
+    String host = URI.create(rootUrl).getHost();
     System.out.println("+ host: " + host);
-    List<String> urls = new ArrayList<String>();
-    Set<String> already_visited = new HashSet<String>();
-    urls.add(root_url);
-    int num_fetched = 0;
-    while (num_fetched <= max_returned_pages && !urls.isEmpty()) {
-      try {
-        System.out.println("+ urls: " + urls);
-        String url_str = urls.remove(0);
-        System.out.println("+ url_str: " + url_str);
-        if (url_str.toLowerCase().indexOf(host) > -1 &&
-            !already_visited.contains(url_str)) {
-          already_visited.add(url_str);
-          URL url = new URL(url_str);
-          URLConnection connection = url.openConnection();
-          connection.setAllowUserInteraction(false);
-          InputStream ins = url.openStream();
-          Source source = new Source(ins);
-          num_fetched++;
-          TextExtractor te = new TextExtractor(source);
-          String text = te.toString();
-          // Skip any pages where text on page is identical to existing
-          // page (e.g., http://example.com and http://exaple.com/index.html
-          boolean process = true;
-          for (List<String> ls : url_content_lists) {
-            if (text.equals(ls.get(1))) {
-              process = false;
-              break;
+    var urls = new ArrayList<String>();
+    var alreadyVisited = new HashSet<String>();
+    urls.add(rootUrl);
+    int numFetched = 0;
+
+    try (var httpClient = HttpClient.newBuilder()
+            .connectTimeout(Duration.ofSeconds(10))
+            .followRedirects(HttpClient.Redirect.NORMAL)
+            .build()) {
+
+      while (numFetched <= maxReturnedPages && !urls.isEmpty()) {
+        try {
+          System.out.println("+ urls: " + urls);
+          String urlStr = urls.removeFirst();
+          System.out.println("+ url_str: " + urlStr);
+          if (urlStr.toLowerCase().contains(host) && !alreadyVisited.contains(urlStr)) {
+            alreadyVisited.add(urlStr);
+
+            var request = HttpRequest.newBuilder()
+                    .uri(URI.create(urlStr))
+                    .timeout(Duration.ofSeconds(15))
+                    .header("User-Agent", "Mozilla/5.0 (compatible; JavaAIBook/1.0)")
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() != 200) {
+              System.out.println("Skipping " + urlStr + " (HTTP " + response.statusCode() + ")");
+              continue;
             }
-          }
-          if (process) {
-            try {
-              Thread.sleep(500);
-            } catch (Exception ignore) {
-            }
-            List<StartTag> anchorTags = source.getAllStartTags("a ");
-            ListIterator iter = anchorTags.listIterator();
-            while (iter.hasNext()) {
-              StartTag anchor = (StartTag) iter.next();
-              Attributes attr = anchor.parseAttributes();
-              Attribute link = attr.get("href");
-              String link_str = link.getValue();
-              if (link_str.indexOf("http:") == -1) {
-                String path = url.getPath();
-                if (path.endsWith("/")) path = path.substring(0, path.length() - 1);
-                int index = path.lastIndexOf("/");
-                if (index > -1) path = path.substring(0, index);
-                link_str = url.getHost() + "/" + path + "/" + link_str;
-                link_str = "http://" + link_str.replaceAll("///", "/").replaceAll("//", "/");
+
+            Document doc = Jsoup.parse(response.body(), urlStr);
+            numFetched++;
+            String text = doc.text();
+
+            // Skip any pages where text on page is identical to existing
+            // page (e.g., http://example.com and http://example.com/index.html)
+            boolean duplicate = urlContentLists.stream()
+                    .anyMatch(ls -> text.equals(ls.get(1)));
+
+            if (!duplicate) {
+              try {
+                Thread.sleep(500);
+              } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
               }
-              urls.add(link_str);
+
+              Elements anchors = doc.select("a[href]");
+              for (Element anchor : anchors) {
+                String linkStr = anchor.attr("abs:href");
+                if (!linkStr.isEmpty()) {
+                  urls.add(linkStr);
+                }
+              }
+              urlContentLists.add(List.of(urlStr, text));
             }
-            List<String> ls = new ArrayList<String>(2);
-            ls.add(url_str);
-            ls.add(text);
-            url_content_lists.add(ls);
           }
+        } catch (IOException ex) {
+          System.out.println("Error: " + ex);
+          ex.printStackTrace();
         }
-      } catch (Exception ex) {
-        System.out.println("Error: " + ex);
-        ex.printStackTrace();
       }
     }
   }
 
-  public List<List<String>> url_content_lists = new ArrayList<List<String>>();
+  private final List<List<String>> urlContentLists = new ArrayList<>();
+
+  public List<List<String>> getUrlContentLists() {
+    return Collections.unmodifiableList(urlContentLists);
+  }
+
+  /** @deprecated Use {@link #getUrlContentLists()} instead. Kept for backward compatibility. */
+  @Deprecated
+  public List<List<String>> url_content_lists = urlContentLists;
 }
 ~~~~~~~~
 
@@ -274,26 +288,27 @@ public class GeoNamesClient {
   }
 
   private List<GeoNameData> helper(String name, String type) throws Exception {
-    List<GeoNameData> ret = new ArrayList<GeoNameData>();
+    var ret = new ArrayList<GeoNameData>();
 
-    String geonames_account_name = System.getenv("GEONAMES");
-    if (geonames_account_name == null) {
-      System.err.println("You will need a free GeoNames account.");
-      System.err.println("Sign up:  https://www.geonames.org/login");
-      System.err.println("Then, set an environment variable:");
-      System.err.println("     export GEONAMES=your-geonames-account-name");
-      throw new Exception("Need API key");
+    String geonamesAccountName = System.getenv("GEONAMES");
+    if (geonamesAccountName == null || geonamesAccountName.isBlank()) {
+      throw new IllegalStateException("""
+              GeoNames API key not configured.
+              You will need a free GeoNames account.
+              Sign up:  https://www.geonames.org/login
+              Then, set an environment variable:
+                   export GEONAMES=your-geonames-account-name""");
     }
-    WebService.setUserName(System.getenv("GEONAMES"));
+    WebService.setUserName(geonamesAccountName);
 
-    ToponymSearchCriteria searchCriteria = new ToponymSearchCriteria();
+    var searchCriteria = new ToponymSearchCriteria();
     searchCriteria.setStyle(Style.LONG);
     searchCriteria.setQ(name);
     ToponymSearchResult searchResult = WebService.search(searchCriteria);
     for (Toponym toponym : searchResult.getToponyms()) {
       if (toponym.getFeatureClassName() != null &&
-        toponym.getFeatureClassName().toString().indexOf(type) > -1 &&
-        toponym.getName().indexOf(name) > -1 &&
+        toponym.getFeatureClassName().contains(type) &&
+        toponym.getName().contains(name) &&
         valid(toponym.getName())) {
         ret.add(new GeoNameData(toponym));
       }
@@ -302,40 +317,31 @@ public class GeoNamesClient {
   }
 
   private boolean valid(String str) {
-    if (str.contains("0")) return false;
-    if (str.contains("1")) return false;
-    if (str.contains("2")) return false;
-    if (str.contains("3")) return false;
-    if (str.contains("4")) return false;
-    if (str.contains("5")) return false;
-    if (str.contains("6")) return false;
-    if (str.contains("7")) return false;
-    if (str.contains("8")) return false;
-    return !str.contains("9");
+    return str.chars().noneMatch(Character::isDigit);
   }
 
-  public List<GeoNameData> getCityData(String city_name) throws Exception {
-    return helper(city_name, "city");
+  public List<GeoNameData> getCityData(String cityName) throws Exception {
+    return helper(cityName, "city");
   }
 
-  public List<GeoNameData> getCountryData(String country_name) throws Exception {
-    return helper(country_name, "country");
+  public List<GeoNameData> getCountryData(String countryName) throws Exception {
+    return helper(countryName, "country");
   }
 
-  public List<GeoNameData> getStateData(String state_name) throws Exception {
-    List<GeoNameData> states = helper(state_name, "state");
+  public List<GeoNameData> getStateData(String stateName) throws Exception {
+    List<GeoNameData> states = helper(stateName, "state");
     for (GeoNameData state : states) {
       state.geoType = GeoNameData.GeoType.STATE;
     }
     return states;
   }
 
-  public List<GeoNameData> getRiverData(String river_name) throws Exception {
-    return helper(river_name, "stream");
+  public List<GeoNameData> getRiverData(String riverName) throws Exception {
+    return helper(riverName, "stream");
   }
 
-  public List<GeoNameData> getMountainData(String mountain_name) throws Exception {
-    return helper(mountain_name, "mountain");
+  public List<GeoNameData> getMountainData(String mountainName) throws Exception {
+    return helper(mountainName, "mountain");
   }
 }
 ~~~~~~~~
@@ -356,6 +362,7 @@ public class GeoNameData {
   public enum GeoType {
     CITY, COUNTRY, STATE, RIVER, MOUNTAIN, UNKNOWN
   }
+
   public int geoNameId = 0;
   public GeoType geoType = GeoType.UNKNOWN;
   public String name = "";
@@ -369,22 +376,26 @@ public class GeoNameData {
     longitude = toponym.getLongitude();
     name = toponym.getName();
     countryCode = toponym.getCountryCode();
-    if (toponym.getFeatureClassName().startsWith("city")) geoType = GeoType.CITY;
-    if (toponym.getFeatureClassName().startsWith("country"))
-       geoType = GeoType.COUNTRY;
-    if (toponym.getFeatureClassName().startsWith("state")) geoType = GeoType.STATE;
-    if (toponym.getFeatureClassName().startsWith("stream")) geoType = GeoType.RIVER;
-    if (toponym.getFeatureClassName().startsWith("mountain"))
-        geoType = GeoType.MOUNTAIN;
+    String featureClassName = toponym.getFeatureClassName();
+    if (featureClassName != null) {
+      geoType = switch (featureClassName) {
+        case String s when s.startsWith("city") -> GeoType.CITY;
+        case String s when s.startsWith("country") -> GeoType.COUNTRY;
+        case String s when s.startsWith("state") -> GeoType.STATE;
+        case String s when s.startsWith("stream") -> GeoType.RIVER;
+        case String s when s.startsWith("mountain") -> GeoType.MOUNTAIN;
+        default -> GeoType.UNKNOWN;
+      };
+    }
   }
 
   public GeoNameData() {
   }
 
+  @Override
   public String toString() {
-    return "[GeoNameData: " + name + ", type: " + geoType + ", country code: " + countryCode +
-      ", ID: " + geoNameId + ", latitude: " + latitude +
-      ", longitude: " + longitude + "]";
+    return "[GeoNameData: %s, type: %s, country code: %s, ID: %d, latitude: %.4f, longitude: %.4f]"
+            .formatted(name, geoType, countryCode, geoNameId, latitude, longitude);
   }
 }
 ~~~~~~~~

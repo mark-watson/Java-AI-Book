@@ -340,23 +340,24 @@ derived classes:
 
 {lang="java",linenos=off}
 ~~~~~~~~
-        final public static int MAX = 50;
-        protected int [] path = 
-              new int[AbstractGraphSearch.MAX];
-        protected int num_path = 0;
-        // for nodes:
-        protected String [] nodeNames = 
-                               new String[MAX];
-        protected int [] node_x = new int[MAX];
-        protected int [] node_y = new int[MAX];
-        // for links between nodes:
-        protected int [] link_1 = new int[MAX];
-        protected int [] link_2 = new int[MAX];
-        protected int [] lengths = new int[MAX];
-        protected int numNodes = 0;
-        protected int numLinks = 0;
-        protected int goalNodeIndex = -1,
-                      startNodeIndex = -1;
+    public static final int MAX = 50; // max number of nodes and max number of links
+
+    protected int [] path = new int[AbstractGraphSearch.MAX];
+    protected int num_path = 0;
+
+    // for nodes:
+    protected String [] nodeNames = new String[MAX];
+    protected int [] node_x = new int[MAX];
+    protected int [] node_y = new int[MAX];
+    // for links between nodes:
+    protected int [] link_1 = new int[MAX];
+    protected int [] link_2 = new int[MAX];
+    protected int [] lengths = new int[MAX];
+
+    protected int numNodes = 0;
+    protected int numLinks = 0;
+
+    protected int goalNodeIndex = -1, startNodeIndex = -1;
 ~~~~~~~~
 
 The abstract base class also provides several common utility methods:
@@ -636,21 +637,14 @@ provide the eight methods:
 
 {lang="java",linenos=off}
 ~~~~~~~~
-      public abstract boolean drawnPosition(Position p)
-      public abstract boolean wonPosition(Position p,
-                                          boolean player)
-                      positionEvaluation(Position p,
-                                         boolean player)
-      public abstract void printPosition(Position p)
-      public abstract Position []
-                      possibleMoves(Position p,
-                                    boolean player)
-      public abstract Position makeMove(Position p,
-                                        boolean player,
-                                        Move move)
-      public abstract boolean reachedMaxDepth(Position p,
-                                              int depth)
-      public abstract Move getMove()
+    public abstract boolean drawnPosition(Position p);
+    public abstract boolean wonPosition(Position p, boolean player);
+    public abstract float positionEvaluation(Position p, boolean player);
+    public abstract void printPosition(Position p);
+    public abstract Position [] possibleMoves(Position p, boolean player);
+    public abstract Position makeMove(Position p, boolean player, Move move);
+    public abstract boolean reachedMaxDepth(Position p, int depth);
+    public abstract Move createMove();
 ~~~~~~~~
 
 The method **drawnPosition** should return a Boolean true value if the
@@ -676,7 +670,7 @@ won the game or the board is full; for the chess program, the method
 **reachedMaxDepth** returns true if the search has reached a depth of 4
 half moves deep (this is not the best strategy, but it has the advantage
 of making the example program short and easy to understand). The method
-**getMove** returns an object of a class derived from the class **Move**
+**createMove** returns an object of a class implementing the interface **Move**
 (e.g., **TicTacToeMove** or **ChessMove**).
 
 The **GameSearch** class implements the following methods to perform game
@@ -684,15 +678,10 @@ search:
 
 {lang="java",linenos=off}
 ~~~~~~~~
-      protected Vector alphaBeta(int depth, Position p,
-                                 boolean player)
-      protected Vector alphaBetaHelper(int depth,
-                                       Position p,
-                                       boolean player,
-                                       float alpha,
-                                       float beta)
-      public void playGame(Position startingPosition,
-                           boolean humanPlayFirst)
+    protected List<Object> alphaBeta(int depth, Position p, boolean player)
+    protected List<Object> alphaBetaHelper(int depth, Position p,
+                                     boolean player, float alpha, float beta)
+    public void playGame(Position startingPosition, boolean humanPlayFirst)
 ~~~~~~~~
 
 The method **alphaBeta** is simple; it calls the helper method
@@ -702,17 +691,13 @@ The method **alphaBeta** is simple; it calls the helper method
 
 {lang="java",linenos=off}
 ~~~~~~~~
-      protected Vector alphaBeta(int depth,
-                                 Position p,
-                                 boolean player)  {
-        Vector v = alphaBetaHelper(depth, p, player,
-                                   1000000.0f,
-                                  -1000000.0f);
+    protected List<Object> alphaBeta(int depth, Position p, boolean player) {
+        List<Object> v = alphaBetaHelper(depth, p, player, 1000000.0f, -1000000.0f);
         return v;
-      }
+    }
 ~~~~~~~~
 
-It is important to understand what is in the vector returned by the methods **alphaBeta** and **alphaBetaHelper**. The first element is a floating point position evaluation for the point of view of the player whose turn it is to move; the remaining values are the “best move” for each side to the last search depth. As an example, if I let the tic-tac-toe program play first, it places a marker at square index 0, then I place my marker in the center of the board an index 4. At this point, to calculate the next computer move, **alphaBeta** is called and returns the following elements in a vector:
+It is important to understand what is in the list returned by the methods **alphaBeta** and **alphaBetaHelper**. The first element is a floating point position evaluation for the point of view of the player whose turn it is to move; the remaining values are the “best move” for each side to the last search depth. As an example, if I let the tic-tac-toe program play first, it places a marker at square index 0, then I place my marker in the center of the board an index 4. At this point, to calculate the next computer move, **alphaBeta** is called and returns the following elements in a list:
 
 {lang="java",linenos=off}
 ~~~~~~~~
@@ -727,9 +712,9 @@ It is important to understand what is in the vector returned by the methods **al
      next element: [-1,1,1,1,1,-1,-1,-1,1,]
 ~~~~~~~~
 
-Here, the alpha-beta enhanced min-max search looked all the way to the end of the game and these board positions represent what the search procedure calculated as the best moves for each side. Note that the class **TicTacToePosition** (derived from the abstract class **Position**) has a toString method to print the board values to a string.
+Here, the alpha-beta enhanced min-max search looked all the way to the end of the game and these board positions represent what the search procedure calculated as the best moves for each side. Note that the class **TicTacToePosition** (which implements the sealed interface **Position**) has a toString method to print the board values to a string.
 
-The same printout of the returned vector from **alphaBeta** for the chess program is:
+The same printout of the returned list from **alphaBeta** for the chess program is:
 
 {lang="java",linenos=off}
 ~~~~~~~~
@@ -766,11 +751,11 @@ The same printout of the returned vector from **alphaBeta** for the chess progra
           -3,-2,-4,]
 ~~~~~~~~
 
-Here, the search procedure assigned the side to move (the computer) a position evaluation score of 5.4; this is an artifact of searching to a fixed depth. Notice that the board representation is different for chess, but because the **GameSearch** class manipulates objects derived from the classes **Position** and **Move**, the GameSearch class does not need to have any knowledge of the rules for a specific game. We will discuss the format of the chess position class **ChessPosition** in more detail when we develop the chess program.
+Here, the search procedure assigned the side to move (the computer) a position evaluation score of 5.4; this is an artifact of searching to a fixed depth. Notice that the board representation is different for chess, but because the **GameSearch** class manipulates objects implementing the interfaces **Position** and **Move**, the GameSearch class does not need to have any knowledge of the rules for a specific game. We will discuss the format of the chess position class **ChessPosition** in more detail when we develop the chess program.
 
-The classes Move and Position contain no data and methods at all. The classes Move and Position are used as placeholders for derived classes for specific games. The search methods in the abstract GameSearch class manipulate objects derived from the classes Move and Position.
+The interfaces Move and Position contain no method declarations. They are defined as Java sealed interfaces, permitting only specific game-related moves and positions (e.g., ChessMove and TicTacToeMove).
 
-Now that we have seen the debug printout of the contents of the vector returned from the methods **alphaBeta** and **alphaBetaHelper**, it will be easier to understand how the method **alphaBetaHelper** works. The following text shows code fragments from the **alphaBetaHelper** method interspersed with book text:
+Now that we have seen the debug printout of the contents of the list returned from the methods **alphaBeta** and **alphaBetaHelper**, it will be easier to understand how the method **alphaBetaHelper** works. The following text shows code fragments from the **alphaBetaHelper** method interspersed with book text:
 
 {lang="java",linenos=off}
 ~~~~~~~~
@@ -782,17 +767,17 @@ Now that we have seen the debug printout of the contents of the vector returned 
 ~~~~~~~~
 
 Here, we notice that the method signature is the same as for **alphaBeta**, except that we pass floating point alpha and beta values. The important point in understanding min-max search is that most of the
-evaluation work is done while “backing up” the search tree; that is, the search proceeds to a leaf node (a node is a leaf if the method **reachedMaxDepth** return a Boolean true value), and then a return vector for the leaf node is created by making a new vector and setting its
-first element to the position evaluation of the position at the leaf node and setting the second element of the return vector to the board position at the leaf node:
+evaluation work is done while “backing up” the search tree; that is, the search proceeds to a leaf node (a node is a leaf if the method **reachedMaxDepth** return a Boolean true value), and then a return list for the leaf node is created by making a new list and setting its
+first element to the position evaluation of the position at the leaf node and setting the second element of the return list to null:
 
 {lang="java",linenos=off}
 ~~~~~~~~
         if (reachedMaxDepth(p, depth)) {
-          Vector v = new Vector(2);
-          float value = positionEvaluation(p, player);
-          v.addElement(new Float(value));
-          v.addElement(p);
-          return v;
+            List<Object> v = new ArrayList<>(2);
+            float value = positionEvaluation(p, player);
+            v.add(value);
+            v.add(null);
+            return v;
         }
 ~~~~~~~~
 
@@ -800,88 +785,96 @@ If we have not reached the maximum search depth (i.e., we are not yet at a leaf 
 
 {lang="java",linenos=off}
 ~~~~~~~~
-      Vector best = new Vector();
-      Position [] moves = possibleMoves(p, player);
-      for (int i=0; i<moves.length; i++) {
-        Vector v2 = alphaBetaHelper(depth + 1, moves[i],
-                                    !player,
-                                    -beta, -alpha);
-        float value = -((Float)v2.elementAt(0)).floatValue();
-        if (value > beta) {
-          if(GameSearch.DEBUG)
-            System.out.println(" ! ! ! value="+
-                               value+ 
-                               ",beta="+beta);
-          beta = value;
-          best = new Vector();
-          best.addElement(moves[i]);
-          Enumeration enum = v2.elements();
-          enum.nextElement(); // skip previous value
-          while (enum.hasMoreElements()) {
-            Object o = enum.nextElement();
-            if (o != null) best.addElement(o);
-          }
+        List<Object> best = new ArrayList<>();
+        Position [] moves = possibleMoves(p, player);
+        for (int i=0; i<moves.length; i++) {
+            List<Object> v2 = alphaBetaHelper(depth + 1, moves[i], !player, -beta, -alpha);
+            float value = -((Float)v2.get(0));
+            if (value > beta) {
+                if(GameSearch.DEBUG) System.out.println(" ! ! ! value="+value+", beta="+beta);
+                beta = value;
+                best = new ArrayList<>();
+                best.add(moves[i]);
+                for (int j = 1; j < v2.size(); j++) {
+                    Object o = v2.get(j);
+                    if (o != null) best.add(o);
+                }
+            }
+            /**
+             * Use the alpha-beta cutoff test to abort search if we
+             * found a move that proves that the previous move in the
+             * move chain was dubious
+             */
+            if (beta >= alpha) {
+                break;
+            }
         }
-        /**
-         * Use the alpha-beta cutoff test to abort
-         * search if we found a move that proves that
-         * the previous move in the move chain was dubious
-         */
-        if (beta >= alpha) {
-          break;
-        }
-      }
 ~~~~~~~~
 
-Notice that when we recursively call **alphaBetaHelper**, we are “flipping” the player argument to the opposite Boolean value. After calculating the best move at this depth (or level), we add it to the end of the return vector:
+Notice that when we recursively call **alphaBetaHelper**, we are “flipping” the player argument to the opposite Boolean value. After calculating the best move at this depth (or level), we add it to the end of the return list:
 
 {lang="java",linenos=off}
 ~~~~~~~~
-        Vector v3 = new Vector();
-        v3.addElement(new Float(beta));
-        Enumeration enum = best.elements();
-        while (enum.hasMoreElements()) {
-          v3.addElement(enum.nextElement());
-        }
+        List<Object> v3 = new ArrayList<>();
+        v3.add(beta);
+        v3.addAll(best);
         return v3;
 ~~~~~~~~
 
-When the recursive calls back up and the first call to **alphaBetaHelper** returns a vector to the method **alphaBeta**, all of the “best” moves for each side are stored in the return vector, along with the evaluation of the board position for the side to move.
+When the recursive calls back up and the first call to **alphaBetaHelper** returns a list to the method **alphaBeta**, all of the “best” moves for each side are stored in the return list, along with the evaluation of the board position for the side to move.
 
-The class **GameSearch** method **playGame** is fairly simple; the following code fragment is a partial listing of playGame showing how to call **alphaBeta**, **getMove**, and **makeMove**:
+The class **GameSearch** method **playGame** is fairly simple; the following code fragment is a partial listing of playGame showing how to call **alphaBeta**, **createMove**, and **makeMove**:
 
 {lang="java",linenos=off}
 ~~~~~~~~
-      public void playGame(Position startingPosition,
-                           boolean humanPlayFirst) {
-        System.out.println("Your move:");
-        Move move = getMove();
-        startingPosition = makeMove(startingPosition,
-                                    HUMAN, move);
-        printPosition(startingPosition);
-        Vector v = alphaBeta(0, startingPosition, PROGRAM);
-        startingPosition = (Position)v.elementAt(1);        
+    public void playGame(Position startingPosition, boolean humanPlayFirst) {
+        if (!humanPlayFirst) {
+            List<Object> v = alphaBeta(0, startingPosition, PROGRAM);
+            startingPosition = (Position)v.get(1);
         }
-      }
+        while (true) {
+            printPosition(startingPosition);
+            if (wonPosition(startingPosition, PROGRAM)) {
+                System.out.println("Program won");
+                break;
+            }
+            if (wonPosition(startingPosition, HUMAN)) {
+                System.out.println("Human won");
+                break;
+            }
+            if (drawnPosition(startingPosition)) {
+                System.out.println("Drawn game");
+                break;
+            }
+            System.out.println("Your move:");
+            Move move = createMove();
+            startingPosition = makeMove(startingPosition, HUMAN, move);
+            printPosition(startingPosition);
+            List<Object> v = alphaBeta(0, startingPosition, PROGRAM);
+            for (Object element : v) {
+                System.out.println(" next element: " + element);
+            }
+            startingPosition = (Position)v.get(1);        
+        }
+    }
 ~~~~~~~~
 
-The debug printout of the vector returned from the method **alphaBeta** seen earlier in this section was printed using the following code immediately after the call to the method **alphaBeta**:
+The debug printout of the list returned from the method **alphaBeta** seen earlier in this section was printed using the following code inside the method **playGame**:
 
 {lang="java",linenos=off}
 ~~~~~~~~
-          Enumeration enum = v.elements();
-          while (enum.hasMoreElements()) {
-            System.out.println(" next element: " + 
-                               enum.nextElement());
-          }
+            List<Object> v = alphaBeta(0, startingPosition, PROGRAM);
+            for (Object element : v) {
+                System.out.println(" next element: " + element);
+            }
 ~~~~~~~~
 
 In the next few sections, we will implement a tic-tac-toe program and a chess-playing program using this Java class framework.
 
 ### Tic-Tac-Toe Using the Alpha-Beta Search Algorithm
 
-Using the Java class framework of **GameSearch**, **Position**, and **Move**, it is simple to write a basic tic-tac-toe program by writing three new derived classes (as seen in the next figure showing a UML Class Diagram)
-**TicTacToe** (derived from **GameSearch**), **TicTacToeMove** (derived from **Move**), and **TicTacToePosition** (derived from **Position**).
+Using the Java class framework of **GameSearch**, **Position**, and **Move**, it is simple to write a basic tic-tac-toe program by writing three new classes/records (as seen in the next figure showing a UML Class Diagram)
+**TicTacToe** (derived from **GameSearch**), **TicTacToeMove** (implementing **Move**), and **TicTacToePosition** (implementing **Position**).
 
 {#alphabaeta-tictactoe-classes}
 {width: "80%"}
@@ -893,9 +886,10 @@ is trivial, adding a single integer value to record the square index for the new
 
 {lang="java",linenos=off}
 ~~~~~~~~
-    public class TicTacToeMove extends Move {
-      public int moveIndex;
-    }
+package search.game;
+
+public record TicTacToeMove(int moveIndex) implements Move {
+}
 ~~~~~~~~
 
 The board position indices are in the range of [0..8] and can be considered to be in the following order:
@@ -911,19 +905,23 @@ The class **TicTacToePosition** is also simple:
 
 {lang="java",linenos=off}
 ~~~~~~~~
-    public class TicTacToePosition extends Position {
-        final static public int BLANK = 0;
-        final static public int HUMAN = 1;
-        final static public int PROGRAM = -1;
-        int [] board = new int[9];
-        public String toString() {
-            StringBuffer sb = new StringBuffer("[");
-            for (int i=0; i<9; i++)
-              sb.append(""+board[i]+",");
-            sb.append("]");
-            return sb.toString();
+package search.game;
+
+public final class TicTacToePosition implements Position {
+    public static final int BLANK = 0;
+    public static final int HUMAN = 1;
+    public static final int PROGRAM = -1;
+    int [] board = new int[9];
+    @Override
+    public String toString() {
+        var sb = new StringBuilder("[");
+        for (int i = 0; i < 9; i++) {
+            sb.append(board[i]).append(",");
         }
+        sb.append("]");
+        return sb.toString();
     }
+}
 ~~~~~~~~
 
 This class allocates an array of nine integers to represent the board, defines constant values for blank, human, and computer squares, and defines a toString method to print out the board representation to a string.
@@ -932,20 +930,14 @@ The **TicTacToe** class must define the following abstract methods from the base
 
 {lang="java",linenos=off}
 ~~~~~~~~
-     public abstract boolean drawnPosition(Position p)
-     public abstract boolean wonPosition(Position p,
-                                         boolean player)
-     public abstract float positionEvaluation(Position p,
-                                              boolean player)
-     public abstract void printPosition(Position p)
-     public abstract Position [] possibleMoves(Position p,
-                                               boolean player)
-     public abstract Position makeMove(Position p,
-                                       boolean player,
-                                       Move move)
-     public abstract boolean reachedMaxDepth(Position p,
-                                            int depth)
-     public abstract Move getMove()
+     public abstract boolean drawnPosition(Position p);
+     public abstract boolean wonPosition(Position p, boolean player);
+     public abstract float positionEvaluation(Position p, boolean player);
+     public abstract void printPosition(Position p);
+     public abstract Position [] possibleMoves(Position p, boolean player);
+     public abstract Position makeMove(Position p, boolean player, Move move);
+     public abstract boolean reachedMaxDepth(Position p, int depth);
+     public abstract Move createMove();
 ~~~~~~~~
 
 The implementation of these methods uses the refined classes **TicTacToeMove** and **TicTacToePosition**. For example, consider the method **drawnPosition** that is responsible for selecting a drawn (or tied) position:
@@ -1091,10 +1083,10 @@ indices:
 
 {lang="java",linenos=off}
 ~~~~~~~~
-    public class ChessMove extends Move {
-        public int from;
-        public int to;
-    }
+package search.game;
+
+public record ChessMove(int from, int to) implements Move {
+}
 ~~~~~~~~
 
 The board is represented as an integer array with 120 elements. A
@@ -1142,26 +1134,29 @@ defines constant values for playing sides and piece types:
 
 {lang="java",linenos=off}
 ~~~~~~~~
-      public class ChessPosition extends Position {
-        final static public int BLANK = 0;
-        final static public int HUMAN = 1;
-        final static public int PROGRAM = -1;
-        final static public int PAWN = 1;
-        final static public int KNIGHT = 2;
-        final static public int BISHOP = 3;
-        final static public int ROOK = 4;
-        final static public int QUEEN = 5;
-        final static public int KING = 6;
-        int [] board = new int[120];
-        public String toString() {
-            StringBuffer sb = new StringBuffer("[");
-            for (int i=22; i<100; i++) {
-                sb.append(""+board[i]+",");
-            }
-            sb.append("]");
-            return sb.toString();
+package search.game;
+
+public final class ChessPosition implements Position {
+    public static final int BLANK = 0;
+    public static final int HUMAN = 1;
+    public static final int PROGRAM = -1;
+    public static final int PAWN = 1;
+    public static final int KNIGHT = 2;
+    public static final int BISHOP = 3;
+    public static final int ROOK = 4;
+    public static final int QUEEN = 5;
+    public static final int KING = 9;
+    int [] board = new int[120];
+    @Override
+    public String toString() {
+        var sb = new StringBuilder("[");
+        for (int i = 22; i < 100; i++) {
+            sb.append(board[i]).append(",");
         }
-      }
+        sb.append("]");
+        return sb.toString();
+    }
+}
 ~~~~~~~~
 
 The class **Chess** also defines other static data. The following array is

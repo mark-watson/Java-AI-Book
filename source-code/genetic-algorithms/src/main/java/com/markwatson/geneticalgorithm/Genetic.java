@@ -1,6 +1,7 @@
 package com.markwatson.geneticalgorithm;
 
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * This is an example genetic algorithm library that uses no external libraries.
@@ -15,61 +16,64 @@ import java.util.*;
 
 abstract public class Genetic {
 
-	protected int numGenesPerChromosome; // number of genes per chromosome
-	protected int numChromosomes; // number of chromosomes
+	protected final int numGenesPerChromosome; // number of genes per chromosome
+	protected final int numChromosomes; // number of chromosomes
 	List<Chromosome> chromosomes;
-	private float crossoverFraction;
-	private float mutationFraction;
-	private int[] rouletteWheel;
-	private int rouletteWheelSize;
+	private final double crossoverFraction;
+	private final double mutationFraction;
+	private final int[] rouletteWheel;
+	private final int rouletteWheelSize;
 
-	public Genetic(int num_genes_per_chromosome, int num_chromosomes) {
-		this(num_genes_per_chromosome, num_chromosomes, 0.8f, 0.01f);
+	public Genetic(int numGenesPerChromosome, int numChromosomes) {
+		this(numGenesPerChromosome, numChromosomes, 0.8, 0.01);
 	}
 
-	public Genetic(int num_genes_per_chromosome, int num_chromosomes,
-			float crossover_fraction, float mutation_fraction) {
-		numGenesPerChromosome = num_genes_per_chromosome;
-		numChromosomes = num_chromosomes;
-		crossoverFraction = crossover_fraction;
-		mutationFraction = mutation_fraction;
-		chromosomes = new ArrayList<Chromosome>(num_chromosomes);
-		for (int i = 0; i < num_chromosomes; i++) {
+	public Genetic(int numGenesPerChromosome, int numChromosomes,
+			double crossoverFraction, double mutationFraction) {
+		this.numGenesPerChromosome = numGenesPerChromosome;
+		this.numChromosomes = numChromosomes;
+		this.crossoverFraction = crossoverFraction;
+		this.mutationFraction = mutationFraction;
+		chromosomes = new ArrayList<>(numChromosomes);
+		var rng = ThreadLocalRandom.current();
+		for (int i = 0; i < numChromosomes; i++) {
 			chromosomes.add(new Chromosome(numGenesPerChromosome));
-			for (int j = 0; j < num_genes_per_chromosome; j++) {
-				chromosomes.get(i).setBit(j, Math.random() < 0.5);
+			for (int j = 0; j < numGenesPerChromosome; j++) {
+				chromosomes.get(i).setBit(j, rng.nextBoolean());
 			}
 		}
 		sort();
-		// define the roulette wheel:
-		rouletteWheelSize = 0;
-		// for (int i = 0; i < numGenesPerChromosome; i++) {  ERROR ?
-		// For example, a bit string of 10 and a population of 20 will only produce a roulette wheel with a highest 
-		// index of 9
-		for (int i = 0; i < numChromosomes; i++) { // Fix
-			rouletteWheelSize += i + 1;
+		// Build the roulette wheel for fitness-proportionate selection.
+		// Higher-ranked chromosomes (lower index after sorting by descending fitness)
+		// get more slots, giving them a higher probability of being selected.
+		rouletteWheelSize = buildRouletteWheelSize(numChromosomes);
+		System.out.println("count of slots in roulette wheel=" + rouletteWheelSize);
+		rouletteWheel = buildRouletteWheel(numChromosomes, rouletteWheelSize);
+	}
+
+	private static int buildRouletteWheelSize(int numChromosomes) {
+		int size = 0;
+		for (int i = 0; i < numChromosomes; i++) {
+			size += i + 1;
 		}
-		System.out.println("count of slots in roulette wheel="
-				+ rouletteWheelSize);
-		rouletteWheel = new int[rouletteWheelSize];
-		
-		// For example, a bit string of 10 and a population of 20 will only produce a roulette wheel with a highest 
-		// index of 9. Using numChromosomes below for the num_trials makes sense because each chromosome should be
-		// representation on the roulette wheel.
-		// int num_trials = numGenesPerChromosome; Stephen Sheridan: Should be based on numChromosomes
-		int num_trials = numChromosomes;  // Fix
+		return size;
+	}
+
+	private static int[] buildRouletteWheel(int numChromosomes, int wheelSize) {
+		var wheel = new int[wheelSize];
+		int numTrials = numChromosomes;
 		int index = 0;
-        //for (int i = 0; i < numGenesPerChromosome; i++) { // !ERROR
-        for (int i = 0; i < numChromosomes; i++) { // bug fixed 3/31/2009
-			for (int j = 0; j < num_trials; j++) {
-				rouletteWheel[index++] = i;
+		for (int i = 0; i < numChromosomes; i++) {
+			for (int j = 0; j < numTrials; j++) {
+				wheel[index++] = i;
 			}
-			num_trials--;
+			numTrials--;
 		}
+		return wheel;
 	}
 	
 	public void sort() {
-		Collections.sort(chromosomes, new ChromosomeComparator());
+		chromosomes.sort(Comparator.comparingDouble(Chromosome::getFitness).reversed());
 	}
 
 	public boolean getGene(int chromosome, int gene) {
@@ -93,16 +97,14 @@ abstract public class Genetic {
 	}
 
 	public void doCrossovers() {
+		var rng = ThreadLocalRandom.current();
 		int num = (int) (numChromosomes * crossoverFraction);
 		for (int i = num - 1; i >= 0; i--) {
-			// 8/11/2008: don't overwrite the "best" chromosome from current generation:
-			int c1 = 1 + (int) ((rouletteWheelSize - 1) * Math.random() * 0.9999f);
-			int c2 = 1 + (int) ((rouletteWheelSize - 1) * Math.random() * 0.9999f);
-			c1 = rouletteWheel[c1];
-			c2 = rouletteWheel[c2];
+			// don't overwrite the "best" chromosome from current generation:
+			int c1 = rouletteWheel[rng.nextInt(1, rouletteWheelSize)];
+			int c2 = rouletteWheel[rng.nextInt(1, rouletteWheelSize)];
 			if (c1 != c2) {
-				int locus = 1 + (int) ((numGenesPerChromosome - 2) * Math
-						.random());
+				int locus = rng.nextInt(1, numGenesPerChromosome - 1);
 				for (int g = 0; g < numGenesPerChromosome; g++) {
 					if (g < locus) {
 						setGene(i, g, getGene(c1, g));
@@ -115,20 +117,22 @@ abstract public class Genetic {
 	}
 
 	public void doMutations() {
+		var rng = ThreadLocalRandom.current();
 		int num = (int) (numChromosomes * mutationFraction);
 		for (int i = 0; i < num; i++) {
-			// 8/11/2008: don't overwrite the "best" chromosome from current generation:
-			int c = 1 + (int) ((numChromosomes - 1) * Math.random() * 0.99);
-			int g = (int) (numGenesPerChromosome * Math.random() * 0.99);
+			// don't overwrite the "best" chromosome from current generation:
+			int c = rng.nextInt(1, numChromosomes);
+			int g = rng.nextInt(numGenesPerChromosome);
 			setGene(c, g, !getGene(c, g));
 		}
 	}
 
 	public void doRemoveDuplicates() {
+		var rng = ThreadLocalRandom.current();
 		for (int i = numChromosomes - 1; i > 3; i--) {
 			for (int j = 0; j < i; j++) {
 				if (chromosomes.get(i).equals(chromosomes.get(j))) {
-					int g = (int) (numGenesPerChromosome * Math.random() * 0.99);
+					int g = rng.nextInt(numGenesPerChromosome);
 					setGene(i, g, !getGene(i, g));
 					break;
 				}
@@ -141,36 +145,41 @@ abstract public class Genetic {
 }
 
 class Chromosome {
-	BitSet chromosome;
-	float fitness = -999;
+	private final BitSet bits;
+	private double fitness = -999;
 
-	private Chromosome() { }
-	public Chromosome(int num_genes) { chromosome = new BitSet(num_genes); }
+	public Chromosome(int numGenes) { bits = new BitSet(numGenes); }
+
 	public boolean getBit(int index) {
-		return chromosome.get(index);
-	}
-    public String toString() {
-      return "[Chromosome: fitness: " + fitness + ", bit set: " + chromosome+"]";
-    }
-	public void setBit(int index, boolean value) {
-		chromosome.set(index, value);
+		return bits.get(index);
 	}
 
-	public float getFitness() {
+	@Override
+	public String toString() {
+		return "Chromosome[fitness=%.6f, bits=%s]".formatted(fitness, bits);
+	}
+
+	public void setBit(int index, boolean value) {
+		bits.set(index, value);
+	}
+
+	public double getFitness() {
 		return fitness;
 	}
 
-	public void setFitness(float value) {
+	public void setFitness(double value) {
 		fitness = value;
 	}
 
-	public boolean equals(Chromosome c) {
-		return chromosome.equals(c.chromosome);
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof Chromosome c)) return false;
+		return bits.equals(c.bits);
 	}
-}
 
-class ChromosomeComparator implements Comparator<Chromosome> {
-	public int compare(Chromosome o1, Chromosome o2) {
-		return (int) (1000 * (o2.getFitness() - o1.getFitness()));
+	@Override
+	public int hashCode() {
+		return bits.hashCode();
 	}
 }

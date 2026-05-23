@@ -165,17 +165,11 @@ The class **EntityAndDescription** contains two strings, a name and a URI refere
 ~~~~~~~~
 package com.knowledgegraphnavigator;
 
-public class EntityAndDescription {
-  public String entityName;
-  public String entityUri;
-  public EntityAndDescription(String entityName, String entityUri) {
-    this.entityName = entityName;
-    this.entityUri = entityUri;
-  }
-  public String toString() {
-    return "[EntityAndDescription name: " + entityName +
-        " description: " + entityUri + "]";
-  }
+/**
+ * Immutable data carrier for an entity name and its DBPedia URI.
+ * Converted to a Java record for automatic toString(), equals(), hashCode().
+ */
+public record EntityAndDescription(String entityName, String entityUri) {
 }
 ~~~~~~~~
 
@@ -264,151 +258,132 @@ import java.sql.SQLException; // Cache layer in JenaApis library throws this
 
 public class EntityDetail {
 
-  static public QueryResult genericResults(Sparql endpoint, String entityUri)
+  public static QueryResult genericResults(Sparql endpoint, String entityUri)
       throws SQLException, ClassNotFoundException {
-    String query =
-        String.format(
-            "select distinct ?p ?o where { %s ?p ?o . " +
-            "  FILTER (!regex(str(?p), 'wiki', 'i')) . " +
-            "  FILTER (!regex(str(?p), 'wiki', 'i')) } limit 10",
-            entityUri);
+    var query = """
+        SELECT DISTINCT ?p ?o WHERE {
+          %s ?p ?o .
+          FILTER (!regex(str(?p), 'wiki', 'i'))
+        } LIMIT 10
+        """.formatted(entityUri);
     return endpoint.query(query);
   }
 
-  static public String genericAsString(Sparql endpoint, String entityUri)
+  public static String genericAsString(Sparql endpoint, String entityUri)
       throws SQLException, ClassNotFoundException {
     QueryResult qr = genericResults(endpoint, entityUri);
     return qr.toString();
   }
 
-  static public QueryResult cityResults(Sparql endpoint, String entityUri)
+  public static QueryResult cityResults(Sparql endpoint, String entityUri)
       throws SQLException, ClassNotFoundException {
-    String query =
-        String.format(cityTemplate, entityUri, entityUri, entityUri,
-                      entityUri, entityUri);
+    var query = cityTemplate.formatted(entityUri, entityUri, entityUri, entityUri, entityUri);
     return endpoint.query(query);
   }
 
-  static public String cityAsString(Sparql endpoint, String entityUri)
+  public static String cityAsString(Sparql endpoint, String entityUri)
       throws SQLException, ClassNotFoundException {
     QueryResult qr = cityResults(endpoint, entityUri);
     return qr.toString();
   }
 
-  static public QueryResult countryResults(Sparql endpoint, String entityUri)
+  public static QueryResult countryResults(Sparql endpoint, String entityUri)
       throws SQLException, ClassNotFoundException {
-    String query =
-        String.format(countryTemplate, entityUri, entityUri, entityUri,
-                      entityUri, entityUri);
+    var query = countryTemplate.formatted(entityUri, entityUri, entityUri, entityUri, entityUri);
     return endpoint.query(query);
   }
 
-  static public String countryAsString(Sparql endpoint, String entityUri)
+  public static String countryAsString(Sparql endpoint, String entityUri)
       throws SQLException, ClassNotFoundException {
     QueryResult qr = countryResults(endpoint, entityUri);
     return qr.toString();
   }
-  static public QueryResult personResults(Sparql endpoint, String entityUri)
+
+  public static QueryResult personResults(Sparql endpoint, String entityUri)
       throws SQLException, ClassNotFoundException {
-    String query =
-        String.format(personTemplate, entityUri, entityUri, entityUri,
-                      entityUri, entityUri);
+    var query = personTemplate.formatted(entityUri, entityUri, entityUri, entityUri, entityUri);
     return endpoint.query(query);
   }
 
-  static public String personAsString(Sparql endpoint, String entityUri)
+  public static String personAsString(Sparql endpoint, String entityUri)
       throws SQLException, ClassNotFoundException {
     QueryResult qr = personResults(endpoint, entityUri);
     return qr.toString();
   }
-  static public QueryResult companyResults(Sparql endpoint, String entityUri)
+
+  public static QueryResult companyResults(Sparql endpoint, String entityUri)
       throws SQLException, ClassNotFoundException {
-    String query =
-        String.format(companyTemplate, entityUri, entityUri, entityUri,
-                      entityUri, entityUri);
+    var query = companyTemplate.formatted(entityUri, entityUri, entityUri, entityUri, entityUri);
     return endpoint.query(query);
   }
 
-  static public String companyAsString(Sparql endpoint, String entityUri)
+  public static String companyAsString(Sparql endpoint, String entityUri)
       throws SQLException, ClassNotFoundException {
     QueryResult qr = companyResults(endpoint, entityUri);
     return qr.toString();
   }
 
-  static private String companyTemplate =
-    "SELECT DISTINCT" +
-    "    (GROUP_CONCAT (DISTINCT ?industry2; SEPARATOR=' | ') AS ?industry)\n" +
-    "    (GROUP_CONCAT (DISTINCT ?netIncome2; SEPARATOR=' | ') AS ?netIncome)\n" +
-    "    (GROUP_CONCAT (DISTINCT ?label2; SEPARATOR=' | ') AS ?label)\n" +
-    "    (GROUP_CONCAT (DISTINCT ?comment2; SEPARATOR=' | ') AS ?comment)\n" +
-    "    (GROUP_CONCAT (DISTINCT ?numberOfEmployees2; SEPARATOR=' | ')\n" +
-    "         AS ?numberOfEmployees) {\n" +
-    "  %s <http://www.w3.org/2000/01/rdf-schema#comment>  ?comment2 .\n" +
-    "            FILTER  (lang(?comment2) = 'en') .\n" +
-    "  OPTIONAL { %s <http://dbpedia.org/ontology/industry> ?industry2 } .\n" +
-    "  OPTIONAL { %s <http://dbpedia.org/ontology/netIncome> ?netIncome2 } .\n" +
-    "  OPTIONAL {\n" +
-    "    %s <http://dbpedia.org/ontology/numberOfEmployees> ?numberOfEmployees2\n" +
-    "  } .\n" +
-    "  OPTIONAL { %s <http://www.w3.org/2000/01/rdf-schema#label> ?label2 .\n" +
-    "            FILTER (lang(?label2) = 'en') } \n" +
-    "} LIMIT 30";
-  
-  static private String personTemplate =
-    "SELECT DISTINCT\n" +
-    "    (GROUP_CONCAT (DISTINCT ?birthplace2; SEPARATOR=' | ') AS ?birthplace)  \n" +
-    "    (GROUP_CONCAT (DISTINCT ?label2; SEPARATOR=' | ') AS ?label)  \n" +
-    "    (GROUP_CONCAT (DISTINCT ?comment2; SEPARATOR=' | ') AS ?comment)  \n" +
-    "    (GROUP_CONCAT (DISTINCT ?almamater2; SEPARATOR=' | ') AS ?almamater)  \n" +
-    "    (GROUP_CONCAT (DISTINCT ?spouse2; SEPARATOR=' | ') AS ?spouse) {  \n" +
-    " %s <http://www.w3.org/2000/01/rdf-schema#comment>  ?comment2 .\n" +
-    " FILTER  (lang(?comment2) = 'en') .  \n" +
-    " OPTIONAL { %s <http://dbpedia.org/ontology/birthPlace> ?birthplace2 } .  \n" +
-    " OPTIONAL { %s <http://dbpedia.org/ontology/almaMater> ?almamater2 } .  \n" +
-    " OPTIONAL { %s <http://dbpedia.org/ontology/spouse> ?spouse2 } .  \n" +
-    " OPTIONAL { %s  <http://www.w3.org/2000/01/rdf-schema#label> ?label2 . \n" +
-    "    FILTER  (lang(?label2) = 'en') }  \n" +
-    " } LIMIT 10";
+  private static final String companyTemplate = """
+      SELECT DISTINCT
+          (GROUP_CONCAT (DISTINCT ?industry2; SEPARATOR=' | ') AS ?industry)
+          (GROUP_CONCAT (DISTINCT ?netIncome2; SEPARATOR=' | ') AS ?netIncome)
+          (GROUP_CONCAT (DISTINCT ?label2; SEPARATOR=' | ') AS ?label)
+          (GROUP_CONCAT (DISTINCT ?comment2; SEPARATOR=' | ') AS ?comment)
+          (GROUP_CONCAT (DISTINCT ?numberOfEmployees2; SEPARATOR=' | ') AS ?numberOfEmployees) {
+        %s <http://www.w3.org/2000/01/rdf-schema#comment>  ?comment2 .
+                  FILTER  (lang(?comment2) = 'en') .
+        OPTIONAL { %s <http://dbpedia.org/ontology/industry> ?industry2 } .
+        OPTIONAL { %s <http://dbpedia.org/ontology/netIncome> ?netIncome2 } .
+        OPTIONAL { %s <http://dbpedia.org/ontology/numberOfEmployees> ?numberOfEmployees2 } .
+        OPTIONAL { %s <http://www.w3.org/2000/01/rdf-schema#label> ?label2 .
+                  FILTER (lang(?label2) = 'en') }
+      } LIMIT 30""";
 
-  static private String countryTemplate =
-   "SELECT DISTINCT" +
-   "   (GROUP_CONCAT (DISTINCT ?areaTotal2; SEPARATOR=' | ') AS ?areaTotal)\n" +
-   "   (GROUP_CONCAT (DISTINCT ?label2; SEPARATOR=' | ') AS ?label)\n" +
-   "   (GROUP_CONCAT (DISTINCT ?comment2; SEPARATOR=' | ') AS ?comment)\n" +
-   "   (GROUP_CONCAT (DISTINCT ?populationDensity2; SEPARATOR=' | ')\n" +
-   "     AS ?populationDensity) {\n" +
-   "  %s <http://www.w3.org/2000/01/rdf-schema#comment>  ?comment2 .\n" +
-   "                           FILTER  (lang(?comment2) = 'en') .\n" +
-   "  OPTIONAL { %s <http://dbpedia.org/ontology/areaTotal> ?areaTotal2 } .\n" +
-   "  OPTIONAL {\n" +
-   "       %s <http://dbpedia.org/ontology/populationDensity> ?populationDensity2\n" +
-   "  } .\n" +
-   "  OPTIONAL { %s <http://www.w3.org/2000/01/rdf-schema#label> ?label2 . }\n" +
-   "} LIMIT 30";
+  private static final String personTemplate = """
+      SELECT DISTINCT
+          (GROUP_CONCAT (DISTINCT ?birthplace2; SEPARATOR=' | ') AS ?birthplace)
+          (GROUP_CONCAT (DISTINCT ?label2; SEPARATOR=' | ') AS ?label)
+          (GROUP_CONCAT (DISTINCT ?comment2; SEPARATOR=' | ') AS ?comment)
+          (GROUP_CONCAT (DISTINCT ?almamater2; SEPARATOR=' | ') AS ?almamater)
+          (GROUP_CONCAT (DISTINCT ?spouse2; SEPARATOR=' | ') AS ?spouse) {
+        %s <http://www.w3.org/2000/01/rdf-schema#comment>  ?comment2 .
+        FILTER  (lang(?comment2) = 'en') .
+        OPTIONAL { %s <http://dbpedia.org/ontology/birthPlace> ?birthplace2 } .
+        OPTIONAL { %s <http://dbpedia.org/ontology/almaMater> ?almamater2 } .
+        OPTIONAL { %s <http://dbpedia.org/ontology/spouse> ?spouse2 } .
+        OPTIONAL { %s  <http://www.w3.org/2000/01/rdf-schema#label> ?label2 .
+          FILTER  (lang(?label2) = 'en') }
+      } LIMIT 10""";
 
-  static private String cityTemplate =
-    "SELECT DISTINCT\n" +
-    "    (GROUP_CONCAT (DISTINCT ?latitude_longitude2; SEPARATOR=' | ') \n" +
-    "              AS ?latitude_longitude) \n" +
-    "    (GROUP_CONCAT (DISTINCT ?populationDensity2; SEPARATOR=' | ')\n" +
-    "              AS ?populationDensity) \n" +
-    "    (GROUP_CONCAT (DISTINCT ?label2; SEPARATOR=' | ') AS ?label) \n" +
-    "    (GROUP_CONCAT (DISTINCT ?comment2; SEPARATOR=' | ') AS ?comment) \n" +
-    "    (GROUP_CONCAT (DISTINCT ?country2; SEPARATOR=' | ') AS ?country) { \n" +
-    " %s <http://www.w3.org/2000/01/rdf-schema#comment>  ?comment2 .\n" +
-    "       FILTER  (lang(?comment2) = 'en') . \n" +
-    " OPTIONAL {\n" +
-    "   %s <http://www.w3.org/2003/01/geo/wgs84_pos#geometry>\n" +
-    "      ?latitude_longitude2\n" +
-    " } . \n" +
-    " OPTIONAL {\n" +
-    "    %s <http://dbpedia.org/ontology/PopulatedPlace/populationDensity>\n" +
-    "      ?populationDensity2\n" +
-    " } . \n" +
-    " OPTIONAL { %s <http://dbpedia.org/ontology/country> ?country2 } . \n" +
-    " OPTIONAL { %s <http://www.w3.org/2000/01/rdf-schema#label> ?label2 . " +
-    "             FILTER  (lang(?label2) = 'en') } \n" +
-    "} LIMIT 30\n";
+  private static final String countryTemplate = """
+      SELECT DISTINCT
+          (GROUP_CONCAT (DISTINCT ?areaTotal2; SEPARATOR=' | ') AS ?areaTotal)
+          (GROUP_CONCAT (DISTINCT ?label2; SEPARATOR=' | ') AS ?label)
+          (GROUP_CONCAT (DISTINCT ?comment2; SEPARATOR=' | ') AS ?comment)
+          (GROUP_CONCAT (DISTINCT ?populationDensity2; SEPARATOR=' | ') AS ?populationDensity) {
+        %s <http://www.w3.org/2000/01/rdf-schema#comment>  ?comment2 .
+                             FILTER  (lang(?comment2) = 'en') .
+                       OPTIONAL { %s <http://dbpedia.org/ontology/areaTotal> ?areaTotal2 } .
+                       OPTIONAL { %s <http://dbpedia.org/ontology/populationDensity> ?populationDensity2 } .
+                       OPTIONAL { %s <http://www.w3.org/2000/01/rdf-schema#label> ?label2 . }
+                     } LIMIT 30""";
+
+  private static final String cityTemplate = """
+      SELECT DISTINCT
+          (GROUP_CONCAT (DISTINCT ?latitude_longitude2; SEPARATOR=' | ')
+              AS ?latitude_longitude)
+          (GROUP_CONCAT (DISTINCT ?populationDensity2; SEPARATOR=' | ') AS ?populationDensity)
+          (GROUP_CONCAT (DISTINCT ?label2; SEPARATOR=' | ') AS ?label)
+          (GROUP_CONCAT (DISTINCT ?comment2; SEPARATOR=' | ') AS ?comment)
+          (GROUP_CONCAT (DISTINCT ?country2; SEPARATOR=' | ') AS ?country) {
+        %s <http://www.w3.org/2000/01/rdf-schema#comment>  ?comment2 . FILTER  (lang(?comment2) = 'en') .
+        OPTIONAL { %s <http://www.w3.org/2003/01/geo/wgs84_pos#geometry> ?latitude_longitude2 } .
+        OPTIONAL { %s <http://dbpedia.org/ontology/PopulatedPlace/populationDensity> ?populationDensity2 } .
+        OPTIONAL { %s <http://dbpedia.org/ontology/country> ?country2 } .
+        OPTIONAL { %s <http://www.w3.org/2000/01/rdf-schema#label> ?label2 .
+                   FILTER  (lang(?label2) = 'en') }
+      } LIMIT 30""";
+
 }
 ~~~~~~~~
 
@@ -425,14 +400,15 @@ import java.sql.SQLException;
 
 public class EntityRelationships {
 
-  static public QueryResult results(Sparql endpoint,
+  public static QueryResult results(Sparql endpoint,
                                     String entity1Uri, String entity2Uri)
       throws SQLException, ClassNotFoundException {
-    String query =
-        String.format(
-         "select ?p where { %s ?p %s . "  +
-         "   FILTER (!regex(str(?p), 'wikiPage', 'i')) } limit 10",
-            entity1Uri, entity2Uri);
+    var query = """
+        SELECT ?p WHERE {
+          %s ?p %s .
+          FILTER (!regex(str(?p), 'wikiPage', 'i'))
+        } LIMIT 10
+        """.formatted(entity1Uri, entity2Uri);
     return endpoint.query(query);
   }
 }
@@ -445,9 +421,10 @@ The class **Log** in the next listing defines a shorthand **out** for calling **
 package com.knowledgegraphnavigator;
 
 public class Log {
-  static public void out(String s) { System.out.println(s); }
-  static public StringBuilder sparql  = new StringBuilder();
-  static public void clearSparql() { sparql.delete(0, sparql.length()); }
+  public static void out(String s) { System.out.println(s); }
+  /** Accumulated SPARQL queries for inspection. Note: not thread-safe (single-threaded demo). */
+  public static final StringBuilder sparql = new StringBuilder();
+  public static void clearSparql() { sparql.delete(0, sparql.length()); }
 }
 ~~~~~~~~
 
@@ -478,43 +455,47 @@ public class PrintEntityResearchResults {
    * ANSI terminal escape sequences correctly. If yo have problems, just
    * change the following to the empty string "":
    */
-  public static final String RESET  = "\u001B[0m"; // ANSI characters for styling
-  public static final String GREEN  = "\u001B[32m";
+  public static final String RESET = "\u001B[0m"; // ANSI characters for styling
+  public static final String GREEN = "\u001B[32m";
   public static final String YELLOW = "\u001B[33m";
   public static final String PURPLE = "\u001B[35m";
-  public static final String CYAN   = "\u001B[36m";
+  public static final String CYAN = "\u001B[36m";
 
   private PrintEntityResearchResults() { }
 
-  public PrintEntityResearchResults(Sparql endpoint,
-                                    List<EntityAndDescription> people,
-                                    List<EntityAndDescription> companies,
-                                    List<EntityAndDescription> cities,
-                                    List<EntityAndDescription> countries)
+  /**
+   * Print detailed research results for each entity category.
+   * Extracted from constructor to avoid side-effects in object construction.
+   */
+  public static void printResults(Sparql endpoint,
+                                  List<EntityAndDescription> people,
+                                  List<EntityAndDescription> companies,
+                                  List<EntityAndDescription> cities,
+                                  List<EntityAndDescription> countries)
       throws SQLException, ClassNotFoundException {
     out("\n" + GREEN + "Individual People:\n" + RESET);
-    for (EntityAndDescription person : people) {
-      out("  " + GREEN + String.format("%-25s", person.entityName) +
-          PURPLE + " : " + removeBrackets(person.entityUri) + RESET);
-      out(EntityDetail.personAsString(endpoint, person.entityUri));
+    for (var person : people) {
+      out("  " + GREEN + String.format("%-25s", person.entityName()) +
+          PURPLE + " : " + removeBrackets(person.entityUri()) + RESET);
+      out(EntityDetail.personAsString(endpoint, person.entityUri()));
     }
     out("\n" + CYAN + "Individual Companies:\n" + RESET);
-    for (EntityAndDescription company : companies) {
-      out("  " + CYAN + String.format("%-25s", company.entityName) +
-          YELLOW + " : " + removeBrackets(company.entityUri) + RESET);
-      out(EntityDetail.companyAsString(endpoint, company.entityUri));
+    for (var company : companies) {
+      out("  " + CYAN + String.format("%-25s", company.entityName()) +
+          YELLOW + " : " + removeBrackets(company.entityUri()) + RESET);
+      out(EntityDetail.companyAsString(endpoint, company.entityUri()));
     }
     out("\n" + GREEN + "Individual Cities:\n" + RESET);
-    for (EntityAndDescription city : cities) {
-      out("  " + GREEN + String.format("%-25s", city.entityName) +
-          PURPLE + " : " + removeBrackets(city.entityUri) + RESET);
-      out(EntityDetail.cityAsString(endpoint, city.entityUri));
+    for (var city : cities) {
+      out("  " + GREEN + String.format("%-25s", city.entityName()) +
+          PURPLE + " : " + removeBrackets(city.entityUri()) + RESET);
+      out(EntityDetail.cityAsString(endpoint, city.entityUri()));
     }
     out("\n" + GREEN + "Individual Countries:\n" + RESET);
-    for (EntityAndDescription country : countries) {
-      out("  " + GREEN + String.format("%-25s", country.entityName) +
-          PURPLE + " : " + removeBrackets(country.entityUri) + RESET);
-      out(EntityDetail.countryAsString(endpoint, country.entityUri));
+    for (var country : countries) {
+      out("  " + GREEN + String.format("%-25s", country.entityName()) +
+          PURPLE + " : " + removeBrackets(country.entityUri()) + RESET);
+      out(EntityDetail.countryAsString(endpoint, country.entityUri()));
     }
     out("");
   }
@@ -537,21 +518,26 @@ import static com.knowledgegraphnavigator.Log.out;
 import java.sql.SQLException;
 
 public class Sparql {
-  //static private String endpoint =
-  //      "https://query.wikidata.org/bigdata/namespace/wdq/sparql";
-  static private String endpoint = "https://dbpedia.org/sparql";
+  //static private String endpoint = "https://query.wikidata.org/bigdata/namespace/wdq/sparql";
+  private static final String ENDPOINT = "https://dbpedia.org/sparql";
+  private final JenaApis jenaApis;
+
   public Sparql() {
     this.jenaApis = new JenaApis();
   }
 
-  public QueryResult query(String sparqlQuery)
-         throws SQLException, ClassNotFoundException {
+  public QueryResult query(String sparqlQuery) throws SQLException, ClassNotFoundException {
     //out(sparqlQuery); // debug for now...
     sparql.append(sparqlQuery);
-    sparql.append(("\n\n"));
-    return jenaApis.queryRemote(endpoint, sparqlQuery);
+    sparql.append("\n\n");
+    return jenaApis.queryRemote(ENDPOINT, sparqlQuery);
   }
-  private JenaApis jenaApis;
+
+  public static void main(String[] args) throws Exception {
+    var sp = new Sparql();
+    QueryResult qr = sp.query("select ?s ?p ?o where { ?s ?p ?o } limit 5");
+    out(qr.toString());
+  }
 }
 ~~~~~~~~
 
@@ -576,7 +562,7 @@ The single method **removeBrackets** is only used in the class **PrintEntityRese
 package com.knowledgegraphnavigator;
 
 public class Utils {
-  static public String removeBrackets(String s) {
+  public static String removeBrackets(String s) {
     if (s.startsWith("<")) return s.substring(1, s.length() - 1);
     return s;
   }
@@ -604,23 +590,29 @@ import static com.knowledgegraphnavigator.Log.sparql;
 import static com.knowledgegraphnavigator.Log.clearSparql;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class KGN {
 
-  private static List<String> demosList =
-   Arrays.asList(
-    "Bill Gates and Melinda Gates worked at Microsoft",
-    "IBM opened an office in Canada",
-    "Steve Jobs worked at Apple Computer and visited IBM and Microsoft in Seattle");
+  private static final List<String> DEMOS_LIST = List.of(
+      "Bill Gates and Melinda Gates worked at Microsoft",
+      "IBM opened an office in Canada",
+      "Steve Jobs worked at Apple Computer and visited IBM and Microsoft in Seattle");
+
+  /** Single Scanner instance to avoid resource leaks from repeated System.in wrapping. */
+  private final Scanner consoleScanner = new Scanner(System.in);
 
   public KGN() throws Exception {
-    Sparql endpoint = new Sparql();
+    var endpoint = new Sparql();
 
     while (true) {
       String query = getUserQueryFromConsole();
+      if (query == null || query.isBlank()) {
+        out("Exiting KGN.");
+        break;
+      }
       out("\nProcessing query:\n" + query + "\n");
       if (query.equalsIgnoreCase("sparql")) {
         out("Generated SPARQL used to get current results:\n");
@@ -628,103 +620,90 @@ public class KGN {
         out("\n");
         clearSparql();
       } else {
-        if (query.equalsIgnoreCase("demo")) {
-          query = demosList.get((int) (Math.random() * (demosList.size() + 1)));
-        }
-        TextToDbpediaUris kt = new TextToDbpediaUris(query);
-        List<EntityAndDescription> userSelectedPeople = new ArrayList();
-        if (kt.personNames.size() > 0) {
-          for (int i = 0; i < kt.personNames.size(); i++) {
-            userSelectedPeople.add(
-                new EntityAndDescription(kt.personNames.get(i),
-                                     kt.personUris.get(i)));
-          }
-        }
-        List<EntityAndDescription> userSelectedCompanies = new ArrayList();
-        if (kt.companyNames.size() > 0) {
-          for (int i = 0; i < kt.companyNames.size(); i++) {
-            userSelectedCompanies.add(
-                new EntityAndDescription(kt.companyNames.get(i),
-                                     kt.companyUris.get(i)));
-          }
-        }
-        List<EntityAndDescription> userSelectedCities = new ArrayList();
-        if (kt.cityNames.size() > 0) {
-          out("+++++ kt.cityNames:" + kt.cityNames.toString());
-          for (int i = 0; i < kt.cityNames.size(); i++) {
-            userSelectedCities.add(
-                new EntityAndDescription(kt.cityNames.get(i), kt.cityUris.get(i)));
-          }
-        }
-        List<EntityAndDescription> userSelectedCountries = new ArrayList();
-        if (kt.countryNames.size() > 0) {
-          out("+++++ kt.countryNames:" + kt.countryNames.toString());
-          for (int i = 0; i < kt.countryNames.size(); i++) {
-            userSelectedCountries.add(
-                new EntityAndDescription(kt.countryNames.get(i),
-                                     kt.countryUris.get(i)));
-          }
-        }
-        new PrintEntityResearchResults(endpoint,
-            userSelectedPeople,
-            userSelectedCompanies,
-            userSelectedCities,
-            userSelectedCountries);
+        processQuery(endpoint, query);
+      }
+    }
+  }
 
-        for (EntityAndDescription person1 : userSelectedPeople) {
-          for (EntityAndDescription person2 : userSelectedPeople) {
-            if (person1 != person2) {
-              QueryResult qr = 
-                EntityRelationships.results(endpoint, person1.entityUri,
-                                            person2.entityUri);
-              if (qr.rows.size() > 0) {
-                out("Relationships between person " + person1.entityName +
-                    " person " + person2.entityName + ":");
-                out(qr.toString());
-              }
-            }
-          }
-        }
+  private void processQuery(Sparql endpoint, String query) throws Exception {
+    if (query.equalsIgnoreCase("demo")) {
+      query = DEMOS_LIST.get(ThreadLocalRandom.current().nextInt(DEMOS_LIST.size()));
+    }
+    var kt = new TextToDbpediaUris(query);
 
-        for (EntityAndDescription person : userSelectedPeople) {
-          for (EntityAndDescription company : userSelectedCompanies) {
-            QueryResult qr = 
-              EntityRelationships.results(endpoint, person.entityUri,
-                                          company.entityUri);
-            if (qr.rows.size() > 0) {
-              out("Relationships between person " + person.entityName +
-                  " company " + company.entityName + ":");
-              out(qr.toString());
-            }
+    var userSelectedPeople = buildEntityList(kt.personNames, kt.personUris);
+    var userSelectedCompanies = buildEntityList(kt.companyNames, kt.companyUris);
+
+    if (!kt.cityNames.isEmpty()) {
+      out("+++++ kt.cityNames:" + kt.cityNames.toString());
+    }
+    var userSelectedCities = buildEntityList(kt.cityNames, kt.cityUris);
+
+    if (!kt.countryNames.isEmpty()) {
+      out("+++++ kt.countryNames:" + kt.countryNames.toString());
+    }
+    var userSelectedCountries = buildEntityList(kt.countryNames, kt.countryUris);
+
+    PrintEntityResearchResults.printResults(endpoint,
+        userSelectedPeople,
+        userSelectedCompanies,
+        userSelectedCities,
+        userSelectedCountries);
+
+    for (var person1 : userSelectedPeople) {
+      for (var person2 : userSelectedPeople) {
+        if (person1 != person2) {
+          QueryResult qr = EntityRelationships.results(endpoint, person1.entityUri(), person2.entityUri());
+          if (!qr.rows.isEmpty()) {
+            out("Relationships between person " + person1.entityName() +
+                " person " + person2.entityName() + ":");
+            out(qr.toString());
           }
         }
-        for (EntityAndDescription company1 : userSelectedCompanies) {
-          for (EntityAndDescription company2 : userSelectedCompanies) {
-            if (company1 != company2) {
-              QueryResult qr = 
-                EntityRelationships.results(endpoint, company1.entityUri, 
-                                            company2.entityUri);
-              if (qr.rows.size() > 0) {
-                out("Relationships between company " + company1.entityName +
-                    " company " + company2.entityName + ":");
-                out(qr.toString());
-              }
-            }
+      }
+    }
+    //  Bill Gates, Melinda Gates and Steve Jobs at Apple Computer, IBM and Microsoft in Seattle
+    for (var person : userSelectedPeople) {
+      for (var company : userSelectedCompanies) {
+        QueryResult qr = EntityRelationships.results(endpoint, person.entityUri(), company.entityUri());
+        if (!qr.rows.isEmpty()) {
+          out("Relationships between person " + person.entityName() +
+              " company " + company.entityName() + ":");
+          out(qr.toString());
+        }
+      }
+    }
+    for (var company1 : userSelectedCompanies) {
+      for (var company2 : userSelectedCompanies) {
+        if (company1 != company2) {
+          QueryResult qr = EntityRelationships.results(endpoint, company1.entityUri(), company2.entityUri());
+          if (!qr.rows.isEmpty()) {
+            out("Relationships between company " + company1.entityName() +
+                " company " + company2.entityName() + ":");
+            out(qr.toString());
           }
         }
       }
     }
   }
 
+  /**
+   * Build a list of EntityAndDescription from parallel name/URI lists.
+   */
+  private static List<EntityAndDescription> buildEntityList(List<String> names, List<String> uris) {
+    var result = new ArrayList<EntityAndDescription>();
+    for (int i = 0; i < names.size(); i++) {
+      result.add(new EntityAndDescription(names.get(i), uris.get(i)));
+    }
+    return result;
+  }
+
   private String getUserQueryFromConsole() {
     out("Enter entities query:");
-    Scanner input = new Scanner(System.in);
-    String ret = "";
-    while (input.hasNext()) {
-      ret = input.nextLine();
-      break;
+    if (consoleScanner.hasNextLine()) {
+      return consoleScanner.nextLine();
     }
-    return ret;
+    return "";
   }
 
   public static void main(String[] args) throws Exception {

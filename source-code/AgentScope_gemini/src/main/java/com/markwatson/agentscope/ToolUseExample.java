@@ -10,7 +10,6 @@ import io.agentscope.core.tool.Toolkit;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -42,7 +41,7 @@ public class ToolUseExample {
         public String getWeather(
                 @ToolParam(name = "city", description = "The name of the city") String city) {
             // Stub: in a real app you would call a weather API here
-            return String.format("%s weather: Sunny, 25°C", city);
+            return "%s weather: Sunny, 25°C".formatted(city);
         }
     }
 
@@ -54,7 +53,7 @@ public class ToolUseExample {
         @Tool(description = "List the files and sub-directories inside a directory")
         public String listDir(
                 @ToolParam(name = "path", description = "Absolute or relative path of the directory to list") String path) {
-            try (Stream<Path> entries = Files.list(Paths.get(path))) {
+            try (Stream<Path> entries = Files.list(Path.of(path))) {
                 String listing = entries
                         .map(p -> (Files.isDirectory(p) ? "[DIR]  " : "[FILE] ") + p.getFileName())
                         .sorted()
@@ -70,7 +69,7 @@ public class ToolUseExample {
                 @ToolParam(name = "path",       description = "Path to the file to read") String path,
                 @ToolParam(name = "max_lines",  description = "Maximum number of lines to return (default 10)") int maxLines) {
             try {
-                List<String> lines = Files.readAllLines(Paths.get(path));
+                List<String> lines = Files.readAllLines(Path.of(path));
                 return lines.stream()
                         .limit(maxLines <= 0 ? 10 : maxLines)
                         .collect(Collectors.joining("\n"));
@@ -84,17 +83,8 @@ public class ToolUseExample {
     //  Main                                                                //
     // ------------------------------------------------------------------ //
     public static void main(String[] args) {
-        String apiKey = System.getenv("GEMINI_API_KEY");
-        if (apiKey == null || apiKey.isBlank()) {
-            System.err.println("ERROR: GEMINI_API_KEY environment variable is not set.");
-            System.exit(1);
-        }
-
-        // Build the Gemini chat model
-        GeminiChatModel model = GeminiChatModel.builder()
-                .apiKey(apiKey)
-                .modelName("gemini-2.5-flash")
-                .build();
+        // Build the Gemini chat model via shared config
+        GeminiChatModel model = GeminiConfig.createModel();
 
         // Register all tools
         Toolkit toolkit = new Toolkit();
@@ -123,8 +113,9 @@ public class ToolUseExample {
         String cwd = System.getProperty("user.dir");
         Msg fsResponse = agent.call(
                 Msg.builder()
-                        .textContent("List the directory \"" + cwd + "\" and for every .md file you find there, " +
-                                     "display its name followed by its first 10 lines.")
+                        .textContent(
+                                "List the directory \"%s\" and for every .md file you find there, display its name followed by its first 10 lines."
+                                        .formatted(cwd))
                         .build()
         ).block();
 

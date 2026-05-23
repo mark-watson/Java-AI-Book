@@ -8,8 +8,8 @@ This example implements several classic AI search algorithms: depth-first and br
 
 ## Prerequisites
 
-- Java 8+
-- Maven 3.6+
+- Java 21+
+- Maven 3.9+
 
 ## Build & Run
 

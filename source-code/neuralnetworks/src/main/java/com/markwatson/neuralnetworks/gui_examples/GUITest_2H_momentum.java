@@ -17,10 +17,6 @@ public class GUITest_2H_momentum extends JFrame {
     static float[] out2 = {0.1f, 0.1f, 0.9f};
     static float[] out3 = {0.1f, 0.9f, 0.1f};
 
-    static float[] test1 = {0.1f, 0.1f, 0.9f};
-    static float[] test2 = {0.1f, 0.9f, 0.1f};
-    static float[] test3 = {0.9f, 0.1f, 0.1f};
-
     Neural_2H_momentum nn = new Neural_2H_momentum(3, 3, 3, 3, 0.75f);
     Plot1DPanel inputPanel = new Plot1DPanel(3,   0.0f, 1.0f, nn.inputs);
     Plot1DPanel hidden1Panel = new Plot1DPanel(3, 0.0f, 1.0f, nn.hidden1);
@@ -39,23 +35,19 @@ public class GUITest_2H_momentum extends JFrame {
     JLabel jLabel5 = new JLabel();
 
     public GUITest_2H_momentum() {
-        try { 
-            nn.addTrainingExample(in1, out1);
-            nn.addTrainingExample(in2, out2);
-            nn.addTrainingExample(in3, out3);
-            jbInit();
-            this.setSize(440, 450);
-            this.setVisible(true);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        nn.addTrainingExample(in1, out1);
+        nn.addTrainingExample(in2, out2);
+        nn.addTrainingExample(in3, out3);
+        jbInit();
+        this.setSize(440, 450);
+        this.setVisible(true);
     }
 
     public static void main(String[] args) {
-        new GUITest_2H();
+        SwingUtilities.invokeLater(GUITest_2H_momentum::new);
     }
 
-    private void jbInit() throws Exception {
+    private void jbInit() {
         this.getContentPane().setLayout(null);
         inputPanel.setBounds(new Rectangle(5, 30, 400, 20));
         hidden1Panel.setBounds(new Rectangle(5, 138, 400, 20));
@@ -71,12 +63,12 @@ public class GUITest_2H_momentum extends JFrame {
                 try {
                     do_run_button(e);
                 } catch (InterruptedException e1) {
-                    // TODO Auto-generated catch block
+                    Thread.currentThread().interrupt();
                     e1.printStackTrace();
                 }
             }
         });
-        this.setDefaultCloseOperation(3);
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         jLabel1.setText("Input neurons:");
         jLabel1.setBounds(new Rectangle(4, 10, 144, 19));
         jLabel2.setText("Hidden 1 neurons:");
@@ -120,7 +112,7 @@ public class GUITest_2H_momentum extends JFrame {
         Graphics g7 = w3Panel.getGraphics();
   training_loop:
         for (int i = 0; i < 25000; i++) {
-            if (i == 5000 || i == 8000 || i == 10000 | i == 12000)  nn.TRAINING_RATE *= 0.75f;
+            if (i == 5000 || i == 8000 || i == 10000 || i == 12000)  nn.TRAINING_RATE *= 0.75f;
             float error = nn.train();
             if (i > 0 && i % 500 == 0) {
                 //

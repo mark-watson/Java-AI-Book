@@ -1,27 +1,28 @@
 package com.markwatson.info_spiders;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Unit test for NLP.
+ * Unit test for WebSpider.
  */
-public class WebClientTest extends TestCase {
+class WebClientTest {
 
-  public WebClientTest(String testName) {
-    super(testName);
-  }
-
-  public static Test suite() {
-    return new TestSuite(WebClientTest.class);
-  }
-
-  public void testFetchAndDisplay() throws Exception {
-    assertTrue(true);
-    WebSpider client = new WebSpider("https://markwatson.com", 10);
-    //WebSpider client = new WebSpider("http://pbs.org", 10);
-    //WebSpider client = new WebSpider("http://kbsportal.com", 10);
-    System.out.println("Found URIs: " + client.url_content_lists);
+  @Test
+  @DisplayName("Spider markwatson.com and verify content is found")
+  void testFetchAndDisplay() throws Exception {
+    var client = new WebSpider("https://markwatson.com", 10);
+    List<List<String>> results = client.getUrlContentLists();
+    System.out.println("Found URIs: " + results);
+    assertFalse(results.isEmpty(), "Should fetch at least one page from markwatson.com");
+    for (List<String> entry : results) {
+      assertEquals(2, entry.size(), "Each entry should contain [url, text]");
+      assertFalse(entry.get(0).isBlank(), "URL should not be blank");
+      assertFalse(entry.get(1).isBlank(), "Page text should not be blank");
+    }
   }
 }

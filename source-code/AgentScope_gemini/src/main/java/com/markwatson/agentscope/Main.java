@@ -17,17 +17,8 @@ import io.agentscope.core.model.GeminiChatModel;
 public class Main {
 
     public static void main(String[] args) {
-        String apiKey = System.getenv("GEMINI_API_KEY");
-        if (apiKey == null || apiKey.isBlank()) {
-            System.err.println("ERROR: GEMINI_API_KEY environment variable is not set.");
-            System.exit(1);
-        }
-
-        // Build the Gemini chat model
-        GeminiChatModel model = GeminiChatModel.builder()
-                .apiKey(apiKey)
-                .modelName("gemini-2.5-flash")
-                .build();
+        // Build the Gemini chat model via shared config
+        GeminiChatModel model = GeminiConfig.createModel();
 
         // Build the ReActAgent
         ReActAgent agent = ReActAgent.builder()
@@ -43,7 +34,7 @@ public class Main {
                         .build()
         ).block();
 
-        System.out.println("Agent response:");
+        System.out.println("=== Agent Response ===");
         System.out.println(response.getTextContent());
     }
 }

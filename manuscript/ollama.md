@@ -42,33 +42,38 @@ In summary, using local LLMs with Ollama not only makes powerful AI tools more a
 
 ## Java Library to Use Ollama's REST API
 
-Te library defined in the directory ** Java-AI-Book-Code/ollama-llm-client** defines a class named **OllamaLlmClient** with a method **getCompletion** that sends a JSON payload to a server and reads the response. Here's an explanation of what each significant part of the method does:
+The library defined in the directory **Java-AI-Book-Code/ollama-llm-client** defines a class named **OllamaLlmClient** with a method **getCompletion** that sends a JSON payload to a server and reads the response. Here's an explanation of what each significant part of the method does:
 
-- Create JSON Payload: It constructs a JSON object (message) containing three key-value pairs: prompt (a string provided by the caller), model (also a string provided by the caller indicating the model name), and stream (a boolean value set to false).
-- Prepare HTTP Connection: It creates a URI object pointing to the server's URL (http://localhost:11434/api/generate), converts it to a URL object, and opens a connection to it. The connection is configured to send output and to use application/json as the content type.
-- Send JSON Payload: It converts the JSON object to a byte array using UTF-8 encoding and sends it to the server through the connection's output stream.
-- Read Server Response: It reads the server's response using a BufferedReader that wraps the connection's input stream, appending each line of the response to a StringBuilder object.
-- Disconnect: It explicitly disconnects the HTTP connection.
-- Process Server Response: It converts the response string back into a JSON object and extracts the value associated with the key response. This value is then returned by the method.
+- Build JSON request payload: Constructs a JSON object `message` containing `prompt`, `model`, and `stream` (set to false to receive the full response at once instead of a stream).
+- Prepare HTTP Request: Uses Java 11 `HttpRequest` builder to configure a `POST` request to `/api/generate` with the JSON payload as the body publisher and sets the content type header.
+- Execute HTTP Request: Sends the request using a static shared `HttpClient` instance with a defined request timeout (defaulting to 3 minutes).
+- Process Server Response: Parses the response body string as a `JSONObject` and extracts the value of the `response` key, which is returned.
 
 In summary, this method sends a JSON payload containing a prompt and model name to a specified server endpoint, reads the JSON response from the server, extracts a specific field from the JSON response, and returns that field's value.
 
 
 ```java
-package com.markwatson.openai;
+package com.markwatson.ollama;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
+import java.io.IOException;
 import java.net.URI;
-import java.net.URL;
-import java.net.URLConnection;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Duration;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class OllamaLlmClient {
+
+    private static final String DEFAULT_BASE_URL = "http://localhost:11434";
+    private static final Duration REQUEST_TIMEOUT = Duration.ofMinutes(3);
+
+    private static final HttpClient HTTP_CLIENT = HttpClient.newBuilder()
+            .connectTimeout(Duration.ofSeconds(10))
+            .build();
 
     public static void main(String[] args) throws Exception {
         String prompt = "Translate the following English text to French: 'Hello, how are you?'";
@@ -76,45 +81,51 @@ public class OllamaLlmClient {
         System.out.println("completion: " + completion);
     }
 
-    public static String getCompletion(String prompt, String modelName) throws Exception {
+    public static String getCompletion(String prompt, String modelName) throws IOException, InterruptedException {
+        return getCompletion(prompt, modelName, DEFAULT_BASE_URL);
+    }
+
+    public static String getCompletion(String prompt, String modelName, String baseUrl)
+            throws IOException, InterruptedException {
         System.out.println("prompt: " + prompt + ", modelName: " + modelName);
- 
-        // New JSON message format
-        JSONObject message = new JSONObject();
+
+        // Build JSON request payload
+        var message = new JSONObject();
         message.put("prompt", prompt);
         message.put("model", modelName);
         message.put("stream", false);
-        URI uri = new URI("http://localhost:11434/api/generate");
-        URL url = uri.toURL();
-        //System.out.println("jsonBody: " + jsonBody);
-        URLConnection connection = url.openConnection();
-        connection.setDoOutput(true);
-        connection.setRequestProperty("Content-Type", "application/json");
-        // Send the JSON payload
-        try (OutputStream os = connection.getOutputStream()) {
-            byte[] input = message.toString().getBytes("utf-8");
-             os.write(input, 0, input.length);
-        }
 
-        StringBuilder response;
-        // Read the response from the server
-        try (BufferedReader br = new BufferedReader(
-                new InputStreamReader(connection.getInputStream(), "utf-8"))) {
-            response = new StringBuilder();
-            String responseLine;
-            while ((responseLine = br.readLine()) != null) {
-                response.append(responseLine.trim());
-            }
-            System.out.println(response.toString());
-        }
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(baseUrl + "/api/generate"))
+                .header("Content-Type", "application/json")
+                .timeout(REQUEST_TIMEOUT)
+                .POST(HttpRequest.BodyPublishers.ofString(message.toString()))
+                .build();
 
-        ((HttpURLConnection) connection).disconnect();
+        HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+        System.out.println(response.body());
 
-        JSONObject jsonObject = new JSONObject(response.toString());
-        String s = jsonObject.getString("response");
-        return s;
+        var jsonObject = new JSONObject(response.body());
+        return jsonObject.getString("response");
     }
 
+    /***
+     * Utilities for using the Ollama LLM APIs
+     */
+
+    // read the contents of a file path into a Java string
+    public static String readFileToString(String filePath) throws IOException {
+        return Files.readString(Path.of(filePath));
+    }
+
+    public static String replaceSubstring(String originalString, String substringToReplace, String replacementString) {
+        return originalString.replace(substringToReplace, replacementString);
+    }
+
+    public static String promptVar(String prompt0, String varName, String varValue) {
+        String prompt = replaceSubstring(prompt0, varName, varValue);
+        return replaceSubstring(prompt, varName, varValue);
+    }
 }
 ```
 
@@ -125,11 +136,10 @@ public class OllamaLlmClient {
 The Java library for getting local LLM text completions using Ollama contains a unit test that contains an example showing how to call the API:
 
 ```java
-String r =
-  OllamaLlmClient.getCompletion(
-    "Translate the following English text to French: 'Hello, how are you?'",
-    "mistral");
-System.out.println("completion: " + r);
+        String r = OllamaLlmClient.getCompletion(
+                "Translate the following English text to French: 'Hello, how are you?'",
+                "gemma3:1b");
+        System.out.println("completion: " + r);
 ```
 
 The output looks like:
@@ -181,14 +191,13 @@ Output:
 The example code is a test method in **OllamaLlmClientTest. testTwoShotTemplate()** that is shown here:
 
 ```java
-String input_text = "Mark Johnson enjoys living in Berkeley California at 102 Dunston Street and use mjess@foobar.com for contacting him.";
-String prompt0 = OllamaLlmClient.readFileToString("../prompts/two-shot-2-var.txt");
-System.out.println("prompt0: " + prompt0);
-String prompt = OllamaLlmClient.promptVar(prompt0, "{input_text}", input_text);
-System.out.println("prompt: " + prompt);
-String r =
-  OllamaLlmClient.getCompletion(prompt, "llama3:instruct");
-System.out.println("two shot extraction completion:\n" + r);
+        String inputText = "Mark Johnson enjoys living in Berkeley California at 102 Dunston Street and use mjess@foobar.com for contacting him.";
+        String prompt0 = OllamaLlmClient.readFileToString("../prompts/two-shot-2-var.txt");
+        System.out.println("prompt0: " + prompt0);
+        String prompt = OllamaLlmClient.promptVar(prompt0, "{input_text}", inputText);
+        System.out.println("prompt: " + prompt);
+        String r = OllamaLlmClient.getCompletion(prompt, "gemma3:1b");
+        System.out.println("two shot extraction completion: " + r);
 ```
 
 The output is (edited for brevity):
@@ -217,15 +226,13 @@ Output:
 The example code is in the test **OllamaLlmClientTest. testSummarization()** listed here:
 
 ```java
-String input_text = "Jupiter is the fifth planet from the Sun and the largest in the Solar System. It is a gas giant with a mass one-thousandth that of the Sun, but two-and-a-half times that of all the other planets in the Solar System combined. Jupiter is one of the brightest objects visible to the naked eye in the night sky, and has been known to ancient civilizations since before recorded history. It is named after the Roman god Jupiter. When viewed from Earth, Jupiter can be bright enough for its reflected light to cast visible shadows, and is on average the third-brightest natural object in the night sky after the Moon and Venus.";
-
-String prompt0 = OllamaLlmClient.readFileToString("../prompts/summarization_prompt.txt");
-System.out.println("prompt0: " + prompt0);
-String prompt = OllamaLlmClient.promptVar(prompt0, "{input_text}", input_text);
-System.out.println("prompt: " + prompt);
-String r =
-  OllamaLlmClient.getCompletion(prompt, "llama3:instruct");
-System.out.println("summarization completion:\n" + r);
+        String inputText = "Jupiter is the fifth planet from the Sun and the largest in the Solar System. It is a gas giant with a mass one-thousandth that of the Sun, but two-and-a-half times that of all the other planets in the Solar System combined. Jupiter is one of the brightest objects visible to the naked eye in the night sky, and has been known to ancient civilizations since before recorded history. It is named after the Roman god Jupiter.[19] When viewed from Earth, Jupiter can be bright enough for its reflected light to cast visible shadows,[ and is on average the third-brightest natural object in the night sky after the Moon and Venus.";
+        String prompt0 = OllamaLlmClient.readFileToString("../prompts/summarization_prompt.txt");
+        System.out.println("prompt0: " + prompt0);
+        String prompt = OllamaLlmClient.promptVar(prompt0, "{input_text}", inputText);
+        System.out.println("prompt: " + prompt);
+        String r = OllamaLlmClient.getCompletion(prompt, "gemma3:1b");
+        System.out.println("summarization completion: " + r);
 ```
 
 The output is (edited for brevity):

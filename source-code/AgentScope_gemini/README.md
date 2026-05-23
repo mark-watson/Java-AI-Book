@@ -8,7 +8,7 @@ This example demonstrates how to use the [AgentScope](https://java.agentscope.io
 
 ## Prerequisites
 
-- Java 17+
+- Java 21+
 - Maven 3.8+
 - A valid Google Gemini API key ([get one here](https://aistudio.google.com/app/apikey))
 
@@ -33,8 +33,8 @@ java -jar target/agentscope-gemini-1.0.0-SNAPSHOT.jar
 
 | Artifact | Purpose |
 |---|---|
-| `io.agentscope:agentscope:1.0.9` | AgentScope core (agents, messaging) |
-| `com.google.genai:google-genai:1.0.0` | Google GenAI SDK (Gemini models) |
+| `io.agentscope:agentscope:1.0.12` | AgentScope core (agents, messaging) |
+| `com.google.genai:google-genai:1.54.0` | Google GenAI SDK (Gemini models) |
 
 ## Book Cover Material, Copyright, and License
 

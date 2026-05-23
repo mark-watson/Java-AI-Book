@@ -8,7 +8,7 @@ This example implements a genetic algorithm framework that demonstrates evolutio
 
 ## Prerequisites
 
-- Java 8+
+- Java 21+
 - Maven 3.6+
 
 ## Build & Run

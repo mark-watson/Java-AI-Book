@@ -1,4 +1,4 @@
 package search.game;
 
-abstract public class Move {
+public sealed interface Move permits ChessMove, TicTacToeMove {
 }

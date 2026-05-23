@@ -15,8 +15,8 @@ public abstract class GameSearch {
      *       
      */
 
-    public static boolean PROGRAM = false;
-    public static boolean HUMAN = true;
+    public static final boolean PROGRAM = false;
+    public static final boolean HUMAN = true;
 
     /**
      *  Notes:  PROGRAM false -1,  HUMAN true 1
@@ -39,42 +39,38 @@ public abstract class GameSearch {
      * Search utility methods:
      */
 
-    protected Vector alphaBeta(int depth, Position p, boolean player) {
-        Vector v = alphaBetaHelper(depth, p, player, 1000000.0f, -1000000.0f);
-        //System.out.println("^^ v(0): " + v.elementAt(0) + ", v(1): " + v.elementAt(1));
+    protected List<Object> alphaBeta(int depth, Position p, boolean player) {
+        List<Object> v = alphaBetaHelper(depth, p, player, 1000000.0f, -1000000.0f);
         return v;
     }
 
-    protected Vector alphaBetaHelper(int depth, Position p,
+    protected List<Object> alphaBetaHelper(int depth, Position p,
                                      boolean player, float alpha, float beta) {
         if (GameSearch.DEBUG) System.out.println("alphaBetaHelper("+depth+","+p+","+alpha+","+beta+")");
         if (reachedMaxDepth(p, depth)) {
-            Vector v = new Vector(2);
+            List<Object> v = new ArrayList<>(2);
             float value = positionEvaluation(p, player);
-            v.addElement(new Float(value));
-            v.addElement(null);
+            v.add(value);
+            v.add(null);
             if(GameSearch.DEBUG) {
                 System.out.println(" alphaBetaHelper: mx depth at " + depth+
                                    ", value="+value);
             }
             return v;
         }
-        Vector best = new Vector();
+        List<Object> best = new ArrayList<>();
         Position [] moves = possibleMoves(p, player);
         for (int i=0; i<moves.length; i++) {
-            Vector v2 = alphaBetaHelper(depth + 1, moves[i], !player, -beta, -alpha);
-            //  if (v2 == null || v2.size() < 1) continue;
-            float value = -((Float)v2.elementAt(0)).floatValue();
+            List<Object> v2 = alphaBetaHelper(depth + 1, moves[i], !player, -beta, -alpha);
+            float value = -((Float)v2.get(0));
             if (value > beta) {
                 if(GameSearch.DEBUG) System.out.println(" ! ! ! value="+value+", beta="+beta);
                 beta = value;
-                best = new Vector();
-                best.addElement(moves[i]);
-                Enumeration enum2 = v2.elements();
-                enum2.nextElement(); // skip previous value
-                while (enum2.hasMoreElements()) {
-                    Object o = enum2.nextElement();
-                    if (o != null) best.addElement(o);
+                best = new ArrayList<>();
+                best.add(moves[i]);
+                for (int j = 1; j < v2.size(); j++) {
+                    Object o = v2.get(j);
+                    if (o != null) best.add(o);
                 }
             }
             /**
@@ -86,18 +82,15 @@ public abstract class GameSearch {
                 break;
             }
         }
-        Vector v3 = new Vector();
-        v3.addElement(new Float(beta));
-        Enumeration enum2 = best.elements();
-        while (enum2.hasMoreElements()) {
-            v3.addElement(enum2.nextElement());
-        }
+        List<Object> v3 = new ArrayList<>();
+        v3.add(beta);
+        v3.addAll(best);
         return v3;
     }
     public void playGame(Position startingPosition, boolean humanPlayFirst) {
-        if (humanPlayFirst == false) {
-            Vector v = alphaBeta(0, startingPosition, PROGRAM);
-            startingPosition = (Position)v.elementAt(1);
+        if (!humanPlayFirst) {
+            List<Object> v = alphaBeta(0, startingPosition, PROGRAM);
+            startingPosition = (Position)v.get(1);
         }
         while (true) {
             printPosition(startingPosition);
@@ -117,12 +110,11 @@ public abstract class GameSearch {
             Move move = createMove();
             startingPosition = makeMove(startingPosition, HUMAN, move);
             printPosition(startingPosition);
-            Vector v = alphaBeta(0, startingPosition, PROGRAM);
-            Enumeration enum2 = v.elements();
-            while (enum2.hasMoreElements()) {
-                System.out.println(" next element: " + enum2.nextElement());
+            List<Object> v = alphaBeta(0, startingPosition, PROGRAM);
+            for (Object element : v) {
+                System.out.println(" next element: " + element);
             }
-            startingPosition = (Position)v.elementAt(1);        
+            startingPosition = (Position)v.get(1);        
         }
     }
 }

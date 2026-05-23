@@ -6,16 +6,14 @@ import org.apache.jena.rdf.model.*;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.sql.Blob;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-public class JenaApis {
+public class JenaApis implements AutoCloseable {
 
   public JenaApis() {
     //model = ModelFactory.createDefaultModel(); // use if OWL reasoning not required
@@ -31,59 +29,70 @@ public class JenaApis {
   }
 
   public void saveModelToTurtleFormat(String outputPath) throws IOException {
-    FileOutputStream fos = new FileOutputStream(outputPath);
-    RDFDataMgr.write(fos, model, RDFFormat.TRIG_PRETTY);
-    fos.close();
+    try (var fos = new FileOutputStream(outputPath)) {
+      RDFDataMgr.write(fos, model, RDFFormat.TRIG_PRETTY);
+    }
   }
+
   public void saveModelToN3Format(String outputPath) throws IOException {
-    FileOutputStream fos = new FileOutputStream(outputPath);
-    RDFDataMgr.write(fos, model, RDFFormat.NTRIPLES);
-    fos.close();
+    try (var fos = new FileOutputStream(outputPath)) {
+      RDFDataMgr.write(fos, model, RDFFormat.NTRIPLES);
+    }
   }
 
   public QueryResult query(String sparqlQuery) {
-    Query query = QueryFactory.create(sparqlQuery);
-    QueryExecution qexec = QueryExecutionFactory.create(query, model);
-    ResultSet results = qexec.execSelect();
-    QueryResult qr = new QueryResult(results.getResultVars());
-    for (; results.hasNext(); ) {
-      QuerySolution solution = results.nextSolution();
-      List<String> newResultRow = new ArrayList();
-      for (String var : qr.variableList) {
-        newResultRow.add(solution.get(var).toString());
+    try (QueryExecution qexec = QueryExecution.model(model)
+        .query(sparqlQuery)
+        .build()) {
+      ResultSet results = qexec.execSelect();
+      var qr = new QueryResult(results.getResultVars());
+      for (; results.hasNext(); ) {
+        QuerySolution solution = results.nextSolution();
+        List<String> newResultRow = new ArrayList<>();
+        for (String var : qr.variableList) {
+          newResultRow.add(solution.get(var).toString());
+        }
+        qr.rows.add(newResultRow);
       }
-      qr.rows.add(newResultRow);
+      return qr;
     }
-    return qr;
   }
 
-  public QueryResult queryRemote(String service, String sparqlQuery) throws SQLException, ClassNotFoundException {
+  public QueryResult queryRemote(String service, String sparqlQuery) throws SQLException {
     if (cache == null) cache = new Cache();
-    byte [] b = cache.fetchResultFromCache(sparqlQuery);
+    byte[] b = cache.fetchResultFromCache(sparqlQuery);
     if (b != null) {
       //System.out.println("Found query in cache.");
-      QueryResult l = SerializationUtils.deserialize(b);
-      return l;
+      return SerializationUtils.deserialize(b);
     }
-    Query query = QueryFactory.create(sparqlQuery);
-    QueryExecution qexec = QueryExecutionFactory.sparqlService(service, sparqlQuery);
-    ResultSet results = qexec.execSelect();
-    QueryResult qr = new QueryResult(results.getResultVars());
-    for (; results.hasNext(); ) {
-      QuerySolution solution = results.nextSolution();
-      List<String> newResultRow = new ArrayList();
-      for (String var : qr.variableList) {
-        newResultRow.add(solution.get(var).toString());
+    try (QueryExecution qexec = QueryExecution.service(service)
+        .query(sparqlQuery)
+        .build()) {
+      ResultSet results = qexec.execSelect();
+      var qr = new QueryResult(results.getResultVars());
+      for (; results.hasNext(); ) {
+        QuerySolution solution = results.nextSolution();
+        List<String> newResultRow = new ArrayList<>();
+        for (String var : qr.variableList) {
+          newResultRow.add(solution.get(var).toString());
+        }
+        qr.rows.add(newResultRow);
       }
-      qr.rows.add(newResultRow);
+      byte[] serialized = SerializationUtils.serialize(qr);
+      cache.saveQueryResultInCache(sparqlQuery, serialized);
+      return qr;
     }
-    byte [] b3 = SerializationUtils.serialize(qr);
-    cache.saveQueryResultInCache(sparqlQuery, b3);
-    return qr;
+  }
+
+  @Override
+  public void close() throws SQLException {
+    if (cache != null) {
+      cache.close();
+    }
   }
 
   private Cache cache = null;
-  private Model model;
+  private final Model model;
 
   public static void main(String[] args) {
     /*
@@ -109,9 +118,9 @@ public class JenaApis {
       StringBuilder sb = new StringBuilder();
       while (sc.hasNextLine()) {  //until no other inputs to proceed
         String s = sc.nextLine();
-        if (s.equals("quit") || s.equals("QUIT") || s.equals("exit") || s.equals("EXIT"))
+        if (s.equalsIgnoreCase("quit") || s.equalsIgnoreCase("exit"))
           System.exit(0);
-        if (s.length() < 1) break;
+        if (s.isEmpty()) break;
         sb.append(s);
         sb.append("\n");
       }

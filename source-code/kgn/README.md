@@ -8,7 +8,7 @@ This example implements a Knowledge Graph Navigator that queries DBPedia's SPARQ
 
 ## Prerequisites
 
-- Java 11+
+- Java 21+ (required by Apache Jena 6.x)
 - Maven 3.6+
 - **You must build and install these local dependencies first**:
 

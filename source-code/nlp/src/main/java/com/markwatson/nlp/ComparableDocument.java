@@ -3,8 +3,9 @@ package com.markwatson.nlp;
 import com.markwatson.nlp.util.NoiseWords;
 import public_domain.Stemmer;
 
-import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 
 /**
@@ -25,8 +26,8 @@ import java.util.*;
  */
 public class ComparableDocument {
 	private ComparableDocument() { } // disable default constructor calls
-	public ComparableDocument(File document) throws FileNotFoundException {
-		this(new Scanner(document).useDelimiter("\\Z").next());
+	public ComparableDocument(Path document) throws IOException {
+		this(Files.readString(document));
 	}
 	public ComparableDocument(String text) {
 		// System.out.println("text:\n\n" + text + "\n\n");
@@ -34,12 +35,7 @@ public class ComparableDocument {
 		for (String stem : stems) {
 			if (!NoiseWords.checkFor(stem)) {
 				stem_count++;
-				if (stemCountMap.containsKey(stem)) {
-					Integer count = stemCountMap.get(stem);
-					stemCountMap.put(stem, 1 + count);
-				} else {
-					stemCountMap.put(stem, 1);
-				}
+				stemCountMap.merge(stem, 1, Integer::sum);
 			}
 			// System.out.println(stem + " : " + stemCountMap.get(stem));
 		}
@@ -49,28 +45,26 @@ public class ComparableDocument {
 	public float compareTo(ComparableDocument otherDocument) {
 		long count = 0;
 		Map<String, Integer> map2 = otherDocument.getStemMap();
-		Iterator<String> iter = stemCountMap.keySet().iterator();
-		while (iter.hasNext()) {
-			String key = iter.next();
-			Integer count1 = stemCountMap.get(key);
-			Integer count2 = map2.get(key);
+		for (var entry : stemCountMap.entrySet()) {
+			Integer count1 = entry.getValue();
+			Integer count2 = map2.get(entry.getKey());
 			
-			if (count1!=null && count2!=null) {
+			if (count1 != null && count2 != null) {
 				count += count1 + count2;
-				//System.out.println(key);
+				//System.out.println(entry.getKey());
 			}
 		} 
 		//System.out.println("stem_count="+stem_count);
 		return (float) Math.sqrt(((float)(count*count) / (double)(stem_count * otherDocument.getStemCount()))) / 2f;
 	}
-	private Map<String, Integer> stemCountMap = new HashMap<String, Integer>();
+	private final Map<String, Integer> stemCountMap = new HashMap<>();
     private int stem_count = 0;
     // throw away test program:
-    public static void main(String[] args) throws FileNotFoundException {
-    	ComparableDocument news1 = new ComparableDocument(new File("test_data/news_1.txt"));
-    	ComparableDocument news2 = new ComparableDocument(new File("test_data/news_2.txt"));
-    	ComparableDocument econ1 = new ComparableDocument(new File("test_data/economy_1.txt"));
-    	ComparableDocument econ2 = new ComparableDocument(new File("test_data/economy_2.txt"));
+    public static void main(String[] args) throws IOException {
+    	var news1 = new ComparableDocument(Path.of("test_data/news_1.txt"));
+    	var news2 = new ComparableDocument(Path.of("test_data/news_2.txt"));
+    	var econ1 = new ComparableDocument(Path.of("test_data/economy_1.txt"));
+    	var econ2 = new ComparableDocument(Path.of("test_data/economy_2.txt"));
     	System.out.println("news 1 - news1: " + news1.compareTo(news1));
     	System.out.println("news 1 - news2: " + news1.compareTo(news2));
     	System.out.println("news 2 - news2: " + news2.compareTo(news2));
@@ -82,5 +76,3 @@ public class ComparableDocument {
     	System.out.println("econ 2 - econ2: " + econ2.compareTo(econ2));
     }
 }
-
-

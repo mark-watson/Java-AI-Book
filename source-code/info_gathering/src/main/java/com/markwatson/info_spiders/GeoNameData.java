@@ -24,17 +24,25 @@ public class GeoNameData {
     longitude = toponym.getLongitude();
     name = toponym.getName();
     countryCode = toponym.getCountryCode();
-    if (toponym.getFeatureClassName().startsWith("city")) geoType = GeoType.CITY;
-    if (toponym.getFeatureClassName().startsWith("country")) geoType = GeoType.COUNTRY;
-    if (toponym.getFeatureClassName().startsWith("state")) geoType = GeoType.STATE;
-    if (toponym.getFeatureClassName().startsWith("stream")) geoType = GeoType.RIVER;
-    if (toponym.getFeatureClassName().startsWith("mountain")) geoType = GeoType.MOUNTAIN;
+    String featureClassName = toponym.getFeatureClassName();
+    if (featureClassName != null) {
+      geoType = switch (featureClassName) {
+        case String s when s.startsWith("city") -> GeoType.CITY;
+        case String s when s.startsWith("country") -> GeoType.COUNTRY;
+        case String s when s.startsWith("state") -> GeoType.STATE;
+        case String s when s.startsWith("stream") -> GeoType.RIVER;
+        case String s when s.startsWith("mountain") -> GeoType.MOUNTAIN;
+        default -> GeoType.UNKNOWN;
+      };
+    }
   }
 
   public GeoNameData() {
   }
 
+  @Override
   public String toString() {
-    return "[GeoNameData: " + name + ", type: " + geoType + ", country code: " + countryCode + ", ID: " + geoNameId + ", latitude: " + latitude + ", longitude: " + longitude + "]";
+    return "[GeoNameData: %s, type: %s, country code: %s, ID: %d, latitude: %.4f, longitude: %.4f]"
+            .formatted(name, geoType, countryCode, geoNameId, latitude, longitude);
   }
 }

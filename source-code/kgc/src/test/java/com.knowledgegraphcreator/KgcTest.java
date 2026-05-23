@@ -1,25 +1,29 @@
 package com.knowledgegraphcreator;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.jupiter.api.Test;
 
-public class KgcTest extends TestCase {
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
-  public KgcTest(String testName) {
-    super(testName);
-  }
+import static org.junit.jupiter.api.Assertions.*;
 
-  public static Test suite() {
-    return new TestSuite(KgcTest.class);
-  }
+public class KgcTest {
 
-  public void testKGC() throws Exception {
-    assertTrue(true);
-    KGC client = new KGC("test_data/", "output_with_duplicates.rdf");
-  }
-  private static void pause() {
-    try { Thread.sleep(2000);
-    } catch (Exception ignore) { }
+  @Test
+  void testKGC() throws IOException {
+    Path outputFile = Path.of("output_with_duplicates.rdf");
+    KGC client = new KGC("test_data/", outputFile.toString());
+
+    assertTrue(Files.exists(outputFile), "Output RDF file should be created");
+
+    String content = Files.readString(outputFile);
+    assertFalse(content.isBlank(), "Output RDF file should not be empty");
+
+    // Verify that known entity types from test data appear in the output
+    assertTrue(content.contains("<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>"),
+        "Output should contain RDF type triples");
+    assertTrue(content.contains("<http://www.w3.org/1999/02/22-rdf-syntax-ns#/label>"),
+        "Output should contain label triples");
   }
 }

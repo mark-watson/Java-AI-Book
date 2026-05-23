@@ -1,64 +1,67 @@
 package com.markwatson.anomaly_detection;
 
-import java.io.*;
-import org.apache.commons.io.FileUtils;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
 
 /**
  * Train a deep belief network on the University of Wisconsin Cancer Data Set.
  */
 public class WisconsinAnomalyDetection {
 
-  private static boolean PRINT_HISTOGRAMS = true;
-  private static int NUM_HISTOGRAM_BINS = 5;
+  private static final boolean PRINT_HISTOGRAMS = true;
+  private static final int NUM_HISTOGRAM_BINS = 5;
 
-  public static void main(String[] args) throws Exception {
+  public static void main(String[] args) throws IOException {
 
-    String [] lines = FileUtils.readFileToString(new File("data/cleaned_wisconsin_cancer_data.csv")).split("\n");
-    double [][] training_data = new double[lines.length][];
-    int line_count = 0;
-    for (String line : lines) {
-      String [] sarr = line.split(",");
-      double [] xs = new double[10];
-      for (int i=0; i<10; i++) xs[i] = Double.parseDouble(sarr[i]);
-      for (int i=0; i<9; i++) xs[i] *= 0.1;
+    var lines = Files.readAllLines(Path.of("data/cleaned_wisconsin_cancer_data.csv"));
+    var trainingData = new double[lines.size()][];
+    int lineCount = 0;
 
-      // make the data look more like a gausian (bell curve shaped) distribution:
+    for (var line : lines) {
+      var sarr = line.strip().split(",");
+      var xs = new double[10];
+      for (int i = 0; i < 10; i++) xs[i] = Double.parseDouble(sarr[i]);
+      for (int i = 0; i < 9; i++) xs[i] *= 0.1;
+
+      // make the data look more like a Gaussian (bell curve shaped) distribution:
       double min = 1.e6, max = -1.e6;
-      for (int i=0; i<9; i++) {
+      for (int i = 0; i < 9; i++) {
         xs[i] = Math.log(xs[i] + 1.2);
         if (xs[i] < min) min = xs[i];
         if (xs[i] > max) max = xs[i];
       }
-      for (int i=0; i<9; i++) xs[i] = (xs[i] - min) / (max - min);
+      for (int i = 0; i < 9; i++) xs[i] = (xs[i] - min) / (max - min);
 
       xs[9] = (xs[9] - 2) * 0.5; // make target output be [0,1] instead of [2,4]
-      training_data[line_count++] = xs;
+      trainingData[lineCount++] = xs;
     }
 
     if (PRINT_HISTOGRAMS) {
-      PrintHistogram.historam("Clump Thickness", training_data, 0, 0.0, 1.0, NUM_HISTOGRAM_BINS);
-      PrintHistogram.historam("Uniformity of Cell Size", training_data, 1, 0.0, 1.0, NUM_HISTOGRAM_BINS);
-      PrintHistogram.historam("Uniformity of Cell Shape", training_data, 2, 0.0, 1.0, NUM_HISTOGRAM_BINS);
-      PrintHistogram.historam("Marginal Adhesion", training_data, 3, 0.0, 1.0, NUM_HISTOGRAM_BINS);
-      PrintHistogram.historam("Single Epithelial Cell Size", training_data, 4, 0.0, 1.0, NUM_HISTOGRAM_BINS);
-      PrintHistogram.historam("Bare Nuclei", training_data, 5, 0.0, 1.0, NUM_HISTOGRAM_BINS);
-      PrintHistogram.historam("Bland Chromatin", training_data, 6, 0.0, 1.0, NUM_HISTOGRAM_BINS);
-      PrintHistogram.historam("Normal Nucleoli", training_data, 7, 0.0, 1.0, NUM_HISTOGRAM_BINS);
-      PrintHistogram.historam("Mitoses", training_data, 8, 0.0, 1.0, NUM_HISTOGRAM_BINS);
+      PrintHistogram.histogram("Clump Thickness", trainingData, 0, 0.0, 1.0, NUM_HISTOGRAM_BINS);
+      PrintHistogram.histogram("Uniformity of Cell Size", trainingData, 1, 0.0, 1.0, NUM_HISTOGRAM_BINS);
+      PrintHistogram.histogram("Uniformity of Cell Shape", trainingData, 2, 0.0, 1.0, NUM_HISTOGRAM_BINS);
+      PrintHistogram.histogram("Marginal Adhesion", trainingData, 3, 0.0, 1.0, NUM_HISTOGRAM_BINS);
+      PrintHistogram.histogram("Single Epithelial Cell Size", trainingData, 4, 0.0, 1.0, NUM_HISTOGRAM_BINS);
+      PrintHistogram.histogram("Bare Nuclei", trainingData, 5, 0.0, 1.0, NUM_HISTOGRAM_BINS);
+      PrintHistogram.histogram("Bland Chromatin", trainingData, 6, 0.0, 1.0, NUM_HISTOGRAM_BINS);
+      PrintHistogram.histogram("Normal Nucleoli", trainingData, 7, 0.0, 1.0, NUM_HISTOGRAM_BINS);
+      PrintHistogram.histogram("Mitoses", trainingData, 8, 0.0, 1.0, NUM_HISTOGRAM_BINS);
     }
 
-    AnomalyDetection detector = new AnomalyDetection(10, line_count - 1, training_data);
+    var detector = new AnomalyDetection(10, lineCount - 1, trainingData);
 
     // the train method will print training results like
     // precision, recall, and F1:
     detector.train();
 
     // get best model parameters:
-    double best_epsilon = detector.bestEpsilon();
-    double [] mean_values = detector.muValues();
-    double [] sigma_squared = detector.sigmaSquared();
+    double bestEpsilon = detector.bestEpsilon();
+    var meanValues = detector.muValues();
+    var sigmaSquared = detector.sigmaSquared();
     System.out.println("\nModel parameters:");
-    System.out.println("  best epsilon = " + best_epsilon);
-    System.out.println("  num features = " + mean_values.length);
+    System.out.println("  best epsilon = " + bestEpsilon);
+    System.out.println("  num features = " + meanValues.length);
   }
 }

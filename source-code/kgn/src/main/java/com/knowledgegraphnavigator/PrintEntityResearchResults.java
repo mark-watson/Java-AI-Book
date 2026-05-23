@@ -21,35 +21,39 @@ public class PrintEntityResearchResults {
 
   private PrintEntityResearchResults() { }
 
-  public PrintEntityResearchResults(Sparql endpoint,
-                                    List<EntityAndDescription> people,
-                                    List<EntityAndDescription> companies,
-                                    List<EntityAndDescription> cities,
-                                    List<EntityAndDescription> countries)
+  /**
+   * Print detailed research results for each entity category.
+   * Extracted from constructor to avoid side-effects in object construction.
+   */
+  public static void printResults(Sparql endpoint,
+                                  List<EntityAndDescription> people,
+                                  List<EntityAndDescription> companies,
+                                  List<EntityAndDescription> cities,
+                                  List<EntityAndDescription> countries)
       throws SQLException, ClassNotFoundException {
     out("\n" + GREEN + "Individual People:\n" + RESET);
-    for (EntityAndDescription person : people) {
-      out("  " + GREEN + String.format("%-25s", person.entityName) +
-          PURPLE + " : " + removeBrackets(person.entityUri) + RESET);
-      out(EntityDetail.personAsString(endpoint, person.entityUri));
+    for (var person : people) {
+      out("  " + GREEN + String.format("%-25s", person.entityName()) +
+          PURPLE + " : " + removeBrackets(person.entityUri()) + RESET);
+      out(EntityDetail.personAsString(endpoint, person.entityUri()));
     }
     out("\n" + CYAN + "Individual Companies:\n" + RESET);
-    for (EntityAndDescription company : companies) {
-      out("  " + CYAN + String.format("%-25s", company.entityName) +
-          YELLOW + " : " + removeBrackets(company.entityUri) + RESET);
-      out(EntityDetail.companyAsString(endpoint, company.entityUri));
+    for (var company : companies) {
+      out("  " + CYAN + String.format("%-25s", company.entityName()) +
+          YELLOW + " : " + removeBrackets(company.entityUri()) + RESET);
+      out(EntityDetail.companyAsString(endpoint, company.entityUri()));
     }
     out("\n" + GREEN + "Individual Cities:\n" + RESET);
-    for (EntityAndDescription city : cities) {
-      out("  " + GREEN + String.format("%-25s", city.entityName) +
-          PURPLE + " : " + removeBrackets(city.entityUri) + RESET);
-      out(EntityDetail.cityAsString(endpoint, city.entityUri));
+    for (var city : cities) {
+      out("  " + GREEN + String.format("%-25s", city.entityName()) +
+          PURPLE + " : " + removeBrackets(city.entityUri()) + RESET);
+      out(EntityDetail.cityAsString(endpoint, city.entityUri()));
     }
     out("\n" + GREEN + "Individual Countries:\n" + RESET);
-    for (EntityAndDescription country : countries) {
-      out("  " + GREEN + String.format("%-25s", country.entityName) +
-          PURPLE + " : " + removeBrackets(country.entityUri) + RESET);
-      out(EntityDetail.countryAsString(endpoint, country.entityUri));
+    for (var country : countries) {
+      out("  " + GREEN + String.format("%-25s", country.entityName()) +
+          PURPLE + " : " + removeBrackets(country.entityUri()) + RESET);
+      out(EntityDetail.countryAsString(endpoint, country.entityUri()));
     }
     out("");
   }

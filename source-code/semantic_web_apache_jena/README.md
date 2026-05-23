@@ -8,7 +8,7 @@ This example demonstrates Semantic Web programming using the Apache Jena framewo
 
 ## Prerequisites
 
-- Java 11+
+- Java 21+ (required by Apache Jena 6)
 - Maven 3.6+
 
 ## Build & Run
@@ -26,9 +26,10 @@ mvn test -q
 
 | Artifact | Purpose |
 |---|---|
-| `org.apache.jena:apache-jena-libs` | RDF/SPARQL processing |
-| `org.apache.derby:derby` | Local SPARQL result caching |
-| `commons-io:commons-io` | File I/O utilities |
+| `org.apache.jena:apache-jena-libs` 6.1.0 | RDF/SPARQL processing |
+| `com.h2database:h2` 2.4.240 | Local SPARQL result caching (embedded DB) |
+| `commons-io:commons-io` 2.22.0 | File I/O utilities |
+| `org.junit.jupiter:junit-jupiter` 6.1.0 | Testing framework |
 
 ## Project Structure
 

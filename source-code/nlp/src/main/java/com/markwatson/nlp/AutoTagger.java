@@ -2,6 +2,7 @@ package com.markwatson.nlp;
 
 import public_domain.Stemmer;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.*;
 import javax.xml.parsers.*;
 import org.xml.sax.Attributes;
@@ -25,9 +26,9 @@ import com.markwatson.nlp.util.NameValue;
  * <p/>
  */
 public class AutoTagger {
-    private static Hashtable<String, Hashtable<String, Float>> tagClasses;
+    private static Map<String, Map<String, Float>> tagClasses;
     private static String[] tagClassNames;
-    private static List<Hashtable<String, Float>> hashes = new ArrayList<Hashtable<String, Float>>();
+    private static final List<Map<String, Float>> hashes = new ArrayList<>();
     /**
      * 
      * Static initialization of data from an XML file that contains
@@ -37,18 +38,16 @@ public class AutoTagger {
     static {
         DefaultHandler handler = new TagsSAXHandler();        
         SAXParserFactory factory = SAXParserFactory.newInstance();  // Use the default non-validating parser
-        try {
-            FileInputStream  xml_input_stream = new FileInputStream(System.getProperty("user.dir") + "/" + "test_data/classification_tags.xml");
+        try (var xmlInputStream = new FileInputStream(System.getProperty("user.dir") + "/" + "test_data/classification_tags.xml")) {
             SAXParser saxParser = factory.newSAXParser();
-            saxParser.parse(xml_input_stream, handler );
-        } catch (Throwable t) {
-            t.printStackTrace();
+            saxParser.parse(xmlInputStream, handler);
+        } catch (IOException | ParserConfigurationException | SAXException e) {
+            e.printStackTrace();
         }
         tagClassNames = new String[tagClasses.size()];
         int count = 0;
-        for (Enumeration<String> e = tagClasses.keys() ; e.hasMoreElements() ;) {
-            String cname = e.nextElement();
-            System.out.println("cname="+cname);
+        for (var cname : tagClasses.keySet()) {
+            System.out.println("cname=" + cname);
             hashes.add(tagClasses.get(cname));
             tagClassNames[count++] = cname;
         }
@@ -59,10 +58,10 @@ public class AutoTagger {
     }
     
     public List<NameValue<String, Float>> getTags(String text) {
-    	List<NameValue<String, Float>> results = new ArrayList<NameValue<String, Float>>();
+    	var results = new ArrayList<NameValue<String, Float>>();
         List<SFtriple> tag_data = getTagsHelper(text);
         for (SFtriple triple : tag_data) {
-        	results.add(new NameValue<String,Float>(triple.getS(), triple.getF()));
+        	results.add(new NameValue<>(triple.s(), triple.f()));
         }
     	return results;
     }
@@ -73,7 +72,7 @@ public class AutoTagger {
      * @return
      */
     private List<SFtriple> getTagsHelper(String text) {
-        Stemmer stemmer = new Stemmer();
+        var stemmer = new Stemmer();
         List<String> stems = stemmer.stemString(text);
         return getTagsHelper(stems);
     }
@@ -84,7 +83,7 @@ public class AutoTagger {
      * @return
      */
     private List<SFtriple> getTagsHelper(List<String> stems) {
-        List<SFtriple> ret = new ArrayList<SFtriple>();
+        var ret = new ArrayList<SFtriple>();
         int size = tagClassNames.length;
         float[] scores = new float[size];
         for (String stem : stems) {
@@ -93,23 +92,17 @@ public class AutoTagger {
                 if (f != null) scores[i] += f;
             }
         }
-        float max_score=0.001f;
-        for (int i=0; i<size; i++) if (max_score < scores[i]) max_score = scores[i];
+        float max_score = 0.001f;
+        for (int i = 0; i < size; i++) if (max_score < scores[i]) max_score = scores[i];
         float cutoff = 0.2f * max_score;
-        for (int i=0; i<size; i++) {
-            if (scores[i] > cutoff) ret.add(new SFtriple(tagClassNames[i], scores[i]/max_score, i));
+        for (int i = 0; i < size; i++) {
+            if (scores[i] > cutoff) ret.add(new SFtriple(tagClassNames[i], scores[i] / max_score, i));
         }
         //for (int i=0; i<size; i++) System.out.println(tagClassNames[i]+"\t"+scores[i]);
-        Collections.sort(ret, new SFtripleComparator());
+        ret.sort(Comparator.comparingDouble(SFtriple::f).reversed());
         return ret;
     }
 
-    class SFtripleComparator implements Comparator<SFtriple> {
-        public int compare(SFtriple o1, SFtriple o2) {
-            return  (int) (1000 * (o2.getF() - o1.getF()));
-        }
-    }
-    
     /**
      * 
      * @param text
@@ -142,10 +135,10 @@ public class AutoTagger {
         float[] ret = new float[num];
         float scale = 1.0f / best_tags.size();
         for (SFtriple tag : best_tags) {
-            Hashtable<String, Float> h = hashes.get(tag.getTopic_index());
-            for (int i=0; i<num; i++) {
+            Map<String, Float> h = hashes.get(tag.topicIndex());
+            for (int i = 0; i < num; i++) {
                 Float f = h.get(stems.get(i));
-                if (f!=null) ret[i] += h.get(stems.get(i)) * scale;
+                if (f != null) ret[i] += f * scale;
             }
         }
         return ret;
@@ -157,32 +150,32 @@ public class AutoTagger {
      * @param args not used
      */
     public static void main(String[] args) {
-    	AutoTagger test = new AutoTagger();
-    	List<NameValue<String, Float>> results = test.getTags("The President went to Congress to argue for his tax bill before leaving on a vacation to Las Vegas to see some shows and gamble.");
-    	for (NameValue<String, Float> result : results) {
+    	var test = new AutoTagger();
+    	var results = test.getTags("The President went to Congress to argue for his tax bill before leaving on a vacation to Las Vegas to see some shows and gamble.");
+    	for (var result : results) {
     		System.out.println(result);
     	}
     }
 
     static class TagsSAXHandler extends org.xml.sax.helpers.DefaultHandler {
         int depth = 0;
-        String last_topic="";
-        Hashtable <String, Float>hash;
+        String last_topic = "";
+        Map<String, Float> hash;
         // override default methods for a few SAX events:
         @Override
         public void startElement (String uri, String localName,
                                   String qName, Attributes attributes)
             throws SAXException
         {
-            if (depth==0) {
-                tagClasses = new Hashtable<String, Hashtable<String, Float>>();
+            if (depth == 0) {
+                tagClasses = new HashMap<>();
             }
-            if (depth==1)  {
-                last_topic=attributes.getValue(0);
-                hash = new Hashtable<String, Float>();
+            if (depth == 1)  {
+                last_topic = attributes.getValue(0);
+                hash = new HashMap<>();
                 tagClasses.put(last_topic, hash);
             }
-            if (depth==2) {
+            if (depth == 2) {
                 hash.put(attributes.getValue(0), Float.parseFloat(attributes.getValue(1)));
             }
 
@@ -209,50 +202,25 @@ public class AutoTagger {
             depth--;
         }
         @Override
-        public void characters (char ch[], int start, int length)
+        public void characters (char[] ch, int start, int length)
             throws SAXException
         {
         }
     }
     
-    class SFtriple implements Comparable {
+    /**
+     * A scored tag triple: tag name, score, and topic index.
+     * Implemented as a Java record for conciseness.
+     */
+    record SFtriple(String s, float f, int topicIndex) implements Comparable<SFtriple> {
 
-        public SFtriple(String s, float f, int topic_index) { this.s = s; this.f = f; this.topic_index = topic_index; }
+        @Override
+        public String toString() { return "[SFtriple: " + s + " : " + f + " : " + topicIndex + "]"; }
 
-        public String toString() { return "[SFtriple: "+s + " : " + f + " : " + topic_index + "]"; }
-
-        public int compareTo(Object o) {
-            return (int)(1000f*(((SFtriple)o).getF() - f));
-        }
-
-        private String s;
-        private float f;
-        private int topic_index;
-
-        public String getS() {
-            return s;
-        }
-
-        public void setS(String s) {
-            this.s = s;
-        }
-
-        public float getF() {
-            return f;
-        }
-
-        public void setF(float f) {
-            this.f = f;
-        }
-
-        public int getTopic_index() {
-            return topic_index;
-        }
-
-        public void setTopic_index(int topic_index) {
-            this.topic_index = topic_index;
+        @Override
+        public int compareTo(SFtriple o) {
+            return Float.compare(o.f, f);
         }
     }
 
 }
-

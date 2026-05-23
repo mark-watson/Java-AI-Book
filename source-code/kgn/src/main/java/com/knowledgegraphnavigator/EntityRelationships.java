@@ -6,12 +6,15 @@ import java.sql.SQLException;
 
 public class EntityRelationships {
 
-  static public QueryResult results(Sparql endpoint,
+  public static QueryResult results(Sparql endpoint,
                                     String entity1Uri, String entity2Uri)
       throws SQLException, ClassNotFoundException {
-    String query =
-        String.format("select ?p where { %s ?p %s . FILTER (!regex(str(?p), 'wikiPage', 'i')) } limit 10",
-            entity1Uri, entity2Uri);
+    var query = """
+        SELECT ?p WHERE {
+          %s ?p %s .
+          FILTER (!regex(str(?p), 'wikiPage', 'i'))
+        } LIMIT 10
+        """.formatted(entity1Uri, entity2Uri);
     return endpoint.query(query);
   }
 }

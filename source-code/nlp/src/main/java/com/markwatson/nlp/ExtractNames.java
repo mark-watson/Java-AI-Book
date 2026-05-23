@@ -8,9 +8,9 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.OutputStreamWriter;
 import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Wrapper for code to find both human and place names in input text.
@@ -34,48 +34,48 @@ public class ExtractNames {
      * @return 
      */
     public ScoredList[] getProperNames(List<String> words) {
-        ScoredList placeNames = new ScoredList();
-        ScoredList humanNames = new ScoredList();
+        var placeNames = new ScoredList();
+        var humanNames = new ScoredList();
         ScoredList[] ret = new ScoredList[2];
         ret[0] = humanNames; ret[1] = placeNames;
         if (words == null) return ret;
-        for (int i=0; i<words.size(); i++) {
+        for (int i = 0; i < words.size(); i++) {
             // 5 word human names:
             if (isHumanName(words, i, 5)) {
-                String s = words.get(i) + " " + words.get(i+1) + " " + words.get(i+2) + " " + words.get(i+3) + " " + words.get(i+4);
+                String s = String.join(" ", words.subList(i, i + 5));
                 humanNames.addValue(s);
                 i += 4;
                 continue;
             }
             // 4 word human names:
             if (isHumanName(words, i, 4)) {
-                String s = words.get(i) + " " + words.get(i+1) + " " + words.get(i+2) + " " + words.get(i+3);
+                String s = String.join(" ", words.subList(i, i + 4));
                 humanNames.addValue(s);
                 i += 3;
                 continue;
             }
             // 3 word names:
             if (isPlaceName(words, i, 3)) {
-                String s = words.get(i) + " " + words.get(i+1) + " " + words.get(i+2);
+                String s = String.join(" ", words.subList(i, i + 3));
                 placeNames.addValue(s);
                 i += 2;
                 continue;
             }
             if (isHumanName(words, i, 3)) {
-                String s = words.get(i) + " " + words.get(i+1) + " " + words.get(i+2);
+                String s = String.join(" ", words.subList(i, i + 3));
                 humanNames.addValue(s);
                 i += 2;
                 continue;
             }
             // 2 word names:
             if (isPlaceName(words, i, 2)) {
-                String s = words.get(i) + " " + words.get(i+1);
+                String s = words.get(i) + " " + words.get(i + 1);
                 placeNames.addValue(s);
                 i += 1;
                 continue;
             }
             if (isHumanName(words, i, 2)) {
-                String s = words.get(i) + " " + words.get(i+1);
+                String s = words.get(i) + " " + words.get(i + 1);
                 humanNames.addValue(s);
                 i += 1;
                 continue;
@@ -108,11 +108,7 @@ public class ExtractNames {
     public boolean isPlaceName(List<String> words, int startIndex, int numWords) {
         if ((startIndex + numWords) > words.size())  return false;
         if (numWords == 1) return isPlaceName(words.get(startIndex));
-        String s = "";
-        for (int i=startIndex; i<(startIndex + numWords); i++) {
-            if (i < (startIndex + numWords - 1)) s = s + words.get(startIndex) + " ";
-            else                                 s = s + words.get(startIndex);
-        }
+        String s = String.join(" ", words.subList(startIndex, startIndex + numWords));
         return isPlaceName(s);
     }
 
@@ -122,7 +118,7 @@ public class ExtractNames {
      * @return
      */
     public boolean isPlaceName(String name) {
-        if (placeNameHash.get(name)!=null) System.out.println("* place name: "+name+", placeNameHash.get(name): "+placeNameHash.get(name));
+        if (placeNameHash.get(name) != null) System.out.println("* place name: " + name + ", placeNameHash.get(name): " + placeNameHash.get(name));
         return placeNameHash.get(name) != null;
     }
 
@@ -148,22 +144,7 @@ public class ExtractNames {
      */
     public boolean isHumanName(List<String> words, int index, int numWords) {
         if ((index + numWords) > words.size())  return false;
-        if (numWords == 1) {
-            return isHumanName(Arrays.asList(words.get(index)));
-        }
-        if (numWords == 2) {
-            return isHumanName(Arrays.asList(words.get(index), words.get(index+1)));
-        }
-        if (numWords == 3) {
-            return isHumanName(Arrays.asList(words.get(index), words.get(index+1), words.get(index+2)));
-        }
-        if (numWords == 4) {
-            return isHumanName(Arrays.asList(words.get(index), words.get(index+1), words.get(index+2), words.get(index+3)));
-        }
-        if (numWords == 5) {
-            return isHumanName(Arrays.asList(words.get(index), words.get(index+1), words.get(index+2), words.get(index+3), words.get(index+4)));
-        }
-        return false;
+        return isHumanName(words.subList(index, index + numWords));
     }
 
     /**
@@ -203,17 +184,17 @@ public class ExtractNames {
                 lastNameHash.get(words.get(3)) != null) return true;
             if (prefixHash.get(words.get(0)) != null &&
                 firstNameHash.get(words.get(1)) != null &&
-                words.get(2).length()==1 &&
+                words.get(2).length() == 1 &&
                 lastNameHash.get(words.get(3)) != null) return true;
         } else if (len == 5) {
             if (firstNameHash.get(words.get(0)) != null &&
                 firstNameHash.get(words.get(1)) != null &&
-                words.get(2).length()==1 &&
+                words.get(2).length() == 1 &&
                 words.get(3).equals(".") &&
                 lastNameHash.get(words.get(4)) != null) return true;
             if (prefixHash.get(words.get(0)) != null &&
                 firstNameHash.get(words.get(1)) != null &&
-                words.get(2).length()==1 &&
+                words.get(2).length() == 1 &&
                 words.get(3).equals(".") &&
                 lastNameHash.get(words.get(4)) != null) return true;
         }
@@ -231,75 +212,71 @@ public class ExtractNames {
      * 
      * @param dataPath
      */
+    @SuppressWarnings("unchecked")
     public ExtractNames(String dataPath) {
         if (lastNameHash != null) return; // static data already loaded
         try {
-            InputStream ins =
+            InputStream tempIns =
                 this.getClass().getClassLoader().getResourceAsStream(dataPath);
-            if (ins == null) {
-                ins = this.getClass().getClassLoader().getResourceAsStream(dataPath);
+            if (tempIns == null) {
+                try {
+                    tempIns = new FileInputStream(dataPath);
+                } catch (java.io.FileNotFoundException e) {
+                    throw new IllegalStateException(
+                        "\ncom.knowledgebooks.entity_extraction.Names: failed to open '" + dataPath + "'\n", e);
+                }
             }
-            if (ins == null) {
-                ins = new FileInputStream(dataPath);
+            try (InputStream ins = tempIns) {
+                var p = new ObjectInputStream(ins);
+                lastNameHash = (Map<String, String>) p.readObject();
+                firstNameHash = (Map<String, String>) p.readObject();
+                placeNameHash = (Map<String, String>) p.readObject();
+                prefixHash = (Map<String, String>) p.readObject();
             }
-            if (ins == null) {
-                System.out.println("\ncom.knowledgebooks.entity_extraction.Names: failed to open '" + dataPath + "'\n");
-                System.exit(1);
-            } else {
-                ObjectInputStream p = new ObjectInputStream(ins);
-                lastNameHash = (Hashtable) p.readObject();
-                firstNameHash = (Hashtable) p.readObject();
-                placeNameHash = (Hashtable) p.readObject();
-                prefixHash = (Hashtable) p.readObject();
-                ins.close();
-                
-                FileOutputStream fos = new FileOutputStream("lastnames.txt");
-                OutputStreamWriter out = new OutputStreamWriter(fos);
-                Enumeration enum2 = lastNameHash.keys();
-                while (enum2.hasMoreElements()) {
-                  Object key = enum2.nextElement();
-                  out.write(key+"\n");
-                }
-                out.close();
-        // temp: write out hash tables:
-           if (true) {
-                fos = new FileOutputStream("firstnames.txt");
-                out = new OutputStreamWriter(fos);
-                enum2 = firstNameHash.keys();
-                while (enum2.hasMoreElements()) {
-                  Object key = enum2.nextElement();
-                  out.write(key+"\n");
-                }
-                out.close();
-                
-                fos = new FileOutputStream("placenames.txt");
-                out = new OutputStreamWriter(fos);
-                enum2 = placeNameHash.keys();
-                while (enum2.hasMoreElements()) {
-                  Object key2 = enum2.nextElement();
-                  String key = "" + key2;
-                  if (key.indexOf(';') != -1) key = key.substring(0,key.indexOf(';')); 
-                  if (key.indexOf('(') != -1) key = key.substring(0,key.indexOf('('));
-                  if (key.indexOf(',') != -1) key = key.substring(0,key.indexOf(','));
-                  key = key.trim();
-                  out.write(key+":" + placeNameHash.get(key) +"\n");
-                }
-                out.close();
-                
-                fos = new FileOutputStream("prefixnames.txt");
-                out = new OutputStreamWriter(fos);
-                enum2 = prefixHash.keys();
-                while (enum2.hasMoreElements()) {
-                  Object key = enum2.nextElement();
-                  out.write(key+"\n");
-                }
-                out.close();
-           }      
-            }
+            
+            // Write out human-readable name files for inspection
+            writeNameFile("lastnames.txt", lastNameHash);
+            writeNameFile("firstnames.txt", firstNameHash);
+            writePlaceNameFile("placenames.txt", placeNameHash);
+            writeNameFile("prefixnames.txt", prefixHash);
         } catch (Exception ee) {
             ee.printStackTrace();
         }
-        System.out.println("# last names="+lastNameHash.size()+", # first names="+firstNameHash.size());
+        System.out.println("# last names=" + lastNameHash.size() + ", # first names=" + firstNameHash.size());
+    }
+
+    /**
+     * Helper to write out name hash keys to a text file.
+     */
+    private void writeNameFile(String filename, Map<String, ?> hash) {
+        try (var fos = new FileOutputStream(filename);
+             var out = new OutputStreamWriter(fos)) {
+            for (String key : hash.keySet()) {
+                out.write(key + "\n");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Helper to write out place names with cleanup for special characters.
+     */
+    private void writePlaceNameFile(String filename, Map<String, ?> hash) {
+        try (var fos = new FileOutputStream(filename);
+             var out = new OutputStreamWriter(fos)) {
+            for (var entry : hash.entrySet()) {
+                String key = entry.getKey();
+                int idx;
+                if ((idx = key.indexOf(';')) != -1) key = key.substring(0, idx);
+                if ((idx = key.indexOf('(')) != -1) key = key.substring(0, idx);
+                if ((idx = key.indexOf(',')) != -1) key = key.substring(0, idx);
+                key = key.trim();
+                out.write(key + ":" + entry.getValue() + "\n");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -307,9 +284,9 @@ public class ExtractNames {
      * @param args
      */
     static public void main(String[] args) {
-        ExtractNames extractNames = new ExtractNames();
+        var extractNames = new ExtractNames();
         // initialize everything, before printing any output - trying to see what is taking so long!
-        if (args.length>0) {
+        if (args.length > 0) {
             ScoredList[] ret = extractNames.getProperNames(args[0]);
             System.out.println("Human names: " + ret[0].getValuesAsString());
             System.out.println("Place names: " + ret[1].getValuesAsString());
@@ -337,7 +314,7 @@ public class ExtractNames {
             System.out.println("\n\n\n");
             
             // for book example:
-            ExtractNames names = new ExtractNames();
+            var names = new ExtractNames();
             System.out.println("Los Angeles: " +
                 names.isPlaceName("Los Angeles"));
     System.out.println("President Bush: " +
@@ -355,9 +332,9 @@ public class ExtractNames {
         }
     }
 
-    static Hashtable lastNameHash = null;
-    static Hashtable firstNameHash = null;
-    static Hashtable placeNameHash = null; // cache for database access
-    static Hashtable prefixHash = null;
+    static Map<String, String> lastNameHash = null;
+    static Map<String, String> firstNameHash = null;
+    static Map<String, String> placeNameHash = null; // cache for database access
+    static Map<String, String> prefixHash = null;
 
 }

@@ -32,37 +32,35 @@ public class Tokenizer {
      */
     static public List<String> wordsToList(String s2, int maxR) {
         s2 = stripControlCharacters(s2);
-        List<String> words = new ArrayList<String>();
-        String x;
+        List<String> words = new ArrayList<>();
         int count = 0;
         try {
-            StreamTokenizer str_tok = new StreamTokenizer(new StringReader(s2));
-            str_tok.whitespaceChars('"', '"');
-            str_tok.whitespaceChars('\'', '\'');
-            str_tok.whitespaceChars('/', '/');
-            //str_tok.wordChars(':', ':');
-            while (str_tok.nextToken() != StreamTokenizer.TT_EOF) {
+            var strTok = new StreamTokenizer(new StringReader(s2));
+            strTok.whitespaceChars('"', '"');
+            strTok.whitespaceChars('\'', '\'');
+            strTok.whitespaceChars('/', '/');
+            //strTok.wordChars(':', ':');
+            while (strTok.nextToken() != StreamTokenizer.TT_EOF) {
                 String s;
-                switch (str_tok.ttype) {
+                switch (strTok.ttype) {
                     case StreamTokenizer.TT_EOL:
                         s = ""; // we will ignore this
                         break;
                     case StreamTokenizer.TT_WORD:
-                        s = str_tok.sval;
+                        s = strTok.sval;
                         break;
                     case StreamTokenizer.TT_NUMBER:
-                        s = "" + (int) str_tok.nval; // .toString(); // we will ignore this
-
+                        s = "" + (int) strTok.nval;
                         break;
                     default :
-                        s = String.valueOf((char) str_tok.ttype);
+                        s = String.valueOf((char) strTok.ttype);
                 }
-                if (s.length() < 1)
+                if (s.isEmpty())
                     continue;
                 //if (s.indexOf("-") > -1) continue;
                 //s = s.toLowerCase();
                 if (s.endsWith(".")) {
-                    // first check for abreviations like "N.J.":
+                    // first check for abbreviations like "N.J.":
                     int index = s.indexOf(".");
                     if (index < (s.length() - 1)) {
                         words.add(s);
@@ -71,34 +69,34 @@ public class Tokenizer {
                         words.add(".");
                     }
                 } else if (s.endsWith(",")) {
-                    x = s.substring(0, s.length() - 1);
-                    if (x.length() > 0) words.add(x);
+                    String x = s.substring(0, s.length() - 1);
+                    if (!x.isEmpty()) words.add(x);
                     words.add(",");
                 } else if (s.endsWith(";")) {
-                    x = s.substring(0, s.length() - 1);
-                    if (x.length() > 0) words.add(x);
+                    String x = s.substring(0, s.length() - 1);
+                    if (!x.isEmpty()) words.add(x);
                     words.add(";");
                 } else if (s.endsWith("?")) {
-                    x = s.substring(0, s.length() - 1);
-                    if (x.length() > 0) words.add(x);
+                    String x = s.substring(0, s.length() - 1);
+                    if (!x.isEmpty()) words.add(x);
                     words.add("?");
                 } else if (s.endsWith(":")) {
-                    x = s.substring(0, s.length() - 1);
-                    if (x.length() > 0) words.add(x);
+                    String x = s.substring(0, s.length() - 1);
+                    if (!x.isEmpty()) words.add(x);
                     words.add(":");
                 } else {
                     words.add(s);
                 }
                 if (++count >= maxR) break;
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
         return words;
     }
 
     static private String stripControlCharacters(String s) {
-        StringBuffer sb = new StringBuffer(s.length() + 1);
+        var sb = new StringBuilder(s.length() + 1);
         for (int i = 0; i < s.length(); i++) {
             char ch = s.charAt(i);
             if (ch > 256 || ch == '\n' || ch == '\t' || ch == '\r' || ch == 226) {
@@ -113,7 +111,7 @@ public class Tokenizer {
         }
         return sb.toString();
     }
-    public static void main(String []args) {
+    public static void main(String[] args) {
     	String text = "The ball, rolling quickly, went down the hill.";
     	List<String> tokens = Tokenizer.wordsToList(text);
     	System.out.println(text);
@@ -121,4 +119,3 @@ public class Tokenizer {
     	System.out.println();
     }
 }
-

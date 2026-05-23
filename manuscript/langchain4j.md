@@ -52,74 +52,71 @@ The main class provides a `getCompletion` method that wraps LangChain4j's `ChatL
 ~~~~~~~~
 package com.markwatson.langchain4j_ollama;
 
-import dev.langchain4j.model.chat.ChatLanguageModel;
-import dev.langchain4j.model.openai.OpenAiChatModel;
+import dev.langchain4j.model.ollama.OllamaChatModel;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-
-import org.json.JSONObject;
+import java.time.Duration;
 
 public class OllamaLlmLangChain4j {
 
-    public static void main(String[] args) throws Exception {
-        String prompt =
-          "Translate the following English text to French:"
-          + " 'Hello, how are you?'";
-        String completion = getCompletion(prompt, "mistral");
-        System.out.println("completion: " + completion);
+    private static final String DEFAULT_BASE_URL = "http://localhost:11434";
+    private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(120);
+
+    public static void main(String[] args) {
+        String prompt = "Translate the following English text to French: 'Hello, how are you?'";
+        try {
+            String completion = getCompletion(prompt, "mistral");
+            System.out.println("completion: " + completion);
+        } catch (Exception e) {
+            System.err.println("Error getting completion: " + e.getMessage());
+        }
     }
 
-    public static String getCompletion(String prompt,
-                         String modelName) throws Exception {
-        System.out.println("\n\n**********\n\nprompt: "
-                           + prompt
-                           + ", modelName: " + modelName);
-        String api_key = System.getenv("OPENAI_API_KEY");
-        ChatLanguageModel model =
-            OpenAiChatModel.withApiKey(api_key);
-        String answer = model.generate(prompt);
+    public static String getCompletion(String prompt, String modelName) {
+        System.out.println("\n\n**********\n\nprompt: " + prompt + ", modelName: " + modelName);
+
+        String baseUrl = System.getenv("OLLAMA_BASE_URL");
+        if (baseUrl == null || baseUrl.isBlank()) {
+            baseUrl = DEFAULT_BASE_URL;
+        }
+
+        OllamaChatModel model = OllamaChatModel.builder()
+                .baseUrl(baseUrl)
+                .modelName(modelName)
+                .temperature(0.7)
+                .timeout(DEFAULT_TIMEOUT)
+                .build();
+
+        String answer = model.chat(prompt);
+
         System.out.println(answer);
         return answer;
     }
 
     /***
-     * Utilities for prompt template processing
+     * Utilities for using the Ollama LLM APIs
      */
 
-    public static String readFileToString(String filePath)
-                                          throws IOException {
-        Path path = Paths.get(filePath);
-        return new String(Files.readAllBytes(path));
+    // read the contents of a file path into a Java string
+    public static String readFileToString(String filePath) throws IOException {
+        return Files.readString(Path.of(filePath));
     }
 
-    public static String replaceSubstring(
-          String originalString,
-          String substringToReplace,
-          String replacementString) {
-        return originalString.replace(
-            substringToReplace, replacementString);
-    }
-
-    public static String promptVar(String prompt0,
-                                   String varName,
-                                   String varValue) {
-        String prompt =
-            replaceSubstring(prompt0, varName, varValue);
-        return replaceSubstring(prompt, varName, varValue);
+    public static String promptVar(String prompt, String varName, String varValue) {
+        return prompt.replace(varName, varValue);
     }
 }
 ~~~~~~~~
 
 ### Understanding the Core API Call
 
-The heart of this class is the `getCompletion` method on lines 24 through 34. Notice how concise the LLM interaction is:
+The heart of this class is the `getCompletion` method. Notice how concise the LLM interaction is:
 
-1. We retrieve the API key from the environment variable `OPENAI_API_KEY`.
-2. We construct a `ChatLanguageModel` instance using `OpenAiChatModel.withApiKey(api_key)`. This single line replaces dozens of lines of HTTP connection setup, JSON serialization, and response parsing that we wrote by hand in the OpenAI chapter.
-3. We call `model.generate(prompt)` which returns a plain Java `String` containing the model's response.
+1. We retrieve the optional `OLLAMA_BASE_URL` from the environment variables, defaulting to `http://localhost:11434` if not specified.
+2. We construct an `OllamaChatModel` instance using its builder, specifying the `baseUrl`, `modelName`, `temperature` (0.7), and `timeout`. This replaces dozens of lines of manual HTTP connection setup, JSON payload building, and response parsing that we wrote by hand in the previous chapter.
+3. We call `model.chat(prompt)` which returns a plain Java `String` containing the model's response.
 
 Compare this with the raw HTTP approach from the OpenAI chapter where we had to manually construct JSON request bodies, set HTTP headers, read input streams, and parse JSON responses. The LangChain4j abstraction reduces all of that ceremony to two lines of code.
 
@@ -187,78 +184,63 @@ The JUnit test class exercises three distinct use cases: translation, structured
 ~~~~~~~~
 package com.markwatson.langchain4j_ollama;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
-public class OllamaLlmLangChain4jTest extends TestCase {
+import static org.junit.jupiter.api.Assertions.*;
 
-    public OllamaLlmLangChain4jTest(String testName) {
-        super(testName);
+/**
+ * Integration tests for OllamaLlmLangChain4j.
+ * Requires a running Ollama server with the specified models pulled.
+ */
+@Tag("integration")
+class OllamaLlmLangChain4jTest {
+
+    @Test
+    @DisplayName("Simple completion with Ollama model")
+    void testCompletion() {
+        String result = OllamaLlmLangChain4j.getCompletion(
+                "Translate the following English text to French: 'Hello, how are you?'",
+                "gemma3:1b");
+
+        System.out.println("\n\n&&&&&&&&&&\n\ncompletion: " + result);
+        assertNotNull(result, "Completion result should not be null");
+        assertFalse(result.isBlank(), "Completion result should not be blank");
     }
 
-    public static Test suite() {
-        return new TestSuite(
-            OllamaLlmLangChain4jTest.class);
+    @Test
+    @DisplayName("Two-shot template extraction")
+    void testTwoShotTemplate() throws Exception {
+        String inputText = "Mark Smith enjoys living in Berkeley California at 102 Dunston Street and use mjess@foobar.com for contacting him.";
+        String prompt0 = OllamaLlmLangChain4j.readFileToString("../prompts/two-shot-2-var.txt");
+        System.out.println("prompt0: " + prompt0);
+
+        String prompt = OllamaLlmLangChain4j.promptVar(prompt0, "{input_text}", inputText);
+        System.out.println("prompt: " + prompt);
+
+        String result = OllamaLlmLangChain4j.getCompletion(prompt, "gemma3:1b");
+        System.out.println("two shot extraction completion: " + result);
+
+        assertNotNull(result, "Two-shot extraction result should not be null");
+        assertFalse(result.isBlank(), "Two-shot extraction result should not be blank");
     }
 
-    public void testCompletion() throws Exception {
-        String r =
-            OllamaLlmLangChain4j.getCompletion(
-                "Translate the following English text"
-                + " to French: 'Hello, how are you?'",
-                "llama3.2:latest");
-        System.out.println(
-            "\n\n&&&&&&&&&&\n\ncompletion: " + r);
-        assertTrue(true);
-    }
+    @Test
+    @DisplayName("Text summarization")
+    void testSummarization() throws Exception {
+        String inputText = "Jupiter is the fifth planet from the Sun and the largest in the Solar System. It is a gas giant with a mass one-thousandth that of the Sun, but two-and-a-half times that of all the other planets in the Solar System combined. Jupiter is one of the brightest objects visible to the naked eye in the night sky, and has been known to ancient civilizations since before recorded history. It is named after the Roman god Jupiter.[19] When viewed from Earth, Jupiter can be bright enough for its reflected light to cast visible shadows,[ and is on average the third-brightest natural object in the night sky after the Moon and Venus.";
+        String prompt0 = OllamaLlmLangChain4j.readFileToString("../prompts/summarization_prompt.txt");
+        System.out.println("prompt0: " + prompt0);
 
-    public void testTwoShotTemplate() throws Exception {
-        String input_text =
-            "Mark Smith enjoys living in Berkeley"
-            + " California at 102 Dunston Street"
-            + " and use mjess@foobar.com for"
-            + " contacting him.";
-        String prompt0 =
-            OllamaLlmLangChain4j.readFileToString(
-                "../prompts/two-shot-2-var.txt");
-        String prompt =
-            OllamaLlmLangChain4j.promptVar(
-                prompt0, "{input_text}", input_text);
-        String r =
-            OllamaLlmLangChain4j.getCompletion(
-                prompt, "llama3:instruct");
-        System.out.println(
-            "two shot extraction completion: " + r);
-        assertTrue(true);
-    }
+        String prompt = OllamaLlmLangChain4j.promptVar(prompt0, "{input_text}", inputText);
+        System.out.println("prompt: " + prompt);
 
-    public void testSummarization() throws Exception {
-        String input_text =
-            "Jupiter is the fifth planet from the Sun"
-            + " and the largest in the Solar System."
-            + " It is a gas giant with a mass"
-            + " one-thousandth that of the Sun, but"
-            + " two-and-a-half times that of all the"
-            + " other planets in the Solar System"
-            + " combined. Jupiter is one of the"
-            + " brightest objects visible to the naked"
-            + " eye in the night sky, and has been"
-            + " known to ancient civilizations since"
-            + " before recorded history. It is named"
-            + " after the Roman god Jupiter.";
-        String prompt0 =
-            OllamaLlmLangChain4j.readFileToString(
-                "../prompts/summarization_prompt.txt");
-        String prompt =
-            OllamaLlmLangChain4j.promptVar(
-                prompt0, "{input_text}", input_text);
-        String r =
-            OllamaLlmLangChain4j.getCompletion(
-                prompt, "llama3:instruct");
-        System.out.println(
-            "summarization completion: " + r);
-        assertTrue(true);
+        String result = OllamaLlmLangChain4j.getCompletion(prompt, "gemma3:1b");
+        System.out.println("summarization completion: " + result);
+
+        assertNotNull(result, "Summarization result should not be null");
+        assertFalse(result.isBlank(), "Summarization result should not be blank");
     }
 }
 ~~~~~~~~
@@ -286,15 +268,12 @@ run:
 	mvn test -q # run test in quiet mode
 ~~~~~~~~
 
-Before running, ensure that you have Ollama running locally (`ollama serve`) and that you have pulled the required models:
+Before running, ensure that you have Ollama running locally (`ollama serve`) and that you have pulled the required model:
 
 {linenos=off}
 ~~~~~~~~
-ollama pull llama3.2
-ollama pull llama3
+ollama pull gemma3:1b
 ~~~~~~~~
-
-You also need the `OPENAI_API_KEY` environment variable set since the LangChain4j OpenAI module requires it for authentication (Ollama accepts any non-empty key when accessed through the OpenAI-compatible endpoint).
 
 The example program output is a few hundred lines due to the verbose prompt logging. Here is a small representative portion of the output showing the results of each test:
 

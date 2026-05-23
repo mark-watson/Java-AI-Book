@@ -8,7 +8,7 @@ This library resolves named entities (people, places, organizations) found in te
 
 ## Prerequisites
 
-- Java 11+
+- Java 21+
 - Maven 3.6+
 
 ## Build & Install

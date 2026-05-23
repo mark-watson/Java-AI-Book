@@ -8,7 +8,7 @@ This example implements anomaly detection using statistical methods applied to t
 
 ## Prerequisites
 
-- Java 8+
+- Java 21+
 - Maven 3.6+
 
 ## Build & Run

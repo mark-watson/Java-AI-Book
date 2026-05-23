@@ -1,13 +1,18 @@
 package com.markwatson.info_spiders;
 
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.parser.Parser;
+import org.jsoup.select.Elements;
 
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.*;
 
 /**
@@ -24,90 +29,72 @@ import java.util.*;
  * the results to ignore results that do not contain all search terms.
  */
 
+public class DBpediaLookupClient {
 
-public class DBpediaLookupClient extends DefaultHandler {
+  private final String query;
+  private final List<Map<String, String>> variableBindings = new ArrayList<>();
+
   public DBpediaLookupClient(String query) throws Exception {
     this.query = query;
     System.out.println("\n query: " + query);
-    CloseableHttpClient client = HttpClients.createDefault();
 
-    String query2 = query.replaceAll(" ", "+"); // URLEncoder.encode(query, "utf-8");
-    System.out.println("\n query2: " + query2);
-/*
-    HttpGet request = new HttpGet("http://lookup.dbpedia.org/api/search.asmx/KeywordSearch?QueryString=" +
-        query2);
+    String encodedQuery = URLEncoder.encode(query, StandardCharsets.UTF_8);
+    System.out.println("\n encodedQuery: " + encodedQuery);
 
-    // add request headers
-    request.addHeader("custom-key", "mkyong");
-    request.addHeader(HttpHeaders.USER_AGENT, "Googlebot");
+    String url = "http://lookup.dbpedia.org/api/search.asmx/KeywordSearch?QueryString=" + encodedQuery;
 
-    CloseableHttpResponse response = client.execute(request);
-    HttpEntity entity = response.getEntity();
-    if (entity != null) {
-      // return it as a String
-      String result = EntityUtils.toString(entity);
-      System.out.println(result);
-    }
-*/
-    SAXParserFactory factory = SAXParserFactory.newInstance();
-    SAXParser sax = factory.newSAXParser();
-    sax.parse("http://lookup.dbpedia.org/api/search.asmx/KeywordSearch?QueryString=" +
-        query2, this);
+    try (var client = HttpClient.newBuilder()
+            .connectTimeout(Duration.ofSeconds(10))
+            .build()) {
 
-  }
+      var request = HttpRequest.newBuilder()
+              .uri(URI.create(url))
+              .timeout(Duration.ofSeconds(15))
+              .header("User-Agent", "Mozilla/5.0 (compatible; JavaAIBook/1.0)")
+              .GET()
+              .build();
 
-  private List<Map<String, String>> variableBindings = new ArrayList<Map<String, String>>();
-  private Map<String, String> tempBinding = null;
-  private String lastElementName = null;
+      HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+      Document doc = Jsoup.parse(response.body(), "", Parser.xmlParser());
 
-  public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-    //System.out.println("startElement " + qName);
-    if (qName.equalsIgnoreCase("result")) {
-      tempBinding = new HashMap<String, String>();
-    }
-    lastElementName = qName;
-  }
+      Elements results = doc.select("Result");
+      for (Element result : results) {
+        var binding = new HashMap<String, String>();
 
-  public void endElement(String uri, String localName, String qName) throws SAXException {
-    //System.out.println("endElement " + qName);
-    if (qName.equalsIgnoreCase("result")) {
-      if (!variableBindings.contains(tempBinding) && containsSearchTerms(tempBinding))
-        variableBindings.add(tempBinding);
-    }
-  }
-
-  public void characters(char[] ch, int start, int length) throws SAXException {
-    String s = new String(ch, start, length).trim();
-    //System.out.println("characters (lastElementName='" + lastElementName + "'): " + s);
-    if (s.length() > 0) {
-      if ("Description".equals(lastElementName)) {
-        if (tempBinding.get("Description") == null) {
-          tempBinding.put("Description", s);
+        Element label = result.selectFirst("Label");
+        if (label != null && !label.text().isBlank()) {
+          binding.put("Label", label.text());
         }
-        tempBinding.put("Description", "" + tempBinding.get("Description") + " " + s);
+
+        Element uri = result.selectFirst("URI");
+        if (uri != null && !uri.text().isBlank() && !uri.text().contains("Category")) {
+          binding.put("URI", uri.text());
+        }
+
+        Element description = result.selectFirst("Description");
+        if (description != null && !description.text().isBlank()) {
+          binding.put("Description", description.text());
+        }
+
+        if (!variableBindings.contains(binding) && containsSearchTerms(binding)) {
+          variableBindings.add(binding);
+        }
       }
-      //if ("URI".equals(lastElementName)) tempBinding.put("URI", s);
-      if ("URI".equals(lastElementName) && s.indexOf("Category")==-1 && tempBinding.get("URI") == null) {
-        tempBinding.put("URI", s);
-      }
-      if ("Label".equals(lastElementName)) tempBinding.put("Label", s);
     }
   }
 
   public List<Map<String, String>> variableBindings() {
-    return variableBindings;
+    return Collections.unmodifiableList(variableBindings);
   }
+
   private boolean containsSearchTerms(Map<String, String> bindings) {
-    StringBuilder sb = new StringBuilder();
-    for (String value : bindings.values()) sb.append(value);  // do not need white space
-    String text = sb.toString().toLowerCase();
-    StringTokenizer st = new StringTokenizer(this.query);
-    while (st.hasMoreTokens()) {
-      if (text.indexOf(st.nextToken().toLowerCase()) == -1) {
+    String text = String.join("", bindings.values()).toLowerCase();
+    var tokenizer = new StringTokenizer(this.query);
+    while (tokenizer.hasMoreTokens()) {
+      if (!text.contains(tokenizer.nextToken().toLowerCase())) {
         return false;
       }
     }
     return true;
   }
-  private String query = "";
 }

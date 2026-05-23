@@ -1,19 +1,9 @@
 package com.markwatson.neuralnetworks;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class NeuralNetwork_2H_Test extends TestCase {
-    /**
-     * Create the test case
-     *
-     * @param testName name of the test case
-     */
-    public NeuralNetwork_2H_Test(String testName)
-    {
-        super( testName );
-    }
+class NeuralNetwork_2H_Test {
 
     static float[] in1 = {0.1f,  0.1f, 0.9f};
     static float[] in2 = {0.1f,  0.9f, 0.1f};
@@ -36,28 +26,27 @@ public class NeuralNetwork_2H_Test extends TestCase {
         System.out.println();
     }
 
-
     /**
-     * @return the suite of tests being tested
+     * Train network and verify it learns the rotation pattern.
      */
-    public static Test suite()
-    {
-        return new TestSuite( NeuralNetwork_2H_Test.class );
-    }
-
-    /**
-     * Test that is just for side effect printouts:
-     */
-    public void testTraining() {
+    @Test
+    void testTraining() {
         Neural_2H nn = new Neural_2H(3, 3, 3, 3);
         nn.addTrainingExample(in1, out1);
         nn.addTrainingExample(in2, out2);
         nn.addTrainingExample(in3, out3);
         double error = 0;
-        for (int i = 0; i < 10000; i++) {
+        for (int i = 0; i < 50000; i++) {
+            if (i == 5000 || i == 8000 || i == 10000 || i == 12000) nn.TRAINING_RATE *= 0.75f;
             error += nn.train();
             if (i > 0 && (i % 1000 == 0)) {
-                error /= 100;
+                error /= 1000;
+                if (error > 0.75) {
+                    nn.randomizeWeights();
+                    nn.TRAINING_RATE = 0.75f;
+                } else if (error > 0.3) {
+                    nn.slightlyRandomizeWeights();
+                }
                 System.out.println("cycle " + i + " error is " + error);
                 error = 0;
             }
@@ -66,13 +55,17 @@ public class NeuralNetwork_2H_Test extends TestCase {
         test_recall(nn, test1);
         test_recall(nn, test2);
         test_recall(nn, test3);
+
+        // Verify the network learned: each recalled output's max index should match expected
+        float[] r1 = nn.recall(test1);
+        assertTrue(r1[0] > r1[1] && r1[0] > r1[2], "test1 should map to output[0] dominant");
+        float[] r2 = nn.recall(test2);
+        assertTrue(r2[2] > r2[0] && r2[2] > r2[1], "test2 should map to output[2] dominant");
+        float[] r3 = nn.recall(test3);
+        assertTrue(r3[1] > r3[0] && r3[1] > r3[2], "test3 should map to output[1] dominant");
     }
 
-    public static String pp(float x) {
-        String s = new String("" + x + "00");
-        int index = s.indexOf(".");
-        if (index > -1) s = s.substring(0, index + 3);
-        if (s.startsWith("-") == false) s = " " + s;
-        return s;
+    static String pp(float x) {
+        return String.format("% .2f", x);
     }
 }

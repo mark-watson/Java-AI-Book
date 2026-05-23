@@ -17,8 +17,8 @@ import java.util.List;
  * see www.knowledgebooks.com for details
  */
 public class ScoredList {
-    public List<String> strings = new ArrayList<String>();
-    private List<Integer> scores = new ArrayList<Integer>();
+    public List<String> strings = new ArrayList<>();
+    private List<Integer> scores = new ArrayList<>();
     private int max_to_keep = 9999999;
     public ScoredList(int max_to_keep) {
         this.max_to_keep = max_to_keep;
@@ -59,11 +59,11 @@ public class ScoredList {
         int score = 1;
         if (strings.contains(text)) {
             int index = strings.indexOf(text);
-            try { score = ((Integer)scores.get(index)).intValue() + 1; } catch (Exception ignore) { ignore.printStackTrace(); }
-            scores.set(index, new Integer(score));
+            try { score = scores.get(index) + 1; } catch (Exception ignore) { ignore.printStackTrace(); }
+            scores.set(index, score);
         } else {
             strings.add(text);
-            scores.add(new Integer(score));
+            scores.add(score);
         }
         return removeOne(text);
     }
@@ -76,48 +76,51 @@ public class ScoredList {
      */
     public boolean contains(String s) { return strings.contains(s); }
 
-    private final boolean removeOne(String text) {    // WARNING: REALLY INEFFICIENT !!  TBD fix this
+    private boolean removeOne(String text) {    // WARNING: REALLY INEFFICIENT !!  TBD fix this
         int size = scores.size();
         if (size > max_to_keep) {
-            int min_val = 999999999;
+            int min_val = Integer.MAX_VALUE;
             int min_index = 0;
-            for (int i=0; i<size; i++) {
-                if (((Integer)scores.get(i)).intValue() < min_val) {
-                    min_val = ((Integer)scores.get(i)).intValue();
+            for (int i = 0; i < size; i++) {
+                int val = scores.get(i);
+                if (val < min_val) {
+                    min_val = val;
                     min_index = i;
                 }
             }
-            boolean ret = text.equals(strings.get(min_index)) == false;
+            boolean ret = !text.equals(strings.get(min_index));
             strings.remove(min_index);
             scores.remove(min_index);
             return ret;
         } else {
-            return true; // yes, the 'text/ item was added
+            return true; // yes, the 'text' item was added
         }
     }
 
     /**
-     * Sort a scored list in highest value first order
-     *
+     * Sort a scored list in highest value first order.
+     * Uses List.sort() for O(n log n) performance instead of bubble sort.
      */
     public void sort() {
-        for (int i=0, size=strings.size(); i<(size-1); i++) {
-            for (int j=i+1; j<size; j++) {
-                int score_i = ((Integer)scores.get(i)).intValue();  // must be inside inner loop because of possible shuffle
-                int score_j = ((Integer)scores.get(j)).intValue();
-                if (score_j > score_i) {
-                    scores.set(i, new Integer(score_j));
-                    scores.set(j, new Integer(score_i));
-                    String o = strings.get(i);
-                    strings.set(i, strings.get(j));
-                    strings.set(j, o);
-                }
-            }
+        int size = strings.size();
+        if (size <= 1) return;
+        // Build index array and sort by score descending
+        Integer[] indices = new Integer[size];
+        for (int i = 0; i < size; i++) indices[i] = i;
+        java.util.Arrays.sort(indices, (a, b) -> Integer.compare(scores.get(b), scores.get(a)));
+        // Rebuild lists in sorted order
+        var sortedStrings = new ArrayList<String>(size);
+        var sortedScores = new ArrayList<Integer>(size);
+        for (int idx : indices) {
+            sortedStrings.add(strings.get(idx));
+            sortedScores.add(scores.get(idx));
         }
+        strings = sortedStrings;
+        scores = sortedScores;
     }
 
     /**
-     * Determing the number of values in a scored list
+     * Determining the number of values in a scored list
      *
      * @return the size of the scored list
      */
@@ -129,7 +132,7 @@ public class ScoredList {
      * @param index
      * @return the value at the specified index
      */
-    public String getValue(int index) { return (String)strings.get(index); }
+    public String getValue(int index) { return strings.get(index); }
 
     /**
      * Get a specific score
@@ -137,7 +140,7 @@ public class ScoredList {
      * @param index
      * @return the score at the specified index
      */
-    public int getScore(int index) { return ((Integer)scores.get(index)).intValue(); }
+    public int getScore(int index) { return scores.get(index); }
 
     /**
      * Get all values and scores as a human readable string
@@ -155,14 +158,13 @@ public class ScoredList {
      * @return string
      */
     public String getValuesAsString(int max_return_values) {
-        StringBuffer sb = new StringBuffer(200);
+        var sb = new StringBuilder(200);
         sort();
-        int limit = strings.size();  if (limit > max_return_values) limit = max_return_values;
-        for (int i=0; i<limit; i++) {
-            sb.append(strings.get(i) + ":" + scores.get(i));
+        int limit = Math.min(strings.size(), max_return_values);
+        for (int i = 0; i < limit; i++) {
+            sb.append(strings.get(i)).append(":").append(scores.get(i));
             if (i != (limit - 1)) sb.append(", ");
         }
         return sb.toString();
     }
 }
-

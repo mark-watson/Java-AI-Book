@@ -1,7 +1,10 @@
 package com.markwatson.neuralnetworks;
 
-import java.util.*;
-import java.io.*;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Back-propagation neural network with 1 hidden layer
@@ -17,26 +20,26 @@ import java.io.*;
  */
 public class Neural_1H implements Serializable {
 
+  private static final long serialVersionUID = 1L;
+
   protected int numInputs;
   protected int numHidden;
   protected int numOutputs;
 
-  protected int numTraining;
+  public float[] inputs;
+  public float[] hidden;
+  public float[] outputs;
 
-  public float inputs[];
-  public float hidden[];
-  public float outputs[];
+  public float[][] W1;
+  public float[][] W2;
 
-  public float W1[][];
-  public float W2[][];
-
-  protected float output_errors[];
-  protected float hidden_errors[];
+  protected float[] output_errors;
+  protected float[] hidden_errors;
 
   public float learningRate = 0.2f;
 
-  transient protected Vector<float[]> inputTraining = new Vector<>();
-  transient protected Vector<float[]> outputTraining = new Vector<>();
+  transient protected List<float[]> inputTraining = new ArrayList<>();
+  transient protected List<float[]> outputTraining = new ArrayList<>();
 
 
   public Neural_1H(int num_in, int num_hidden, int num_output) {
@@ -56,11 +59,12 @@ public class Neural_1H implements Serializable {
 
   public void addTrainingExample(float[] inputs, float[] outputs) {
     if (inputs.length != numInputs || outputs.length != numOutputs) {
-      System.out.println("addTrainingExample(): array size is wrong");
-      return;
+      throw new IllegalArgumentException(
+          "addTrainingExample(): expected " + numInputs + " inputs and " +
+          numOutputs + " outputs, but got " + inputs.length + " and " + outputs.length);
     }
-    inputTraining.addElement(inputs);
-    outputTraining.addElement(outputs);
+    inputTraining.add(inputs);
+    outputTraining.add(outputs);
   }
 
   public void setLearningRate(float f) {
@@ -68,66 +72,53 @@ public class Neural_1H implements Serializable {
   }
 
   public void randomizeWeights() {
-    // Randomize weights here:
+    var rng = ThreadLocalRandom.current();
     for (int ii = 0; ii < numInputs; ii++)
       for (int hh = 0; hh < numHidden; hh++)
-        W1[ii][hh] =
-            (float) Math.random() - 0.5f;
+        W1[ii][hh] = rng.nextFloat() - 0.5f;
     for (int hh = 0; hh < numHidden; hh++)
       for (int oo = 0; oo < numOutputs; oo++)
-        W2[hh][oo] =
-            (float) Math.random() - 0.5f;
+        W2[hh][oo] = rng.nextFloat() - 0.5f;
   }
 
   public void slightlyRandomizeWeights() {
-    // Randomize weights here:
+    var rng = ThreadLocalRandom.current();
     for (int ii = 0; ii < numInputs; ii++)
       for (int hh = 0; hh < numHidden; hh++)
-        W1[ii][hh] +=
-            0.2f * (float) Math.random() - 0.1f;
+        W1[ii][hh] += 0.2f * rng.nextFloat() - 0.1f;
     for (int ii = 0; ii < numHidden; ii++)
       for (int hh = 0; hh < numOutputs; hh++)
-        W2[ii][hh] +=
-            0.2f * (float) Math.random() - 0.1f;
+        W2[ii][hh] += 0.2f * rng.nextFloat() - 0.1f;
   }
 
   public void jiggleWeights(float factor) {
-    // Randomize weights here:
+    var rng = ThreadLocalRandom.current();
     for (int ii = 0; ii < numInputs; ii++)
       for (int hh = 0; hh < numHidden; hh++)
-        W1[ii][hh] +=
-            factor * (float) Math.random() - (factor / 2);
+        W1[ii][hh] += factor * rng.nextFloat() - (factor / 2);
     for (int hh = 0; hh < numHidden; hh++)
       for (int oo = 0; oo < numOutputs; oo++)
-        W2[hh][oo] +=
-            factor * (float) Math.random() - (factor / 2);
+        W2[hh][oo] += factor * rng.nextFloat() - (factor / 2);
   }
 
   public float[] recall(float[] in) {
-    for (int i = 0; i < numInputs; i++) inputs[i] = in[i];
+    System.arraycopy(in, 0, inputs, 0, numInputs);
     forwardPass();
-    float[] ret = new float[numOutputs];
-    for (int i = 0; i < numOutputs; i++) ret[i] = outputs[i];
-    return ret;
+    return Arrays.copyOf(outputs, numOutputs);
   }
 
   public void forwardPass() {
     int i, h, o;
-    for (h = 0; h < numHidden; h++) {
-      hidden[h] = 0.0f;
-    }
+    Arrays.fill(hidden, 0.0f);
     for (i = 0; i < numInputs; i++) {
       for (h = 0; h < numHidden; h++) {
-        hidden[h] +=
-            inputs[i] * W1[i][h];
+        hidden[h] += inputs[i] * W1[i][h];
       }
     }
-    for (o = 0; o < numOutputs; o++)
-      outputs[o] = 0.0f;
+    Arrays.fill(outputs, 0.0f);
     for (h = 0; h < numHidden; h++) {
       for (o = 0; o < numOutputs; o++) {
-        outputs[o] +=
-            sigmoid(hidden[h]) * W2[h][o];
+        outputs[o] += sigmoid(hidden[h]) * W2[h][o];
       }
     }
     for (o = 0; o < numOutputs; o++)
@@ -142,23 +133,18 @@ public class Neural_1H implements Serializable {
   private int current_example = 0;
   private int count_control_randomize_weights = 0;
 
-  public float train(Vector<float[]> v_ins, Vector<float[]> v_outs) {
+  public float train(List<float[]> v_ins, List<float[]> v_outs) {
     int i, h, o;
     float error = 0.0f;
     int num_cases = v_ins.size();
     count_control_randomize_weights += 1;
-    //for (int example=0; example<num_cases; example++) {
     // zero out error arrays:
-    for (h = 0; h < numHidden; h++)
-      hidden_errors[h] = 0.0f;
-    for (o = 0; o < numOutputs; o++)
-      output_errors[o] = 0.0f;
+    Arrays.fill(hidden_errors, 0.0f);
+    Arrays.fill(output_errors, 0.0f);
     // copy the input values:
-    for (i = 0; i < numInputs; i++) {
-      inputs[i] = ((float[]) v_ins.elementAt(current_example))[i];
-    }
-    // copy the ouytput values:
-    float[] outs = (float[]) v_outs.elementAt(current_example);
+    System.arraycopy(v_ins.get(current_example), 0, inputs, 0, numInputs);
+    // copy the output values:
+    float[] outs = v_outs.get(current_example);
 
     // perform a forward pass through the network:
 
@@ -212,11 +198,10 @@ public class Neural_1H implements Serializable {
   protected float sigmoid(float x) {
     return
         (float) (1.0f / (1.0f + Math.exp((double) (-x))));
-    //     (float)((1.0f/(1.0f+Math.exp((double)(-x))))-0.5f);
   }
 
   protected float sigmoidP(float x) {
-    double z = sigmoid(x); // + 0.5f;
+    double z = sigmoid(x);
     return (float) (z * (1.0f - z));
   }
 

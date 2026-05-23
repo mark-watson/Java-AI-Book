@@ -18,27 +18,27 @@ public class GeoNamesClient {
   }
 
   private List<GeoNameData> helper(String name, String type) throws Exception {
-    List<GeoNameData> ret = new ArrayList<GeoNameData>();
+    var ret = new ArrayList<GeoNameData>();
 
-    String geonames_account_name = System.getenv("GEONAMES");
-    if (geonames_account_name == null) {
-      System.err.println("You will need a free GeoNames account.");
-      System.err.println("Sign up:  https://www.geonames.org/login");
-      System.err.println("Then, set an environment variable:");
-      System.err.println("     export GEONAMES=your-geonames-account-name");
-      throw new Exception("Need API key");
+    String geonamesAccountName = System.getenv("GEONAMES");
+    if (geonamesAccountName == null || geonamesAccountName.isBlank()) {
+      throw new IllegalStateException("""
+              GeoNames API key not configured.
+              You will need a free GeoNames account.
+              Sign up:  https://www.geonames.org/login
+              Then, set an environment variable:
+                   export GEONAMES=your-geonames-account-name""");
     }
-    WebService.setUserName(System.getenv("GEONAMES"));
+    WebService.setUserName(geonamesAccountName);
 
-    ToponymSearchCriteria searchCriteria = new ToponymSearchCriteria();
+    var searchCriteria = new ToponymSearchCriteria();
     searchCriteria.setStyle(Style.LONG);
     searchCriteria.setQ(name);
     ToponymSearchResult searchResult = WebService.search(searchCriteria);
     for (Toponym toponym : searchResult.getToponyms()) {
-      //System.out.println("* " + toponym.getName() + " : " +toponym.getFeatureClassName());
       if (toponym.getFeatureClassName() != null &&
-        toponym.getFeatureClassName().toString().indexOf(type) > -1 &&
-        toponym.getName().indexOf(name) > -1 &&
+        toponym.getFeatureClassName().contains(type) &&
+        toponym.getName().contains(name) &&
         valid(toponym.getName())) {
         ret.add(new GeoNameData(toponym));
       }
@@ -47,39 +47,30 @@ public class GeoNamesClient {
   }
 
   private boolean valid(String str) {
-    if (str.contains("0")) return false;
-    if (str.contains("1")) return false;
-    if (str.contains("2")) return false;
-    if (str.contains("3")) return false;
-    if (str.contains("4")) return false;
-    if (str.contains("5")) return false;
-    if (str.contains("6")) return false;
-    if (str.contains("7")) return false;
-    if (str.contains("8")) return false;
-    return !str.contains("9");
+    return str.chars().noneMatch(Character::isDigit);
   }
 
-  public List<GeoNameData> getCityData(String city_name) throws Exception {
-    return helper(city_name, "city");
+  public List<GeoNameData> getCityData(String cityName) throws Exception {
+    return helper(cityName, "city");
   }
 
-  public List<GeoNameData> getCountryData(String country_name) throws Exception {
-    return helper(country_name, "country");
+  public List<GeoNameData> getCountryData(String countryName) throws Exception {
+    return helper(countryName, "country");
   }
 
-  public List<GeoNameData> getStateData(String state_name) throws Exception {
-    List<GeoNameData> states = helper(state_name, "state");
+  public List<GeoNameData> getStateData(String stateName) throws Exception {
+    List<GeoNameData> states = helper(stateName, "state");
     for (GeoNameData state : states) {
       state.geoType = GeoNameData.GeoType.STATE;
     }
     return states;
   }
 
-  public List<GeoNameData> getRiverData(String river_name) throws Exception {
-    return helper(river_name, "stream");
+  public List<GeoNameData> getRiverData(String riverName) throws Exception {
+    return helper(riverName, "stream");
   }
 
-  public List<GeoNameData> getMountainData(String mountain_name) throws Exception {
-    return helper(mountain_name, "mountain");
+  public List<GeoNameData> getMountainData(String mountainName) throws Exception {
+    return helper(mountainName, "mountain");
   }
 }

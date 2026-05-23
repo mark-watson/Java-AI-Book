@@ -15,86 +15,51 @@ The library code defined in the directory **Java-AI-Book-Code/openai-llm-client*
 
 The **getCompletion** method performs the following steps:
 
-- Initialization: This method takes a prompt as input and retrieves the OpenAI API key from the environment variables.
-- JSON Object Creation: Constructs a JSON object to define the user's role and the content (the prompt). This is added to a JSON array, which is then included in another JSON object along with the model name (here we are using gpt-5-mini.
-- API Request Setup: Constructs a URI for the OpenAI API endpoint and sets up a URL connection. It configures the connection to send data (output) and sets the request headers for content type (JSON) and authorization (using the retrieved API key).
-- Sending the Request: Converts the JSON object to bytes and sends it through the connection's output stream.
-- Response Handling: Reads the response from the API using a BufferedReader. The response is built into a string using a StringBuilder.
-- Parsing the Response: Converts the response string back into a JSON object, extracts the relevant part of the JSON that contains the API's completion result (the translated text), and returns this result.
-- Error Handling and Cleanup: The connection is explicitly disconnected after the response is read.
+- Client Initialization: We reuse a single client instance of `OpenAIClient`, initialized via `OpenAIOkHttpClient.fromEnv()`, which automatically pulls the API key from the standard environment variables.
+- Request Parameters Construction: Builds a `ChatCompletionCreateParams` object using its builder. We add the user message (the prompt) and set the model to `ChatModel.GPT_5_MINI`.
+- Sending the Request: Calls `client.chat().completions().create(params)` which synchronously sends the request via OKHttp and receives the chat completion response.
+- Parsing the Response: Extracts the first choice's message content using `chatCompletion.choices().get(0).message().content().orElse("")` and returns it.
 
 
 ```java
 package com.markwatson.openai;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URI;
-import java.net.URL;
-import java.net.URLConnection;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
+import com.openai.client.OpenAIClient;
+import com.openai.client.okhttp.OpenAIOkHttpClient;
+import com.openai.models.ChatModel;
+import com.openai.models.chat.completions.ChatCompletion;
+import com.openai.models.chat.completions.ChatCompletionCreateParams;
 
 public class OpenAICompletions {
 
-    public static void main(String[] args) throws Exception {
-        String prompt = "Translate the following English text to French: 'Hello, how are you?'";
-        String completion = getCompletion(prompt);
+    // Reuse a single client instance (connection pool + thread pool efficiency)
+    private static final OpenAIClient client = OpenAIOkHttpClient.fromEnv();
+
+    public static void main(String[] args) {
+        var prompt = "Translate the following English text to French: 'Hello, how are you?'";
+        var completion = getCompletion(prompt);
         System.out.println("completion: " + completion);
     }
 
-    public static String getCompletion(String prompt) throws Exception {
+    public static String getCompletion(String prompt) {
         System.out.println("prompt: " + prompt);
-        String apiKey = System.getenv("OPENAI_API_KEY");
-        String model = "gpt-5-mini"; // Replace with the desired model
 
-        // New JSON message format
-        JSONObject message = new JSONObject();
-        message.put("role", "user");
-        message.put("content", prompt);
+        var params = ChatCompletionCreateParams.builder()
+                .addUserMessage(prompt)
+                .model(ChatModel.GPT_5_MINI)
+                .build();
 
-        JSONArray messages = new JSONArray();
-        messages.put(message);
-        //System.out.println("messages: " + messages.toString());
-        JSONObject jsonBody = new JSONObject();
-        jsonBody.put("messages", messages);
-        jsonBody.put("model", model);
-        URI uri = new URI("https://api.openai.com/v1/chat/completions");
-        URL url = uri.toURL();
-        //System.out.println("jsonBody: " + jsonBody);
-        URLConnection connection = url.openConnection();
-        connection.setDoOutput(true);
-        connection.setRequestProperty("Content-Type", "application/json");
-        connection.setRequestProperty("Authorization", "Bearer " + apiKey);
-        // Send the JSON payload
-        try (OutputStream os = connection.getOutputStream()) {
-            byte[] input = jsonBody.toString().getBytes("utf-8");
-             os.write(input, 0, input.length);
-        }
+        ChatCompletion chatCompletion = client.chat().completions().create(params);
 
-        StringBuilder response;
-        // Read the response from the server
-        try (BufferedReader br = new BufferedReader(
-                new InputStreamReader(connection.getInputStream(), "utf-8"))) {
-            response = new StringBuilder();
-            String responseLine;
-            while ((responseLine = br.readLine()) != null) {
-                response.append(responseLine.trim());
-            }
-            System.out.println(response.toString());
-        }
-
-        ((HttpURLConnection) connection).disconnect();
-        JSONObject jsonObject = new JSONObject(response.toString());
-        JSONArray choices = jsonObject.getJSONArray("choices");
-        JSONObject messageObject = choices.getJSONObject(0).getJSONObject("message");
-        String content = messageObject.getString("content");
-        //System.out.println("content: " + content);
+        var content = chatCompletion.choices().get(0).message().content().orElse("");
+        System.out.println(content);
         return content;
     }
+
 
     /***
      * Utilities for using the OpenAI API
@@ -102,8 +67,7 @@ public class OpenAICompletions {
 
     // read the contents of a file path into a Java string
     public static String readFileToString(String filePath) throws IOException {
-        Path path = Paths.get(filePath);
-        return new String(Files.readAllBytes(path));
+        return Files.readString(Path.of(filePath));
     }
 
     public static String replaceSubstring(String originalString, String substringToReplace, String replacementString) {
@@ -123,9 +87,9 @@ In the next section we write a unit test for this Java class to demonstrate text
 There is a unit test provided with this library that shows how to call the completion API:
 
 ```java
-String r =
-  OpenAICompletions.getCompletion("Translate the following English text to French: 'Hello, how are you?'");
-System.out.println("completion: " + r);
+        var result = OpenAICompletions.getCompletion(
+                "Translate the following English text to French: 'Hello, how are you?'");
+        System.out.println("completion: " + result);
 ```
 
 Sample output is:
@@ -178,15 +142,13 @@ Output:
 The example code for this section is in a Java Unit Test method **testTwoShotTemplate()**:
 
 ```java
-String input_text = "Mark Johnson enjoys living in Berkeley California at 102 Dunston Street and use mjess@foobar.com for contacting him.";
-
-String prompt0 = OpenAICompletions.readFileToString("../prompts/two-shot-2-var.txt");
-System.out.println("prompt0: " + prompt0);
-String prompt = OpenAICompletions.promptVar(prompt0, "{input_text}", input_text);
-System.out.println("prompt: " + prompt);
-String r =
-OpenAICompletions.getCompletion(prompt);
-System.out.println("two shot extraction completion:\n" + r);
+        var inputText = "Mark Johnson enjoys living in Berkeley California at 102 Dunston Street and use mjess@foobar.com for contacting him.";
+        var prompt0 = OpenAICompletions.readFileToString("../prompts/two-shot-2-var.txt");
+        System.out.println("prompt0: " + prompt0);
+        var prompt = OpenAICompletions.promptVar(prompt0, "{input_text}", inputText);
+        System.out.println("prompt: " + prompt);
+        var result = OpenAICompletions.getCompletion(prompt);
+        System.out.println("two shot extraction completion: " + result);
 ```
 
 The output looks like:
@@ -215,14 +177,13 @@ Output:
 The example code is in the Java Unit Test **testSummarization()**:
 
 ```java
-String input_text = "Jupiter is the fifth planet from the Sun and the largest in the Solar System. It is a gas giant with a mass one-thousandth that of the Sun, but two-and-a-half times that of all the other planets in the Solar System combined. Jupiter is one of the brightest objects visible to the naked eye in the night sky, and has been known to ancient civilizations since before recorded history. It is named after the Roman god Jupiter.[19] When viewed from Earth, Jupiter can be bright enough for its reflected light to cast visible shadows,[ and is on average the third-brightest natural object in the night sky after the Moon and Venus.";
-        String prompt0 = OpenAICompletions.readFileToString("../prompts/summarization_prompt.txt");
+        var inputText = "Jupiter is the fifth planet from the Sun and the largest in the Solar System. It is a gas giant with a mass one-thousandth that of the Sun, but two-and-a-half times that of all the other planets in the Solar System combined. Jupiter is one of the brightest objects visible to the naked eye in the night sky, and has been known to ancient civilizations since before recorded history. It is named after the Roman god Jupiter.[19] When viewed from Earth, Jupiter can be bright enough for its reflected light to cast visible shadows,[ and is on average the third-brightest natural object in the night sky after the Moon and Venus.";
+        var prompt0 = OpenAICompletions.readFileToString("../prompts/summarization_prompt.txt");
         System.out.println("prompt0: " + prompt0);
-        String prompt = OpenAICompletions.promptVar(prompt0, "{input_text}", input_text);
+        var prompt = OpenAICompletions.promptVar(prompt0, "{input_text}", inputText);
         System.out.println("prompt: " + prompt);
-        String r =
-        OpenAICompletions.getCompletion(prompt);
-        System.out.println("summarization completion:\n\n" + r);
+        var result = OpenAICompletions.getCompletion(prompt);
+        System.out.println("summarization completion: " + result);
 ```
 
 The output is:

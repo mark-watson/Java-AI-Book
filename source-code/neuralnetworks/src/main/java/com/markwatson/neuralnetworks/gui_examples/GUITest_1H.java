@@ -18,10 +18,6 @@ public class GUITest_1H extends JFrame {
     static float[] out2 = {0.1f, 0.1f, 0.9f};
     static float[] out3 = {0.1f, 0.9f, 0.1f};
 
-    static float[] test1 = {0.1f, 0.1f, 0.9f};
-    static float[] test2 = {0.1f, 0.9f, 0.1f};
-    static float[] test3 = {0.9f, 0.1f, 0.1f};
-
 
     Neural_1H nn = new Neural_1H(3, 3, 3);
     Plot1DPanel inputPanel = new Plot1DPanel(3, 0f, 1.0f, nn.inputs);
@@ -37,23 +33,19 @@ public class GUITest_1H extends JFrame {
     JLabel jLabel5 = new JLabel();
 
     public GUITest_1H() {
-        try {
-            nn.addTrainingExample(in1, out1);
-            nn.addTrainingExample(in2, out2);
-            nn.addTrainingExample(in3, out3);
-            jbInit();
-            this.setSize(450, 350);
-            this.setVisible(true);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        nn.addTrainingExample(in1, out1);
+        nn.addTrainingExample(in2, out2);
+        nn.addTrainingExample(in3, out3);
+        jbInit();
+        this.setSize(450, 350);
+        this.setVisible(true);
     }
 
     public static void main(String[] args) {
-        GUITest_1H GUITest_1H1 = new GUITest_1H();
+        SwingUtilities.invokeLater(GUITest_1H::new);
     }
 
-    private void jbInit() throws Exception {
+    private void jbInit() {
         this.getContentPane().setLayout(null);
         inputPanel.setBounds(new Rectangle(5, 30, 400, 20));
         hiddenPanel.setBounds(new Rectangle(5, 138, 400, 20));
@@ -67,12 +59,12 @@ public class GUITest_1H extends JFrame {
                 try {
 					do_run_button(e);
 				} catch (InterruptedException e1) {
-					// TODO Auto-generated catch block
+					Thread.currentThread().interrupt();
 					e1.printStackTrace();
 				}
             }
         });
-        this.setDefaultCloseOperation(3);
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         jLabel1.setText("Input neurons:");
         jLabel1.setBounds(new Rectangle(4, 10, 144, 19));
         jLabel2.setText("Hidden neurons:");
@@ -105,7 +97,7 @@ public class GUITest_1H extends JFrame {
         Graphics g5 = w2Panel.getGraphics();
   training_loop:
         for (int i = 0; i < 5000; i++) {
-        	if (i == 1000 || i == 3000 || i == 4000 | i ==4500)  nn.learningRate *= 0.75f;
+        	if (i == 1000 || i == 3000 || i == 4000 || i == 4500)  nn.learningRate *= 0.75f;
             float error = nn.train();
             if (i > 0 && i % 500 == 0) {
             	//

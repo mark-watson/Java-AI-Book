@@ -5,7 +5,7 @@ import java.util.Set;
 import public_domain.Stemmer;
 
 public class NoiseWords {
-	private static String[] words = {
+	private static final String[] words = {
 		"the", "a", "an", "it", "or", "and", "he", "she",
 		"with", "often", "to", "do", "that", "this", "is",
 		"are", "one", "two", "since", "just", "start", 
@@ -23,9 +23,9 @@ public class NoiseWords {
 		"under", "why", "also", "take", "am", "great",
 		"in", "top"
 	};
-	private static Set<String> stems = new HashSet<String>();
+	private static final Set<String> stems = new HashSet<>();
 	static {
-		Stemmer stemmer = new Stemmer();
+		var stemmer = new Stemmer();
 		for (String word : words) {
 			stems.add(stemmer.stemOneWord(word));
 		}

@@ -62,14 +62,14 @@ The class **com.markwatson.ner_dbpedia.NerMaps** is a utility for reading the ra
 ~~~~~~~~
 package com.markwatson.ner_dbpedia;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 
 /**
  * Copyright Mark Watson 2020. Apache 2 license,
@@ -80,47 +80,46 @@ public class NerMaps {
     if (s.startsWith("<")) return s;
     return "<" + s + ">";
   }
+
   private static Map<String, String> textFileToMap(String nerFileName) {
-    Map<String, String> ret = new HashMap<String, String>();
-    try {
-      InputStream in = ClassLoader.getSystemResourceAsStream(nerFileName);
-      BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-      List<String> lines = new ArrayList<String>();
-      String line2;
-      while((line2 = reader.readLine()) != null) {
-        lines.add(line2);
-      }
-      reader.close();
-      lines.forEach(line -> {
+    var ret = new HashMap<String, String>();
+    try (InputStream in = ClassLoader.getSystemResourceAsStream(nerFileName);
+         BufferedReader reader = new BufferedReader(
+             new InputStreamReader(in, StandardCharsets.UTF_8))) {
+      reader.lines().forEach(line -> {
         String[] tokens = line.split("\t");
         if (tokens.length > 1) {
           ret.put(tokens[0], enforceAngleBrackets(tokens[1]));
         }
       });
-    } catch (Exception ex) {
-      ex.printStackTrace();
+    } catch (IOException ex) {
+      throw new UncheckedIOException(
+          "Failed to load NER resource file: " + nerFileName, ex);
     }
-    return ret;
+    return Map.copyOf(ret);
   }
 
-  static public final Map<String, String> broadcastNetworks = 
-    textFileToMap("BroadcastNetworkNamesDbPedia.txt");
-  static public final Map<String, String> cityNames = 
-    textFileToMap("CityNamesDbpedia.txt");
-  static public final Map<String, String> companyames = 
-    textFileToMap("CompanyNamesDbPedia.txt");
-  static public final Map<String, String> countryNames = 
-    textFileToMap("CountryNamesDbpedia.txt");
-  static public final Map<String, String> musicGroupNames = 
-    textFileToMap("MusicGroupNamesDbPedia.txt");
-  static public final Map<String, String> personNames = 
-    textFileToMap("PeopleDbPedia.txt");
-  static public final Map<String, String> politicalPartyNames = 
-    textFileToMap("PoliticalPartyNamesDbPedia.txt");
-  static public final Map<String, String> tradeUnionNames = 
-    textFileToMap("TradeUnionNamesDbPedia.txt");
-  static public final Map<String, String> universityNames = 
-    textFileToMap("UniversityNamesDbPedia.txt");
+  static public final Map<String, String> broadcastNetworks = textFileToMap("BroadcastNetworkNamesDbPedia.txt");
+  static public final Map<String, String> cityNames = textFileToMap("CityNamesDbpedia.txt");
+  static public final Map<String, String> companyNames = textFileToMap("CompanyNamesDbPedia.txt");
+  static public final Map<String, String> countryNames = textFileToMap("CountryNamesDbpedia.txt");
+  static public final Map<String, String> musicGroupNames = textFileToMap("MusicGroupNamesDbPedia.txt");
+  static public final Map<String, String> personNames = textFileToMap("PeopleDbPedia.txt");
+  static public final Map<String, String> politicalPartyNames = textFileToMap("PoliticalPartyNamesDbPedia.txt");
+  static public final Map<String, String> tradeUnionNames = textFileToMap("TradeUnionNamesDbPedia.txt");
+  static public final Map<String, String> universityNames = textFileToMap("UniversityNamesDbPedia.txt");
+
+  /**
+   * Keep legacy field name as an alias so downstream code that references
+   * {@code NerMaps.companyames} (the original typo) still compiles.
+   */
+  @Deprecated(forRemoval = true)
+  static public final Map<String, String> companyames = companyNames;
+
+  public static void main(String[] args) {
+    System.out.println(
+        textFileToMap("CityNamesDbpedia.txt"));
+  }
 }
 ~~~~~~~~
 
@@ -134,106 +133,246 @@ The code in the class **TextToDbpediaUris** is simple and repeats two common pat
 package com.markwatson.ner_dbpedia;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 public class TextToDbpediaUris {
-  private TextToDbpediaUris() {
-  }
-
-  public List<String> personUris = new ArrayList<String>();
-  public List<String> personNames = new ArrayList<String>();
-  public List<String> companyUris = new ArrayList<String>();
-  public List<String> companyNames = new ArrayList<>();
-~~~~~~~~
-
-The empty constructor is private since it makes no sense to create an instance of **TextToDbpediaUris** without text input. The code supports nine entity types. Here we show the definition of public output fields for just two entity types (people and companies).
-
-As a matter of programming style I generally no longer use getter and setter methods, preferring a more concise coding style. I usually make output fields package default visibility (i.e., no **private** or **public** specification so the fields are public within a package and private from other packages). Here I make them public because the package **nerdbpedia** developed here is meant to be used by other packages. If you prefer using getter and setter methods, modern IDEs like IntelliJ and Eclipse can generate those for you for the example code in this book.
-
-We will handle entity names comprised of one, two, and three word sequences. We check for longer word sequences before shorter sequences:
- 
-{lang="java",linenos=off}
-~~~~~~~~
-  public TextToDbpediaUris(String text) {
-    String[] tokens = tokenize(text + " . . .");
-    String uri = "";
-    for (int i = 0, size = tokens.length - 2; i < size; i++) {
-      String n2gram = tokens[i] + " " + tokens[i + 1];
-      String n3gram = n2gram + " " + tokens[i + 2];
-      // check for 3grams:
-      if ((uri = NerMaps.personNames.get(n3gram)) != null) {
-        log("person", i, i + 2, n3gram, uri);
-        i += 2;
-        continue;
-      }
- ~~~~~~~~
-
-The class **NerMaps** that we previously saw listed converts text files of entities to DBPedia URIs mappings to Java hash maps. The method **log** does two things:
-
-- Prints out the entity type, the word indices from the original tokenized text, the entity name as a single string (combine tokens for an entity to a string), and the DBPedia URI.
-- Saves entity mapping in the public fields **personUris**, **personNames**, etc.
-
-After we check for three word entity names, we process two word names, and one word names. Here is an example:
-
-{lang="java",linenos=off}
-~~~~~~~~
-      // check for 2grams:
-      if ((s = NerMaps.personNames.get(n2gram)) != null) {
-        log("person", i, i + 1, n2gram, s);
-        i += 1;
-        continue;
-      }
-~~~~~~~~
-
-The following listing shows the **log** method that write descriptive output and saves entity mappings. We only show the code for the entity type *person*:
-
-{lang="java",linenos=off}
-~~~~~~~~
-  public void log(String nerType, int index1, int index2, String ngram, String uri) {
-    System.out.println(nerType + "\t" + index1 + "\t" + index2 + "\t" + 
-                       ngram + "\t" + uri);
-    if (!uri.startsWith("<")) uri = "<" + uri + ">";
-    if (nerType.equals("person")) {
-      if (!personUris.contains(uri)) {
-        personUris.add(uri);
-        personNames.add(ngram);
-      }
-    }
-~~~~~~~~
-
-For some NLP applications I will use a standard tokenizer like the OpenNLP tokenizer that we used in two previous chapters. Here, I simply add spaces around punctuation characters and use the Java string **split** method:
-
-{lang="java",linenos=off}
-~~~~~~~~
-  private String[] tokenize(String s) {
-    return s.replaceAll("\\.", " \\. ").
-             replaceAll(",", " , ").
-             replaceAll("\\?", " ? ").
-             replaceAll("\n", " ").
-             replaceAll(";", " ; ").split(" ");
-  }
-~~~~~~~~
-
-The following listing shows the code snippet from the unit test code in the class **TextToDbpediaUrisTest** that calls the **TextToDbpediaUris** constructor with a text sample (**junit** boilerplate code is not shown):
-
-{lang="java",linenos=on}
-~~~~~~~~
-package com.markwatson.ner_dbpedia;
- 
-  ...
 
   /**
-   * Test that is just for side effect printouts:
+   * Represents a named-entity category with its lookup map and matched results.
    */
-  public void test1() throws Exception {
-    String s = "PTL Satellite Network covered President Bill Clinton going to "   
-      + " Guatemala and visiting the Coca Cola Company.";
-    TextToDbpediaUris test = new TextToDbpediaUris(s);
+  private record EntityCategory(String name, Map<String, String> lookupMap,
+                                Set<String> uriSet, List<String> uris, List<String> names) {
+    void addIfAbsent(String uri, String ngram) {
+      if (uriSet.add(uri)) {
+        uris.add(uri);
+        names.add(ngram);
+      }
+    }
+  }
+
+  // Precompiled patterns for tokenization
+  private static final Pattern DOT   = Pattern.compile("\\.");
+  private static final Pattern COMMA = Pattern.compile(",");
+  private static final Pattern QMARK = Pattern.compile("\\?");
+  private static final Pattern SEMI  = Pattern.compile(";");
+  private static final Pattern NL    = Pattern.compile("\n");
+  private static final Pattern MULTI_SPACE = Pattern.compile(" +");
+
+  // Entity categories — order matters for priority
+  private final List<EntityCategory> categories;
+
+  // Public accessors preserving the original API
+  public final List<String> personUris;
+  public final List<String> personNames;
+  public final List<String> companyUris;
+  public final List<String> companyNames;
+  public final List<String> cityUris;
+  public final List<String> cityNames;
+  public final List<String> countryUris;
+  public final List<String> countryNames;
+  public final List<String> broadcastNetworkUris;
+  public final List<String> broadcastNetworkNames;
+  public final List<String> musicGroupUris;
+  public final List<String> musicGroupNames;
+  public final List<String> politicalPartyUris;
+  public final List<String> politicalPartyNames;
+  public final List<String> tradeUnionUris;
+  public final List<String> tradeUnionNames;
+  public final List<String> universityUris;
+  public final List<String> universityNames;
+
+  @SuppressWarnings("unused")
+  private TextToDbpediaUris() {
+    this("");
+  }
+
+  public TextToDbpediaUris(String text) {
+    // Initialize entity categories with their lookup maps
+    var person           = makeCat("person",           NerMaps.personNames);
+    var city             = makeCat("city",             NerMaps.cityNames);
+    var company          = makeCat("company",          NerMaps.companyNames);
+    var country          = makeCat("country",          NerMaps.countryNames);
+    var broadcastNetwork = makeCat("broadcastNetwork", NerMaps.broadcastNetworks);
+    var musicGroup       = makeCat("musicGroup",       NerMaps.musicGroupNames);
+    var politicalParty   = makeCat("politicalParty",   NerMaps.politicalPartyNames);
+    var tradeUnion       = makeCat("tradeUnion",       NerMaps.tradeUnionNames);
+    var university       = makeCat("university",       NerMaps.universityNames);
+
+    categories = List.of(person, city, company, country,
+        broadcastNetwork, musicGroup, politicalParty, tradeUnion, university);
+
+    // Wire public fields to category lists for backward compatibility
+    personUris              = person.uris();
+    personNames             = person.names();
+    companyUris             = company.uris();
+    companyNames            = company.names();
+    cityUris                = city.uris();
+    cityNames               = city.names();
+    countryUris             = country.uris();
+    countryNames            = country.names();
+    broadcastNetworkUris    = broadcastNetwork.uris();
+    broadcastNetworkNames   = broadcastNetwork.names();
+    musicGroupUris          = musicGroup.uris();
+    musicGroupNames         = musicGroup.names();
+    politicalPartyUris      = politicalParty.uris();
+    politicalPartyNames     = politicalParty.names();
+    tradeUnionUris          = tradeUnion.uris();
+    tradeUnionNames         = tradeUnion.names();
+    universityUris          = university.uris();
+    universityNames         = university.names();
+
+    processText(text);
+  }
+
+  private static EntityCategory makeCat(String name, Map<String, String> lookupMap) {
+    return new EntityCategory(name, lookupMap,
+        new LinkedHashSet<>(), new ArrayList<>(), new ArrayList<>());
+  }
+
+  private void processText(String text) {
+    String[] tokens = tokenize(text + " . . .");
+    for (int i = 0, size = tokens.length - 2; i < size; i++) {
+      String n3gram = tokens[i] + " " + tokens[i + 1] + " " + tokens[i + 2];
+      String n2gram = tokens[i] + " " + tokens[i + 1];
+
+      // Check 3-grams first (longest match wins)
+      int skip = tryMatch(n3gram, 3, i);
+      if (skip > 0) { i += skip - 1; continue; }
+
+      // Check 2-grams
+      skip = tryMatch(n2gram, 2, i);
+      if (skip > 0) { i += skip - 1; continue; }
+
+      // Check 1-grams
+      tryMatch(tokens[i], 1, i);
+    }
+  }
+
+  /**
+   * Try to match an n-gram against all entity categories.
+   * @return the number of extra tokens to skip (n-1), or 0 if no match.
+   */
+  private int tryMatch(String ngram, int n, int startIndex) {
+    for (var cat : categories) {
+      String uri = cat.lookupMap().get(ngram);
+      if (uri != null) {
+        if (!uri.startsWith("<")) uri = "<" + uri + ">";
+        System.out.println(cat.name() + "\t" + startIndex + "\t" + (startIndex + n - 1) + "\t" + ngram + "\t" + uri);
+        cat.addIfAbsent(uri, ngram);
+        return n;
+      }
+    }
+    return 0;
+  }
+
+  private String[] tokenize(String s) {
+    String result = DOT.matcher(s).replaceAll(" . ");
+    result = COMMA.matcher(result).replaceAll(" , ");
+    result = QMARK.matcher(result).replaceAll(" ? ");
+    result = NL.matcher(result).replaceAll(" ");
+    result = SEMI.matcher(result).replaceAll(" ; ");
+    return MULTI_SPACE.matcher(result).replaceAll(" ").split(" ");
+  }
+
+  @Override
+  public String toString() {
+    var sb = new StringBuilder("TextToDbpediaUris {\n");
+    for (var cat : categories) {
+      if (!cat.names().isEmpty()) {
+        sb.append("  ").append(cat.name()).append(": ")
+            .append(cat.names()).append(" -> ").append(cat.uris())
+            .append('\n');
+      }
+    }
+    sb.append('}');
+    return sb.toString();
   }
 }
 ~~~~~~~~
 
-On line 11, the object **test** contains public fields for accessing the entity names and corresponding URIs. We will use these fields in the later chapters [Automatically Generating Data for Knowledge Graphs](#kgcreator) and [Knowledge Graph Navigator](#kgn).
+The empty constructor is private since it makes no sense to create an instance of **TextToDbpediaUris** without text input. The code supports nine entity types. Here we show the definition of public output fields for just two entity types (people and companies).
+
+As a matter of programming style I generally no longer use getter and setter methods, preferring a more concise coding style. I usually make output fields package default visibility (i.e., no **private** or **public** specification so the fields are public within a package and private from other packages). Here I make them public because the package **nerdbpedia** developed here is meant to be used by other packages. If you prefer using getter and setter methods, modern IDEs like IntelliJ and Eclipse can generate those for you for the example code in this book.We will handle entity names comprised of one, two, and three word sequences (n-grams). We check for longer word sequences before shorter sequences (longest-match-first priority) across all categories:
+
+{lang="java",linenos=off}
+~~~~~~~~
+  private void processText(String text) {
+    String[] tokens = tokenize(text + " . . .");
+    for (int i = 0, size = tokens.length - 2; i < size; i++) {
+      String n3gram = tokens[i] + " " + tokens[i + 1] + " " + tokens[i + 2];
+      String n2gram = tokens[i] + " " + tokens[i + 1];
+
+      // Check 3-grams first (longest match wins)
+      int skip = tryMatch(n3gram, 3, i);
+      if (skip > 0) { i += skip - 1; continue; }
+
+      // Check 2-grams
+      skip = tryMatch(n2gram, 2, i);
+      if (skip > 0) { i += skip - 1; continue; }
+
+      // Check 1-grams
+      tryMatch(tokens[i], 1, i);
+    }
+  }
+ ~~~~~~~~
+
+To clean up the code and avoid repeating lookup logic for each of the nine entity categories, we use a helper method `tryMatch` that iterates through all registered `EntityCategory` instances and records matching entities:
+
+{lang="java",linenos=off}
+~~~~~~~~
+  private int tryMatch(String ngram, int n, int startIndex) {
+    for (var cat : categories) {
+      String uri = cat.lookupMap().get(ngram);
+      if (uri != null) {
+        if (!uri.startsWith("<")) uri = "<" + uri + ">";
+        System.out.println(cat.name() + "\t" + startIndex + "\t" + (startIndex + n - 1) + "\t" + ngram + "\t" + uri);
+        cat.addIfAbsent(uri, ngram);
+        return n;
+      }
+    }
+    return 0;
+  }
+ ~~~~~~~~
+
+For tokenization, we use precompiled regular expression `Pattern` instances (like `DOT`, `COMMA`, `QMARK`, `SEMI`, and `NL`) for performance efficiency:
+
+{lang="java",linenos=off}
+~~~~~~~~
+  // Precompiled patterns for tokenization
+  private static final Pattern DOT   = Pattern.compile("\\.");
+  private static final Pattern COMMA = Pattern.compile(",");
+  private static final Pattern QMARK = Pattern.compile("\\?");
+  private static final Pattern SEMI  = Pattern.compile(";");
+  private static final Pattern NL    = Pattern.compile("\n");
+  private static final Pattern MULTI_SPACE = Pattern.compile(" +");
+
+  private String[] tokenize(String s) {
+    String result = DOT.matcher(s).replaceAll(" . ");
+    result = COMMA.matcher(result).replaceAll(" , ");
+    result = QMARK.matcher(result).replaceAll(" ? ");
+    result = NL.matcher(result).replaceAll(" ");
+    result = SEMI.matcher(result).replaceAll(" ; ");
+    return MULTI_SPACE.matcher(result).replaceAll(" ").split(" ");
+  }
+ ~~~~~~~~
+
+The following listing shows the code snippet from the unit test code in the class **TextToDbpediaUrisTest** that calls the **TextToDbpediaUris** constructor with a text sample (**junit** boilerplate code is not shown):
+
+{lang="java",linenos=on}
+  @Test
+  @DisplayName("Recognises known entities in a sentence")
+  void recognisesKnownEntities() {
+    String s = "PTL Satellite Network covered President Bill Clinton going to Guatemala and visiting the Coca Cola Company.";
+    TextToDbpediaUris result = new TextToDbpediaUris(s);
+    System.out.println(result);
+  }
+~~~~~~~~
+
+The object **result** contains public fields for accessing the entity names and corresponding URIs. We will use these fields in the later chapters [Automatically Generating Data for Knowledge Graphs](#kgcreator) and [Knowledge Graph Navigator](#kgn).
 
 Here is the output from running the unit test code:
 

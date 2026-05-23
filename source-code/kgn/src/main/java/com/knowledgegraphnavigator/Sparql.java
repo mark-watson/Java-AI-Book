@@ -9,7 +9,9 @@ import java.sql.SQLException;
 
 public class Sparql {
   //static private String endpoint = "https://query.wikidata.org/bigdata/namespace/wdq/sparql";
-  static private String endpoint = "https://dbpedia.org/sparql";
+  private static final String ENDPOINT = "https://dbpedia.org/sparql";
+  private final JenaApis jenaApis;
+
   public Sparql() {
     this.jenaApis = new JenaApis();
   }
@@ -17,13 +19,12 @@ public class Sparql {
   public QueryResult query(String sparqlQuery) throws SQLException, ClassNotFoundException {
     //out(sparqlQuery); // debug for now...
     sparql.append(sparqlQuery);
-    sparql.append(("\n\n"));
-    return jenaApis.queryRemote(endpoint, sparqlQuery);
+    sparql.append("\n\n");
+    return jenaApis.queryRemote(ENDPOINT, sparqlQuery);
   }
-  private JenaApis jenaApis;
 
   public static void main(String[] args) throws Exception {
-    Sparql sp = new Sparql();
+    var sp = new Sparql();
     QueryResult qr = sp.query("select ?s ?p ?o where { ?s ?p ?o } limit 5");
     out(qr.toString());
   }

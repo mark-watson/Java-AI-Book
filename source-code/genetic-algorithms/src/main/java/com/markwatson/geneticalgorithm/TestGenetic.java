@@ -13,71 +13,69 @@ package com.markwatson.geneticalgorithm;
 
 public class TestGenetic {
 
-    static MyGenetic genetic_experiment;
+    static MyGenetic geneticExperiment;
 
-    static public void main(String args[]) {
+    public static void main(String[] args) {
         // we will use chromosomes with 10 1 bit genes per
         // chromosomes, and a population of 12 chromosomes:
-        genetic_experiment = new MyGenetic(10, 20, 0.85f, 0.3f);
+        geneticExperiment = new MyGenetic(10, 20, 0.85, 0.3);
         int geneIndex = 0; //  debug only
-        for (Chromosome ll  : genetic_experiment.chromosomes) {
-          System.out.println(ll.chromosome + " : " + genetic_experiment.geneToFloat(geneIndex++));
+        for (Chromosome chromosome : geneticExperiment.chromosomes) {
+            System.out.printf("%s : %.6f%n", chromosome, geneticExperiment.geneToDouble(geneIndex++));
         }
-        int NUM_CYCLES = 15000;
-        for (int i=0; i<NUM_CYCLES; i++) {
-            genetic_experiment.evolve();
-            if ((i%(NUM_CYCLES/100))==0 || i==(NUM_CYCLES-1)) {
+        int numCycles = 15000;
+        for (int i = 0; i < numCycles; i++) {
+            geneticExperiment.evolve();
+            if ((i % (numCycles / 100)) == 0 || i == (numCycles - 1)) {
                 System.out.println("Generation " + i);
-                genetic_experiment.calcFitness(); // suggested by Rick Hall
-                genetic_experiment.sort();        // suggested by Rick Hall
-                genetic_experiment.print();
+                geneticExperiment.calcFitness(); // suggested by Rick Hall
+                geneticExperiment.sort();        // suggested by Rick Hall
+                geneticExperiment.print();
             }
         }
     }
 }
 
 class MyGenetic extends Genetic {
-    MyGenetic(int num_g, int num_c, float crossover_fraction,
-              float mutation_fraction) {
-        super(num_g, num_c, crossover_fraction, mutation_fraction);
+    MyGenetic(int numGenes, int numChromosomes, double crossoverFraction,
+              double mutationFraction) {
+        super(numGenes, numChromosomes, crossoverFraction, mutationFraction);
     }
-    private float fitness(float x) {
-        return (float)(Math.sin(x) * Math.sin(0.4f * x) * Math.sin(3.0f * x));
+
+    private double fitness(double x) {
+        return Math.sin(x) * Math.sin(0.4 * x) * Math.sin(3.0 * x);
     }
-    float geneToFloat(int chromosomeIndex) {
+
+    double geneToDouble(int chromosomeIndex) {
         int base = 1;
-        float x = 0;
-        for (int j=0; j<numGenesPerChromosome; j++)  {
+        double x = 0;
+        for (int j = 0; j < numGenesPerChromosome; j++) {
             if (getGene(chromosomeIndex, j)) {
                 x += base;
             }
             base *= 2;
         }
-        x /= 102.4f;
+        x /= 102.4;
         return x;
     }
+
     public void calcFitness() {
-        for (int i=0; i<numChromosomes; i++) {
-            float x = geneToFloat(i);
+        for (int i = 0; i < numChromosomes; i++) {
+            double x = geneToDouble(i);
             chromosomes.get(i).setFitness(fitness(x));
         }
     }
 
     public void print() {
-        float sum = 0.0f;
-        for (int i=0; i<numChromosomes; i++) {
-            float x = geneToFloat(i);
+        double sum = 0.0;
+        for (int i = 0; i < numChromosomes; i++) {
+            double x = geneToDouble(i);
             sum += chromosomes.get(i).getFitness();
-            if (true) { // (i < (numChromosomes / 2)) {  // show best half of chromosomes
-                System.out.print("Fitness for chromosome ");
-                System.out.print(i);
-                System.out.print(" is ");
-                System.out.println(chromosomes.get(i).getFitness() + ", occurs at x=" + x);
-            }
+            System.out.printf("Fitness for chromosome %d is %.6f, occurs at x=%.6f%n",
+                    i, chromosomes.get(i).getFitness(), x);
         }
-        sum /= (float)numChromosomes;
-        System.out.println("Average fitness=" + sum +
-        		           " and best fitness for this generation:" +
-        		           chromosomes.get(0).getFitness());
+        sum /= numChromosomes;
+        System.out.printf("Average fitness=%.6f and best fitness for this generation:%.6f%n",
+                sum, chromosomes.get(0).getFitness());
     }
 }

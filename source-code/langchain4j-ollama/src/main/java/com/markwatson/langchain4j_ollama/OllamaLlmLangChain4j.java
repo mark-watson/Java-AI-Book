@@ -1,39 +1,45 @@
 package com.markwatson.langchain4j_ollama;
 
-import dev.langchain4j.model.chat.ChatLanguageModel;
-import dev.langchain4j.model.openai.OpenAiChatModel;
+import dev.langchain4j.model.ollama.OllamaChatModel;
 
-
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URI;
-import java.net.URL;
-import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-
-import org.json.JSONObject;
+import java.time.Duration;
 
 public class OllamaLlmLangChain4j {
 
-    public static void main(String[] args) throws Exception {
+    private static final String DEFAULT_BASE_URL = "http://localhost:11434";
+    private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(120);
+
+    public static void main(String[] args) {
         String prompt = "Translate the following English text to French: 'Hello, how are you?'";
-        String completion = getCompletion(prompt, "mistral");
-        System.out.println("completion: " + completion);
+        try {
+            String completion = getCompletion(prompt, "mistral");
+            System.out.println("completion: " + completion);
+        } catch (Exception e) {
+            System.err.println("Error getting completion: " + e.getMessage());
+        }
     }
 
-    public static String getCompletion(String prompt, String modelName) throws Exception {
+    public static String getCompletion(String prompt, String modelName) {
         System.out.println("\n\n**********\n\nprompt: " + prompt + ", modelName: " + modelName);
-        String api_key = System.getenv("OPENAI_API_KEY");
 
-        ChatLanguageModel model = OpenAiChatModel.withApiKey(api_key);
-        String answer = model.generate(prompt);
+        String baseUrl = System.getenv("OLLAMA_BASE_URL");
+        if (baseUrl == null || baseUrl.isBlank()) {
+            baseUrl = DEFAULT_BASE_URL;
+        }
 
-        System.out.println(answer); // Hello! How can I assist you today?
+        OllamaChatModel model = OllamaChatModel.builder()
+                .baseUrl(baseUrl)
+                .modelName(modelName)
+                .temperature(0.7)
+                .timeout(DEFAULT_TIMEOUT)
+                .build();
+
+        String answer = model.chat(prompt);
+
+        System.out.println(answer);
         return answer;
     }
 
@@ -43,19 +49,10 @@ public class OllamaLlmLangChain4j {
 
     // read the contents of a file path into a Java string
     public static String readFileToString(String filePath) throws IOException {
-        Path path = Paths.get(filePath);
-        return new String(Files.readAllBytes(path));
+        return Files.readString(Path.of(filePath));
     }
 
-    public static String replaceSubstring(String originalString, String substringToReplace, String replacementString) {
-        return originalString.replace(substringToReplace, replacementString);
+    public static String promptVar(String prompt, String varName, String varValue) {
+        return prompt.replace(varName, varValue);
     }
-    public static String promptVar(String prompt0, String varName, String varValue) {
-        String prompt = replaceSubstring(prompt0, varName, varValue);
-        return replaceSubstring(prompt, varName, varValue);
-    }   
 }
-
-
-
-

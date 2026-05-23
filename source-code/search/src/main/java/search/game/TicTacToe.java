@@ -32,13 +32,10 @@ public class TicTacToe extends GameSearch {
     }
     private boolean winCheck(int i1, int i2, int i3,
                              boolean player, TicTacToePosition pos) {
-        int b = 0;
-        if (player) b = TicTacToePosition.HUMAN;
-        else        b = TicTacToePosition.PROGRAM;
-        if (pos.board[i1] == b &&
-            pos.board[i2] == b &&
-            pos.board[i3] == b)         return true;
-        return false;
+        int b = player ? TicTacToePosition.HUMAN : TicTacToePosition.PROGRAM;
+        return pos.board[i1] == b &&
+               pos.board[i2] == b &&
+               pos.board[i3] == b;
     }
 
     public float positionEvaluation(Position p, boolean player) {
@@ -97,7 +94,7 @@ public class TicTacToe extends GameSearch {
         for (int i=0; i<9; i++) {
             if (pos.board[i] == 0) {
                 TicTacToePosition pos2 = new  TicTacToePosition();
-                for (int j=0; j<9; j++) pos2.board[j] = pos.board[j];
+                System.arraycopy(pos.board, 0, pos2.board, 0, 9);
                 if (player) pos2.board[i] = 1; else pos2.board[i] = -1;
                 ret[count++] = pos2;
                 if (GameSearch.DEBUG) System.out.println("    "+pos2);
@@ -110,12 +107,10 @@ public class TicTacToe extends GameSearch {
         TicTacToeMove m = (TicTacToeMove)move;
         TicTacToePosition pos = (TicTacToePosition)p;
         TicTacToePosition pos2 = new  TicTacToePosition();
-        for (int i=0; i<9; i++) pos2.board[i] = pos.board[i];
-        int pp;
-        if (player) pp =  1;
-        else        pp = -1;
-        if (GameSearch.DEBUG) System.out.println("makeMove: m.moveIndex = " + m.moveIndex);
-        pos2.board[m.moveIndex] = pp;
+        System.arraycopy(pos.board, 0, pos2.board, 0, 9);
+        int pp = player ? 1 : -1;
+        if (GameSearch.DEBUG) System.out.println("makeMove: m.moveIndex = " + m.moveIndex());
+        pos2.board[m.moveIndex()] = pp;
         return pos2;
     }
     public boolean reachedMaxDepth(Position p, int depth) {
@@ -139,9 +134,7 @@ public class TicTacToe extends GameSearch {
             System.in.read();
             System.out.println("ch="+ch+", i=" + i);
         } catch (Exception e) { }
-        TicTacToeMove mm = new TicTacToeMove();
-        mm.moveIndex = i;
-        return mm;
+        return new TicTacToeMove(i);
     }
     static public void main(String [] args) {
         TicTacToePosition p = new TicTacToePosition();

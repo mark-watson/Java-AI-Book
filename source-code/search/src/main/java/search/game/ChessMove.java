@@ -1,6 +1,4 @@
 package search.game;
 
-public class ChessMove extends Move {
-    public int from;
-    public int to;
+public record ChessMove(int from, int to) implements Move {
 }

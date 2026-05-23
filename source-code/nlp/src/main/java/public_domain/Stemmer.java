@@ -558,15 +558,15 @@ public class Stemmer {
     }
     public String stemOneWord(String word) {
         List<String> sl = stemString(word);
-        if (sl.size() > 0)
-            return stemString(word).get(0);     // TBD: inefficient: FIX
+        if (!sl.isEmpty())
+            return sl.get(0);
         else
             return "";
     }
 
     public static void main(String[] args) {
-        Stemmer s = new Stemmer();
-        List l = s.stemString("the a not they an one two three four five six seven eight nine on off no yes Mr "+
+        var s = new Stemmer();
+        List<String> l = s.stemString("the a not they an one two three four five six seven eight nine on off no yes Mr "+
           "can be am it all run running runs ");
         System.out.println(l);
         System.out.println("Stem runs: " + s.stemOneWord("runs"));

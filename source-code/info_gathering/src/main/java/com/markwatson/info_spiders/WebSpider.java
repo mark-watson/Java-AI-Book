@@ -1,10 +1,16 @@
 package com.markwatson.info_spiders;
 
-import net.htmlparser.jericho.*;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
-import java.io.InputStream;
-import java.net.URL;
-import java.net.URLConnection;
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.*;
 
 /**
@@ -18,72 +24,81 @@ import java.util.*;
  */
 
 public class WebSpider {
-  public WebSpider(String root_url, int max_returned_pages) throws Exception {
-    String host = new URL(root_url).getHost();
+  public WebSpider(String rootUrl, int maxReturnedPages) throws Exception {
+    String host = URI.create(rootUrl).getHost();
     System.out.println("+ host: " + host);
-    List<String> urls = new ArrayList<String>();
-    Set<String> already_visited = new HashSet<String>();
-    urls.add(root_url);
-    int num_fetched = 0;
-    while (num_fetched <= max_returned_pages && !urls.isEmpty()) {
-      try {
-        System.out.println("+ urls: " + urls);
-        String url_str = urls.remove(0);
-        System.out.println("+ url_str: " + url_str);
-        //if (url_str.toLowerCase().indexOf(host) > -1 && url_str.indexOf("https:") == -1 && !already_visited.contains(url_str)) {
-        if (url_str.toLowerCase().indexOf(host) > -1 && !already_visited.contains(url_str)) {
-          already_visited.add(url_str);
-          URL url = new URL(url_str);
-          URLConnection connection = url.openConnection();
-          connection.setAllowUserInteraction(false);
-          InputStream ins = url.openStream();
-          Source source = new Source(ins);
-          num_fetched++;
-          TextExtractor te = new TextExtractor(source);
-          String text = te.toString();
-          // Skip any pages where text on page is identical to existing
-          // page (e.g., http://example.com and http://exaple.com/index.html
-          boolean process = true;
-          for (List<String> ls : url_content_lists) {
-            if (text.equals(ls.get(1))) {
-              process = false;
-              break;
+    var urls = new ArrayList<String>();
+    var alreadyVisited = new HashSet<String>();
+    urls.add(rootUrl);
+    int numFetched = 0;
+
+    try (var httpClient = HttpClient.newBuilder()
+            .connectTimeout(Duration.ofSeconds(10))
+            .followRedirects(HttpClient.Redirect.NORMAL)
+            .build()) {
+
+      while (numFetched <= maxReturnedPages && !urls.isEmpty()) {
+        try {
+          System.out.println("+ urls: " + urls);
+          String urlStr = urls.removeFirst();
+          System.out.println("+ url_str: " + urlStr);
+          if (urlStr.toLowerCase().contains(host) && !alreadyVisited.contains(urlStr)) {
+            alreadyVisited.add(urlStr);
+
+            var request = HttpRequest.newBuilder()
+                    .uri(URI.create(urlStr))
+                    .timeout(Duration.ofSeconds(15))
+                    .header("User-Agent", "Mozilla/5.0 (compatible; JavaAIBook/1.0)")
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() != 200) {
+              System.out.println("Skipping " + urlStr + " (HTTP " + response.statusCode() + ")");
+              continue;
             }
-          }
-          if (process) {
-            try {
-              Thread.sleep(500);
-            } catch (Exception ignore) {
-            }
-            List<StartTag> anchorTags = source.getAllStartTags("a ");
-            ListIterator iter = anchorTags.listIterator();
-            while (iter.hasNext()) {
-              StartTag anchor = (StartTag) iter.next();
-              Attributes attr = anchor.parseAttributes();
-              Attribute link = attr.get("href");
-              String link_str = link.getValue();
-              if (link_str.indexOf("http:") == -1) {
-                String path = url.getPath();
-                if (path.endsWith("/")) path = path.substring(0, path.length() - 1);
-                int index = path.lastIndexOf("/");
-                if (index > -1) path = path.substring(0, index);
-                link_str = url.getHost() + "/" + path + "/" + link_str;
-                link_str = "http://" + link_str.replaceAll("///", "/").replaceAll("//", "/");
+
+            Document doc = Jsoup.parse(response.body(), urlStr);
+            numFetched++;
+            String text = doc.text();
+
+            // Skip any pages where text on page is identical to existing
+            // page (e.g., http://example.com and http://example.com/index.html)
+            boolean duplicate = urlContentLists.stream()
+                    .anyMatch(ls -> text.equals(ls.get(1)));
+
+            if (!duplicate) {
+              try {
+                Thread.sleep(500);
+              } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
               }
-              urls.add(link_str);
+
+              Elements anchors = doc.select("a[href]");
+              for (Element anchor : anchors) {
+                String linkStr = anchor.attr("abs:href");
+                if (!linkStr.isEmpty()) {
+                  urls.add(linkStr);
+                }
+              }
+              urlContentLists.add(List.of(urlStr, text));
             }
-            List<String> ls = new ArrayList<String>(2);
-            ls.add(url_str);
-            ls.add(text);
-            url_content_lists.add(ls);
           }
+        } catch (IOException ex) {
+          System.out.println("Error: " + ex);
+          ex.printStackTrace();
         }
-      } catch (Exception ex) {
-        System.out.println("Error: " + ex);
-        ex.printStackTrace();
       }
     }
   }
 
-  public List<List<String>> url_content_lists = new ArrayList<List<String>>();
+  private final List<List<String>> urlContentLists = new ArrayList<>();
+
+  public List<List<String>> getUrlContentLists() {
+    return Collections.unmodifiableList(urlContentLists);
+  }
+
+  /** @deprecated Use {@link #getUrlContentLists()} instead. Kept for backward compatibility. */
+  @Deprecated
+  public List<List<String>> url_content_lists = urlContentLists;
 }

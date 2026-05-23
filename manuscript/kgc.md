@@ -53,7 +53,8 @@ import com.markwatson.ner_dbpedia.TextToDbpediaUris;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
+import java.util.List;
 
 /**
  * Java implementation of Knowledge Graph Creator.
@@ -68,71 +69,91 @@ import java.nio.file.Paths;
 
 public class KGC  {
 
-	static String subjectUri = 
-	  "<http://www.w3.org/1999/02/22-rdf-syntax-ns#/subject>";
-	static String labelUri = 
-	  "<http://www.w3.org/1999/02/22-rdf-syntax-ns#/label>";
-	static String personTypeUri = 
-	  "<http://www.w3.org/2000/01/rdf-schema#person>";
-	static String companyTypeUri = 
-	  "<http://www.w3.org/2000/01/rdf-schema#company>";
+	private static final System.Logger LOG = System.getLogger(KGC.class.getName());
 
-	static String typeOfUri = 
-	  "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>";
+	private static final String SUBJECT_URI = "<http://www.w3.org/1999/02/22-rdf-syntax-ns#/subject>";
+	private static final String LABEL_URI = "<http://www.w3.org/1999/02/22-rdf-syntax-ns#/label>";
+	private static final String COUNTRY_TYPE_URI = "<http://www.w3.org/2000/01/rdf-schema#country>";
+	private static final String PERSON_TYPE_URI = "<http://www.w3.org/2000/01/rdf-schema#person>";
+	private static final String COMPANY_TYPE_URI = "<http://www.w3.org/2000/01/rdf-schema#company>";
+	private static final String CITY_TYPE_URI = "<http://www.w3.org/2000/01/rdf-schema#city>";
+	private static final String BROADCAST_NETWORK_TYPE_URI = "<http://www.w3.org/2000/01/rdf-schema#broadcastNetwork>";
+	private static final String MUSIC_GROUP_TYPE_URI = "<http://www.w3.org/2000/01/rdf-schema#musicGroup>";
+	private static final String POLITICAL_PARTY_TYPE_URI = "<http://www.w3.org/2000/01/rdf-schema#politicalParty>";
+	private static final String TRADE_UNION_TYPE_URI = "<http://www.w3.org/2000/01/rdf-schema#tradeUnion>";
+	private static final String UNIVERSITY_TYPE_URI = "<http://www.w3.org/2000/01/rdf-schema#university>";
+	private static final String TYPE_OF_URI = "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>";
+
+	/** Immutable holder for a text file and its associated metadata. */
+	private record TextAndMeta(String text, String meta) {}
 
 	private KGC() { }
-	
+
 	public KGC(String directoryPath, String outputRdfPath) throws IOException {
-		System.out.println("KGN");
-		PrintStream out = new PrintStream(outputRdfPath);
-		File dir = new File(directoryPath);
-		File[] directoryListing = dir.listFiles();
-		if (directoryListing != null) {
-			for (File child : directoryListing) {
-				System.out.println("child:" + child);
-				if (child.toString().endsWith(".txt")) {
-					// try to open the meta file with the same extension:
-					String metaAbsolutePath = child.getAbsolutePath();
-					File meta = 
-					  new File(metaAbsolutePath.substring(0,
-					                                  metaAbsolutePath.length() - 4)
-					                                   + ".meta");
-					System.out.println("meta:" + meta);
-					String [] text_and_meta = 
-					  readData(child.getAbsolutePath(), meta.getAbsolutePath());
-					String metaData = "<" + text_and_meta[1].strip() + ">";
-					TextToDbpediaUris kt = 
-					  new TextToDbpediaUris(text_and_meta[0]);
-					for (int i=0; i<kt.personNames.size(); i++) {
-						out.println(metaData + " " + subjectUri + " " + 
-						            kt.personUris.get(i) + " .");
-						out.println(kt.personUris.get(i) + " " + labelUri + 
-						            " \"" + kt.personNames.get(i) + "\" .");
-						out.println(kt.personUris.get(i) + " " + typeOfUri + 
-						            " " + personTypeUri + " .");
-					}
-					for (int i=0; i<kt.companyNames.size(); i++) {
-						out.println(metaData + " " + 
-						            subjectUri + " " + 
-						            kt.companyUris.get(i) + " .");
-						out.println(kt.companyUris.get(i) + " " +
-						           labelUri + " \"" +
-						           kt.companyNames.get(i) + "\" .");
-						out.println(kt.companyUris.get(i) + " " + typeOfUri + 
-						            " " + companyTypeUri + " .");
-					}
-				}
-			}
-		}
-		out.close();
+		process(directoryPath, outputRdfPath);
 	}
 
-	private String [] readData(String textPath, String metaPath) throws IOException {
-		String text = Files.readString(Paths.get(textPath), StandardCharsets.UTF_8);
-		String meta = Files.readString(Paths.get(metaPath), StandardCharsets.UTF_8);
-		System.out.println("\n\n** text:\n\n" + text);
-		return new String[] { text, meta };
+	/**
+	 * Process all .txt/.meta file pairs in {@code directoryPath} and write
+	 * RDF triples to {@code outputRdfPath}.
+	 */
+	public static void process(String directoryPath, String outputRdfPath) throws IOException {
+		LOG.log(System.Logger.Level.INFO, "KGC processing directory: {0}", directoryPath);
+		Path dirPath = Path.of(directoryPath);
+		File[] directoryListing = dirPath.toFile().listFiles();
+		if (directoryListing == null) {
+			LOG.log(System.Logger.Level.WARNING, "Directory listing returned null for: {0}", directoryPath);
+			return;
+		}
+
+		try (var out = new PrintStream(outputRdfPath)) {
+			for (File child : directoryListing) {
+				if (!child.toString().endsWith(".txt")) {
+					continue;
+				}
+				LOG.log(System.Logger.Level.DEBUG, "Processing file: {0}", child);
+
+				// try to open the meta file with the same extension:
+				String metaAbsolutePath = child.getAbsolutePath();
+				Path metaPath = Path.of(metaAbsolutePath.substring(0, metaAbsolutePath.length() - 4) + ".meta");
+				LOG.log(System.Logger.Level.DEBUG, "Meta file: {0}", metaPath);
+
+				TextAndMeta data = readData(child.toPath(), metaPath);
+				String metaData = "<" + data.meta().strip() + ">";
+				TextToDbpediaUris kt = new TextToDbpediaUris(data.text());
+
+				writeTriples(out, metaData, kt.personNames, kt.personUris, PERSON_TYPE_URI);
+				writeTriples(out, metaData, kt.companyNames, kt.companyUris, COMPANY_TYPE_URI);
+				writeTriples(out, metaData, kt.cityNames, kt.cityUris, CITY_TYPE_URI);
+				writeTriples(out, metaData, kt.countryNames, kt.countryUris, COUNTRY_TYPE_URI);
+				writeTriples(out, metaData, kt.broadcastNetworkNames, kt.broadcastNetworkUris, BROADCAST_NETWORK_TYPE_URI);
+				writeTriples(out, metaData, kt.musicGroupNames, kt.musicGroupUris, MUSIC_GROUP_TYPE_URI);
+				writeTriples(out, metaData, kt.politicalPartyNames, kt.politicalPartyUris, POLITICAL_PARTY_TYPE_URI);
+				writeTriples(out, metaData, kt.tradeUnionNames, kt.tradeUnionUris, TRADE_UNION_TYPE_URI);
+				writeTriples(out, metaData, kt.universityNames, kt.universityUris, UNIVERSITY_TYPE_URI);
+			}
+		}
 	}
+
+	/**
+	 * Write subject, label, and type triples for a list of named entities.
+	 */
+	private static void writeTriples(PrintStream out, String metaData,
+			List<String> names, List<String> uris, String typeUri) {
+		for (int i = 0; i < names.size(); i++) {
+			out.println(metaData + " " + SUBJECT_URI + " " + uris.get(i) + " .");
+			out.println(uris.get(i) + " " + LABEL_URI + " \"" + names.get(i) + "\" .");
+			out.println(uris.get(i) + " " + TYPE_OF_URI + " " + typeUri + " .");
+		}
+	}
+
+	private static TextAndMeta readData(Path textPath, Path metaPath) throws IOException {
+		String text = Files.readString(textPath, StandardCharsets.UTF_8);
+		String meta = Files.readString(metaPath, StandardCharsets.UTF_8);
+		LOG.log(System.Logger.Level.DEBUG, "Read text ({0} chars) from {1}", text.length(), textPath);
+		return new TextAndMeta(text, meta);
+	}
+
 }
 ~~~~~~~~
 
@@ -145,27 +166,31 @@ The **junit** test class **KgcTest** will process the local directory **test_dat
 ~~~~~~~~
 package com.knowledgegraphcreator;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.jupiter.api.Test;
 
-public class KgcTest extends TestCase {
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
-  public KgcTest(String testName) {
-    super(testName);
-  }
+import static org.junit.jupiter.api.Assertions.*;
 
-  public static Test suite() {
-    return new TestSuite(KgcTest.class);
-  }
+public class KgcTest {
 
-  public void testKGC() throws Exception {
-    assertTrue(true);
-    KGC client = new KGC("test_data/", "output_with_duplicates.rdf");
-  }
-  private static void pause() {
-    try { Thread.sleep(2000);
-    } catch (Exception ignore) { }
+  @Test
+  void testKGC() throws IOException {
+    Path outputFile = Path.of("output_with_duplicates.rdf");
+    KGC client = new KGC("test_data/", outputFile.toString());
+
+    assertTrue(Files.exists(outputFile), "Output RDF file should be created");
+
+    String content = Files.readString(outputFile);
+    assertFalse(content.isBlank(), "Output RDF file should not be empty");
+
+    // Verify that known entity types from test data appear in the output
+    assertTrue(content.contains("<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>"),
+        "Output should contain RDF type triples");
+    assertTrue(content.contains("<http://www.w3.org/1999/02/22-rdf-syntax-ns#/label>"),
+        "Output should contain label triples");
   }
 }
 ~~~~~~~~

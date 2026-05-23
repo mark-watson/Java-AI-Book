@@ -1,5 +1,7 @@
 package search.graph;
 
+import java.util.Arrays;
+
 /**
  * Depth First Graph search
  *
@@ -26,14 +28,12 @@ public class DepthFirstSearch extends AbstractGraphSearch {
         System.out.println("Entered DepthFirstSearch.findPathHelper(...," +
                            num_path + ", " + goal_node + ")");
         if (goal_node == path[num_path - 1]) {
-            int [] ret = new int[num_path];
-            for (int i=0; i<num_path; i++) ret[i] = path[i];
-            return ret;  // we are done!
+            return Arrays.copyOf(path, num_path);  // we are done!
         }
         int [] new_nodes = connected_nodes(path, num_path);
         if (new_nodes != null) {
-            for (int j=0; j<new_nodes.length; j++) {
-                path[num_path] = new_nodes[j];
+            for (int new_node : new_nodes) {
+                path[num_path] = new_node;
                 int [] test = findPathHelper(path, num_path + 1, goal_node);
                 if (test != null) {
                     if (test[test.length - 1] == goal_node) {
@@ -64,17 +64,13 @@ public class DepthFirstSearch extends AbstractGraphSearch {
             if (keep) {
                 // now see if there is a link between node 'last_node' and 'n':
                 for (int i=0; i<numLinks; i++) {
-                    if (link_1[i] == last_node) {
-                        if (link_2[i] == n) {
-                            connected = true;
-                            break;
-                        }
+                    if (link_1[i] == last_node && link_2[i] == n) {
+                        connected = true;
+                        break;
                     }
-                    if (link_2[i] == last_node) {
-                        if (link_1[i] == n) {
-                            connected = true;
-                            break;
-                        }
+                    if (link_2[i] == last_node && link_1[i] == n) {
+                        connected = true;
+                        break;
                     }
                 }
                 if (connected) {
@@ -83,11 +79,7 @@ public class DepthFirstSearch extends AbstractGraphSearch {
             }
         }
         if (num == 0)  return null;
-        int [] ret2 = new int[num];
-        for (int i=0; i<num; i++) {
-            ret2[i] = ret[i];
-        }
-        return ret2;
+        return Arrays.copyOf(ret, num);
     }
 
 }

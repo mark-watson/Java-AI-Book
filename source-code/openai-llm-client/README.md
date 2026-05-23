@@ -4,11 +4,11 @@ Book URI: https://leanpub.com/javaai
 
 You can read my book for free online at: https://leanpub.com/javaai/read
 
-This example shows how to call the OpenAI chat completions API directly from Java using `java.net.HttpClient`. It constructs the JSON request body, sends it to the OpenAI REST endpoint, and parses the response — demonstrating LLM integration with no third-party SDK.
+This example shows how to call the OpenAI chat completions API from Java using the [official OpenAI Java SDK](https://github.com/openai/openai-java) (`com.openai:openai-java:4.37.0`). It uses the type-safe builder API to construct requests and parse responses.
 
 ## Prerequisites
 
-- Java 11+
+- Java 21+
 - Maven 3.6+
 - A valid `OPENAI_API_KEY` environment variable
 

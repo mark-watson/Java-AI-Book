@@ -1,22 +1,20 @@
 package com.markwatson.gemini;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
 import java.net.URI;
-import java.net.URL;
-//import java.net.URLConnection;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 public class GeminiCompletions {
 
-    public static String model = "gemini-3-flash-preview";
+    private static final String DEFAULT_MODEL = "gemini-2.5-flash";
+    public static String model = DEFAULT_MODEL;
 
     public static void main(String[] args) throws Exception {
         String prompt = "How much is 11 + 22?";
@@ -25,14 +23,32 @@ public class GeminiCompletions {
     }
 
     public static String getCompletion(String prompt) throws Exception {
-        String jsonBody = "{\"contents\":[{\"parts\":[{\"text\":\"" + prompt + "\"}]}]}";
+        var jsonBody = buildRequestBody(prompt);
         return executeRequest(jsonBody);
     }
 
     public static String getCompletionWithSearch(String prompt) throws Exception {
-        String jsonBody = "{\"contents\":[{\"parts\":[{\"text\":\"" + prompt
-                + "\"}]}],\"tools\":[{\"google_search\":{}}]}";
-        return executeRequest(jsonBody);
+        var textPart = new JSONObject().put("text", prompt);
+        var parts = new JSONArray().put(textPart);
+        var content = new JSONObject().put("parts", parts);
+        var contents = new JSONArray().put(content);
+
+        var googleSearchTool = new JSONObject().put("google_search", new JSONObject());
+        var tools = new JSONArray().put(googleSearchTool);
+
+        var body = new JSONObject()
+                .put("contents", contents)
+                .put("tools", tools);
+
+        return executeRequest(body.toString());
+    }
+
+    private static String buildRequestBody(String prompt) {
+        var textPart = new JSONObject().put("text", prompt);
+        var parts = new JSONArray().put(textPart);
+        var content = new JSONObject().put("parts", parts);
+        var contents = new JSONArray().put(content);
+        return new JSONObject().put("contents", contents).toString();
     }
 
     private static String executeRequest(String jsonBody) throws Exception {
@@ -40,30 +56,27 @@ public class GeminiCompletions {
         if (apiKey == null || apiKey.isEmpty()) {
             throw new IOException("GOOGLE_API_KEY environment variable not set.");
         }
-        URI uri = new URI(
+
+        var uri = URI.create(
                 "https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent?key=" + apiKey);
-        URL url = uri.toURL();
 
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("POST");
-        connection.setRequestProperty("Content-Type", "application/json");
-        connection.setDoOutput(true);
-        try (OutputStream os = connection.getOutputStream()) {
-            byte[] input = jsonBody.getBytes("utf-8");
-            os.write(input, 0, input.length);
+        var request = HttpRequest.newBuilder()
+                .uri(uri)
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
+                .build();
+
+        HttpResponse<String> response;
+        try (var client = HttpClient.newHttpClient()) {
+            response = client.send(request, HttpResponse.BodyHandlers.ofString());
         }
 
-        StringBuilder response = new StringBuilder();
-        try (BufferedReader br = new BufferedReader(
-                new InputStreamReader(connection.getInputStream(), "utf-8"))) {
-            String responseLine = null;
-            while ((responseLine = br.readLine()) != null) {
-                response.append(responseLine.trim());
-            }
+        if (response.statusCode() != 200) {
+            throw new IOException("Gemini API request failed (HTTP %d): %s"
+                    .formatted(response.statusCode(), response.body()));
         }
 
-        connection.disconnect();
-        JSONObject jsonObject = new JSONObject(response.toString());
+        var jsonObject = new JSONObject(response.body());
         return jsonObject.getJSONArray("candidates").getJSONObject(0).getJSONObject("content").getJSONArray("parts")
                 .getJSONObject(0).getString("text");
     }
@@ -74,8 +87,7 @@ public class GeminiCompletions {
 
     // read the contents of a file path into a Java string
     public static String readFileToString(String filePath) throws IOException {
-        Path path = Paths.get(filePath);
-        return new String(Files.readAllBytes(path)).replace("\"", "\\\"");
+        return Files.readString(Path.of(filePath)).replace("\"", "\\\"");
     }
 
     public static String replaceSubstring(String originalString, String substringToReplace, String replacementString) {
