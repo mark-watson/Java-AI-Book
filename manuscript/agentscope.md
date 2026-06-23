@@ -254,3 +254,36 @@ The transition from a basic conversational agent to a tool augmented system repr
 The second example elevated the agent's role from a passive information retriever to an active participant in the local computing environment. By registering a `Toolkit` containing both a simulated weather service and a concrete filesystem service, we demonstrated how the agent utilizes its reasoning loop to solve multi step problems. The ability of the agent to "plan" its actions by first listing a directory, identifying relevant files, and then selectively reading their content, showcases the power of the Reasoning and Acting (ReAct) paradigm. This architecture allows developers to build safe, sandboxed environments where AI can perform real world tasks, transforming a static model into a dynamic assistant capable of interacting with proprietary data and external APIs.
 
 Together, these examples illustrate the scalability of the `AgentScope framework`. Whether you are building a simple customer service bot or a complex autonomous researcher capable of navigating a codebase, the pattern remains consistent: define the model, describe the tools, and let the agent's reasoning engine bridge the gap. As you move forward, you can extend these concepts by adding more specialized tools, implementing custom error handling logic, or even orchestrating multiple agents to collaborate on shared tasks within the same JVM environment.
+
+## Optional Practice Problems
+
+Here are some hands-on practice problems to help you master agent development using AgentScope and Google Gemini:
+
+### 1. Persona Tuning (Easy)
+Customize the agent's behavior by modifying the system prompt.
+* **Task**: Open [Main.java](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/AgentScope_gemini/src/main/java/com/markwatson/agentscope/Main.java). Modify the `.sysPrompt(...)` configuration of the `ReActAgent` builder to define a specific persona, such as a "skeptical code reviewer" who responds exclusively with concise critiques and bulleted lists of potential edge cases.
+* **Goal**: Ask the agent to review a simple snippet of code (e.g., a division method that doesn't check for a zero denominator) and print the response to verify that the agent adheres strictly to the defined persona.
+
+### 2. Registering a Calculator Service (Medium)
+Learn how to define and register new tools with AgentScope.
+* **Task**: Create a new tool class named `CalculatorService` in [ToolUseExample.java](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/AgentScope_gemini/src/main/java/com/markwatson/agentscope/ToolUseExample.java). Inside this class, write methods for basic operations: `add`, `subtract`, `multiply`, and `divide`.
+* **API Reference**: Annotate these methods with `@Tool(description = "...")` and their parameters with `@ToolParam(name = "...", description = "...")`. Register the service inside the `Toolkit` instance in the `main` method.
+* **Goal**: Prompt the `ReActAgent` with a compound math problem (e.g., "Take the number 15, multiply it by 3, and then add 10 to the result") and observe the trace logs. Verify that the agent correctly decomposes the query into multiple sequential tool calls to perform the calculation.
+
+### 3. A Sandboxed File-Writer Tool (Medium)
+Build tools that allow agents to modify their environment safely.
+* **Task**: Extend the `FileService` class in [ToolUseExample.java](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/AgentScope_gemini/src/main/java/com/markwatson/agentscope/ToolUseExample.java) with a new tool method to write content to a file:
+  ```java
+  @Tool(description = "Write a block of text to a file in the workspace sandbox")
+  public String writeFile(
+      @ToolParam(name = "filename", description = "The name of the file to write") String filename,
+      @ToolParam(name = "content", description = "The text content to write to the file") String content)
+  ```
+* **Requirements**: To enforce sandboxing, your method must validate that the file is only written inside a specific target directory (e.g., `user.dir/sandbox/`) and does not escape via directory traversal attacks (using `..` in paths).
+* **Goal**: Instruct the agent to run a weather query for "Berlin", format the result, and save it to `berlin_weather.txt` using the new tool. Verify that the file was created in the correct directory.
+
+### 4. Stateful Conversation Loop (Hard)
+Build an interactive command-line interface that maintains chat context.
+* **Task**: Implement a new class or modify [Main.java](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/AgentScope_gemini/src/main/java/com/markwatson/agentscope/Main.java) to construct an interactive loop that reads user input from the terminal (`System.in`) and queries the agent repeatedly.
+* **Requirements**: A standard `ReActAgent` invocation is stateless unless you manage the context history. Use a list or sequence of `Msg` objects to hold the conversation history and pass them to the agent so that it remembers previous turns (e.g., if you say "My name is Alice" in turn 1, it should be able to answer "What is my name?" in turn 2).
+* **Goal**: Test the conversational agent with follow-up prompts to verify that context is preserved correctly throughout the session.

@@ -353,3 +353,35 @@ I mentioned in the last section that there are at least two techniques for train
 ## Wrap-up for Neural Networks
 
 I hope that the material in this chapter has given you some low-level understanding of the implementation of backpropagation neural networks. We will use a popular deep learning library in the next chapter that in practice you should prefer to the pedantic code here. That said, I used very similar C++ code to that developed here for several practical engineering problems in the 1980s and early 1990s including the prediction code for a bomb detector my company made for the FAA.
+
+## Optional Practice Problems
+
+Here are some hands-on practice problems to help you solidify your understanding of backpropagation neural network mechanics, weight updates, and tuning hyper-parameters:
+
+### 1. Tuning Hyper-parameters (Easy)
+Modify the test case in [NeuralNetwork_1H_Test.java](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/neuralnetworks/src/test/java/com/markwatson/neuralnetworks/NeuralNetwork_1H_Test.java) (specifically the `testTraining()` method) to experiment with different values for `learningRate` in [Neural_1H.java](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/neuralnetworks/src/main/java/com/markwatson/neuralnetworks/Neural_1H.java).
+* Run the tests with different learning rates (e.g., `0.01`, `0.1`, `0.5`, `1.0`, and `2.0`).
+* Measure how many iterations are required for the training error to drop below `0.1`.
+* What happens if the learning rate is set too high (e.g., `5.0`)? Explain how the weights react.
+
+### 2. Exploring Momentum Scaling (Medium)
+The class [Neural_2H_momentum.java](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/neuralnetworks/src/main/java/com/markwatson/neuralnetworks/Neural_2H_momentum.java) incorporates a momentum term `alpha`. Look at the test in [NeuralNetwork_2H_momentum_Test.java](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/neuralnetworks/src/test/java/com/markwatson/neuralnetworks/NeuralNetwork_2H_momentum_Test.java).
+* Create a test variation that compares training convergence speed (number of cycles to reach convergence) using `alpha = 0.0` (which turns off momentum), `alpha = 0.3`, `alpha = 0.6`, and `alpha = 0.9`.
+* Under what conditions does a larger `alpha` speed up training? When does it cause the training error to oscillate or fail to converge?
+
+### 3. Alternative Activation Functions (Medium/Hard)
+The current classes [Neural_1H.java](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/neuralnetworks/src/main/java/com/markwatson/neuralnetworks/Neural_1H.java) and [Neural_2H.java](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/neuralnetworks/src/main/java/com/markwatson/neuralnetworks/Neural_2H.java) use a Sigmoid activation function `sigmoid(float x)` and its derivative `sigmoidP(float x)`.
+* Implement a new class or subclass that uses the Hyperbolic Tangent (tanh) activation function instead.
+* Recall that the mathematical definition of tanh is:
+  `tanh(x) = (e^x - e^-x) / (e^x + e^-x)`
+  And its derivative in terms of the activation value `a = tanh(x)` is:
+  `d/dx tanh(x) = 1 - a^2`
+* Because the range of tanh is `[-1, 1]` (unlike Sigmoid's `[0, 1]`), how should you initialize the weights (in `randomizeWeights()`) and format your training example input/output values?
+* Test your tanh network on the same rotation pattern as [NeuralNetwork_1H_Test.java](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/neuralnetworks/src/test/java/com/markwatson/neuralnetworks/NeuralNetwork_1H_Test.java).
+
+### 4. Tracking and Visualizing Weight Trajectories (Hard)
+Write a new unit test or modify [NeuralNetwork_1H_Test.java](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/neuralnetworks/src/test/java/com/markwatson/neuralnetworks/NeuralNetwork_1H_Test.java) to inspect the weight matrices `W1` and `W2` during the training loop.
+* Log the sum of absolute changes in the weights (the sum of `|W_new - W_old|` for all weights) after every 1,000 training cycles.
+* Identify which specific connections (e.g., input-to-hidden or hidden-to-output) experience the largest modifications early in training versus late in training.
+* Relate these changes to the concept of gradient descent. How does this demonstrate the network converging to a local minimum?
+

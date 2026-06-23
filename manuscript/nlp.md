@@ -567,3 +567,19 @@ You can add additional noise words to the data section in the file **NoiseWords.
 This chapter contains my own experiments with ad-hoc NLP that I often find useful for my work.
 
 In the next chapter [Natural Language Processing Using OpenNLP](#opennlp) we use the Apache OpenNLP library that I also often use in my work.
+
+## Optional Practice Problems
+
+Here are optional hands-on practice problems to help you explore and extend the Natural Language Processing library:
+
+1. **Custom Part-of-Speech Tagging Rules (Easy/Medium)**:
+   Extend [FastTag](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/nlp/src/main/java/com/markwatson/nlp/FastTag.java) by adding a new transformational rule. In the [FastTag.tag](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/nlp/src/main/java/com/markwatson/nlp/FastTag.java#L75-L136) method, rules are applied sequentially to adjust word tags based on local context. Write a new rule (e.g., Rule 9) that converts a token to a plural proper noun (`NNPS`) if it ends with "s" and is currently tagged as a singular proper noun (`NNP`) (such as "Apples" or "Smiths"). Test your tagger with a sentence containing plural proper nouns.
+
+2. **Filtering Place Names in Entity Extraction (Medium)**:
+   The [ExtractNames](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/nlp/src/main/java/com/markwatson/nlp/ExtractNames.java) class resolves place names but currently doesn't filter them by type. Modify or extend `ExtractNames` to allow filtering place names based on their classification types (e.g., returning only items classified as `"country"` or `"country_capital"` in the underlying `placeNameHash`). Use `placeNameHash.get(name)` to inspect classification metadata and verify the output.
+
+3. **Hybrid Document Similarity Metrics (Medium/Hard)**:
+   In the "Text Clustering" section, the book lists multiple options for rating document similarity. Currently, [ComparableDocument.compareTo](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/nlp/src/main/java/com/markwatson/nlp/ComparableDocument.java#L448-L462) only uses the intersection of word stems. Enhance this class to calculate a hybrid similarity score by combining the word stem intersection with the intersection of classification tags computed by [AutoTagger.getTags](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/nlp/src/main/java/com/markwatson/nlp/AutoTagger.java#L60-L67). Experiment with different weights for the stem similarity versus the category similarity.
+
+4. **Sentence Extraction and Summarization (Hard)**:
+   The [AutoTagger.getWordImportanceWeights](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/nlp/src/main/java/com/markwatson/nlp/AutoTagger.java#L111-L145) method computes the relative importance of words/stems based on category classification maps. Use this metadata to write a simple text summarizer. Split an input text document into sentences, tokenize each sentence, and score it by summing the importance weights of its non-noise words (utilizing [Tokenizer.wordsToList](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/nlp/src/main/java/com/markwatson/nlp/util/Tokenizer.java#L23-L96) and [NoiseWords.checkFor](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/nlp/src/main/java/com/markwatson/nlp/util/NoiseWords.java#L33-L35)). Finally, output the top $N$ highest-scoring sentences as the document summary.

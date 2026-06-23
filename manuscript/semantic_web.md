@@ -973,3 +973,35 @@ for integer values bound to the variable **count**.
 ## Semantic Web Wrap-up
 
 Writing semantic web applications in Java is a very large topic, worthy of an entire book. I have covered in this chapter what for my work has been the most useful semantic web techniques: storing and querying RDF and RDFS for a specific application and using OWL when required. We will see in the next two chapters the use of RDF when automatically creating Knowledge Graphs from text data and for automatic navigation of Knowledge Graphs.
+
+## Optional Practice Problems
+
+Here are optional hands-on practice problems to help you master semantic web technologies, SPARQL, and Apache Jena:
+
+### Problem 1: SPARQL Filtering and Regex Match (Easy)
+Write a local SPARQL query using the [JenaApis](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/semantic_web_apache_jena/src/main/java/com/markwatson/semanticweb/JenaApis.java) class to search through the dataset in [news.n3](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/semantic_web_apache_jena/data/news.n3). Your query should find all news articles that mention organizations containing the word "Government" or "administration" (case-insensitive or case-sensitive matching). Order the results alphabetically by organization name.
+- **Reference API/Class**: [JenaApis](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/semantic_web_apache_jena/src/main/java/com/markwatson/semanticweb/JenaApis.java), [QueryResult](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/semantic_web_apache_jena/src/main/java/com/markwatson/semanticweb/QueryResult.java)
+
+### Problem 2: Programmatically Constructing RDF Triples (Medium)
+Create a new unit test in [JenaApisTest](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/semantic_web_apache_jena/src/test/java/com/markwatson/semanticweb/JenaApisTest.java) (or write a standalone runner) that builds a model programmatically. Use Apache Jena's `Model` API directly to:
+1. Define a namespace prefix `kb` for `http://knowledgebooks.com/ontology#`.
+2. Create a subject resource representing a book (e.g., `http://knowledgebooks.com/book/java-ai-book`).
+3. Define properties like `kb:title` ("Java AI Book") and `kb:author` ("Mark Watson").
+4. Add these statements to the `Model`.
+5. Execute a SPARQL query using `JenaApis.query()` to verify that your programmatically added statements are retrievable.
+- **Reference API/Class**: `org.apache.jena.rdf.model.Model`, `org.apache.jena.rdf.model.Resource`, `org.apache.jena.rdf.model.Property`, [JenaApis](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/semantic_web_apache_jena/src/main/java/com/markwatson/semanticweb/JenaApis.java)
+
+### Problem 3: RDFS Class Hierarchy Inference (Medium-Hard)
+While the chapter demonstrates property hierarchy via `rdfs:subPropertyOf`, RDFS also supports class hierarchies via `rdfs:subClassOf`.
+1. Create a simple Turtle/N3 file or define string statements in memory that declare `kb:Company rdfs:subClassOf kb:Organization`.
+2. Add a statement declaring that a specific company (e.g., `<http://dbpedia.org/resource/Google> rdf:type kb:Company`).
+3. Load this data into [JenaApis](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/semantic_web_apache_jena/src/main/java/com/markwatson/semanticweb/JenaApis.java) (which initializes the ontology model using `ModelFactory.createOntologyModel()`).
+4. Write and execute a SPARQL query to select all subjects of type `kb:Organization`. Verify that the company is returned as an organization due to RDFS reasoning.
+- **Reference API/Class**: `org.apache.jena.rdf.model.ModelFactory`, [JenaApis](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/semantic_web_apache_jena/src/main/java/com/markwatson/semanticweb/JenaApis.java)
+
+### Problem 4: Cache Expiration with Timestamps (Hard)
+The [Cache](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/semantic_web_apache_jena/src/main/java/com/markwatson/semanticweb/Cache.java) class in this chapter caches SPARQL query results in an H2 database indefinitely.
+1. Modify [Cache.java](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/semantic_web_apache_jena/src/main/java/com/markwatson/semanticweb/Cache.java) to alter the database schema so it records a timestamp (e.g., a `timestamp` column) representing when each query result was saved.
+2. Update `Cache.saveQueryResultInCache` and `Cache.fetchResultFromCache` to accept or check this timestamp.
+3. Modify [JenaApis.java](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/semantic_web_apache_jena/src/main/java/com/markwatson/semanticweb/JenaApis.java) to parse and verify the timestamp, such that cached queries are invalidated (re-queried from the remote endpoint) if they are older than 24 hours.
+- **Reference API/Class**: [Cache](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/semantic_web_apache_jena/src/main/java/com/markwatson/semanticweb/Cache.java), [JenaApis](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/semantic_web_apache_jena/src/main/java/com/markwatson/semanticweb/JenaApis.java)

@@ -211,3 +211,14 @@ If you are not familiar with **awk** and want to learn the basics then I recomme
 ## KGCreator Wrap Up
 
 When developing applications or systems using Knowledge Graphs it is useful to be able to quickly generate test data which is the primary purpose of KGCreator. A secondary use is to generate  Knowledge Graphs for production use using text data sources. In this second use case you will want to manually inspect the generated data to verify its correctness or usefulness for your application.
+
+## Optional Practice Problems
+
+1. **In-Memory Deduplication (Easy):** 
+   Currently, [KGC.java](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/kgc/src/main/java/com/knowledgegraphcreator/KGC.java) writes all extracted RDF triples to a print stream directly, and relies on an external `awk` command in the `Makefile` to filter out duplicate statements. Modify the `process` and `writeTriples` methods in [KGC](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/kgc/src/main/java/com/knowledgegraphcreator/KGC.java#L44-L100) to keep track of already written triples in a memory-efficient collection (such as a `HashSet<String>`). Update [KgcTest.java](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/kgc/src/test/java/com.knowledgegraphcreator/KgcTest.java) to verify that the generated output file contains only unique RDF triples, eliminating the need for `awk`.
+
+2. **Filtering Low-Confidence Entities (Medium):** 
+   When processing raw text, some entities identified by `TextToDbpediaUris` might not be relevant or may be false positives. Modify the `process` method in [KGC.java](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/kgc/src/main/java/com/knowledgegraphcreator/KGC.java#L52-L88) to filter out entities whose names or URIs do not meet certain criteria (such as minimum string length or specific domain structures). Alternatively, explore the `TextToDbpediaUris` class to check if it provides confidence scores, and only generate triples for entities above a given threshold.
+
+3. **Integrating Apache Jena or RDF4J (Hard):** 
+   Instead of writing raw NTriples strings manually, integrate a professional semantic web library like Apache Jena or Eclipse RDF4J by updating the project's dependencies in `pom.xml`. Refactor the `process` and `writeTriples` methods in [KGC.java](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/kgc/src/main/java/com/knowledgegraphcreator/KGC.java#L52-L100) to construct a graph `Model` programmatically, populate it using statement objects, and write the graph to the output file using a standard format like Turtle (`.ttl`) or RDF/XML instead of plain N-Triples.

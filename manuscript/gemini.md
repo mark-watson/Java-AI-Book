@@ -343,3 +343,31 @@ summarization completion: Jupiter is the fifth planet from the Sun and the large
 ## Wrap Up
 
 The Java test code for the Gemini API also contains two more complex examples, similar to what was listed in the last chapter for OpenAI API support.
+
+## Optional Practice Problems
+
+Here are optional practice problems designed to help you deepen your understanding of using Google's Gemini APIs in Java. These exercises range from straightforward model configuration changes to building interactive multi-turn chat sessions.
+
+### Problem 1: Model Customization (Easy)
+By default, the [GeminiCompletions](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/gemini-llm-client/src/main/java/com/markwatson/gemini/GeminiCompletions.java) class specifies `gemini-2.5-flash` in its [model](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/gemini-llm-client/src/main/java/com/markwatson/gemini/GeminiCompletions.java#L17) static field. Write a new test case in [GeminiCompletionsTest](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/gemini-llm-client/src/test/java/com/markwatson/gemini/GeminiCompletionsTest.java) that dynamically sets the `GeminiCompletions.model` variable to `gemini-2.5-pro` (or another model) before calling [getCompletion](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/gemini-llm-client/src/main/java/com/markwatson/gemini/GeminiCompletions.java#L25). Verify that the API still returns a valid completion and print it to the console.
+
+### Problem 2: Multi-Variable Prompt Templating (Medium)
+The helper method [promptVar](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/gemini-llm-client/src/main/java/com/markwatson/gemini/GeminiCompletions.java#L97) only replaces a single named variable in a template. Extend [GeminiCompletions](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/gemini-llm-client/src/main/java/com/markwatson/gemini/GeminiCompletions.java) by adding a new method that accepts a map of placeholder-value pairs:
+```java
+public static String promptVars(String promptTemplate, java.util.Map<String, String> variables)
+```
+Create a new prompt template under the prompts directory that requires replacing multiple variables (e.g., `{topic}` and `{tone}`), use your new method to format the prompt, and retrieve a completion using [getCompletion](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/gemini-llm-client/src/main/java/com/markwatson/gemini/GeminiCompletions.java#L25). Write a unit test to verify your solution.
+
+### Problem 3: JSON Mode / Structured Outputs (Medium-Hard)
+The Gemini API supports enforcing structured JSON output using the `responseMimeType` parameter in the request configuration. Modify the request construction logic in [GeminiCompletions](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/gemini-llm-client/src/main/java/com/markwatson/gemini/GeminiCompletions.java) to allow specifying JSON configuration options in the request payload. Implement a new method:
+```java
+public static String getJsonCompletion(String prompt) throws Exception
+```
+This method should construct a request body that instructs Gemini to return structured JSON. Write a test case that asks Gemini to return a structured list of three historical facts (e.g., with keys for `year`, `event`, and `significance`) and assert that the response can be parsed using `org.json.JSONObject` or `org.json.JSONArray`.
+
+### Problem 4: Persistent Chat Sessions (Hard)
+The current implementation of [getCompletion](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/gemini-llm-client/src/main/java/com/markwatson/gemini/GeminiCompletions.java#L25) is stateless. To maintain conversation context (such as for a chatbot), the Gemini API accepts a chronological list of prior turns (with roles `user` and `model`) within the `contents` array. Create a new class `GeminiChatSession` that holds a list of these conversation messages in memory. Implement a method:
+```java
+public String sendMessage(String userMessage) throws Exception
+```
+This method should append the new user message to the conversation history, construct the request body with the entire history, send it to the Gemini API, record the model's response in the history, and return the response text. Write a unit test simulating a brief back-and-forth dialogue to verify that the model remembers context from the first turn.

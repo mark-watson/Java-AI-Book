@@ -726,3 +726,23 @@ I suggest further projects that you might want to try implementing with this exa
 - Clone this KGN example and enable it to work simultaneously with DBPedia, WikiData, and local RDF files by using three instances of the class **JenaApis** and in the main application loop access all three data sources.
 
 I had the idea for the KGN application because I was spending quite a bit of time manually setting up SPARQL queries for DBPedia (and other public sources like WikiData) and I wanted to experiment with partially automating this process. I have experimented with versions of KGN written in Java, Hy language ([Lisp running on Python that I wrote a short book on](https://leanpub.com/hy-lisp-python/read)), Swift, and Common Lisp and all four implementations take different approaches as I experimented with different ideas. You might want to check out my [web site devoted to different versions of KGN: www.knowledgegraphnavigator.com](http://www.knowledgegraphnavigator.com/).
+
+## Optional Practice Problems
+
+Here are some optional, hands-on practice problems to help deepen your understanding of SPARQL and the Knowledge Graph Navigator (KGN) architecture:
+
+1. **Easy: Expand Company Details**
+   Modify the `companyTemplate` in [EntityDetail.java](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/kgn/src/main/java/com/knowledgegraphnavigator/EntityDetail.java) to retrieve additional properties from DBPedia, such as the company's homepage (using `<http://xmlns.com/foaf/0.1/homepage>`) or founding date (using `<http://dbpedia.org/ontology/foundingDate>`). Ensure that these new properties are bound as optional variables and appended to the output in `companyAsString`.
+
+2. **Medium: Support a New Entity Type (Universities)**
+   The `TextToDbpediaUris` utility detects universities, but the current KGN implementation does not display them. Add support for universities:
+   - Create a `universityTemplate` SPARQL query in [EntityDetail.java](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/kgn/src/main/java/com/knowledgegraphnavigator/EntityDetail.java) that queries properties like the number of students (using `<http://dbpedia.org/ontology/numberOfStudents>`) and the establishment year.
+   - Implement `universityResults` and `universityAsString` in [EntityDetail.java](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/kgn/src/main/java/com/knowledgegraphnavigator/EntityDetail.java).
+   - Update [PrintEntityResearchResults.java](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/kgn/src/main/java/com/knowledgegraphnavigator/PrintEntityResearchResults.java) and the main processing loop in [KGN.java](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/kgn/src/main/java/com/knowledgegraphnavigator/KGN.java) to resolve and display the results for discovered universities.
+
+3. **Medium: Bidirectional Relationship Searching**
+   Currently, [EntityRelationships.java](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/kgn/src/main/java/com/knowledgegraphnavigator/EntityRelationships.java) checks for relationships in one direction: `entity1Uri ?p entity2Uri`. However, RDF triples are directional. For example, a person might be the subject of a triple pointing to a company (e.g., `Bill_Gates board Microsoft`), or the company might be the subject pointing to the person.
+   Update `EntityRelationships.results` to execute a SPARQL query that checks for relationships in both directions (using a `UNION` pattern or a broader `FILTER` structure) and returns all properties connecting the two entities.
+
+4. **Hard: Cross-Registry Identifier Mapping**
+   Comment out the DBPedia endpoint in [Sparql.java](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/kgn/src/main/java/com/knowledgegraphnavigator/Sparql.java) and enable the Wikidata endpoint. Because Wikidata uses non-human-readable identifiers (like `Q215627` for Person), write a SPARQL query in a new helper class to look up DBPedia entities on Wikidata via the `owl:sameAs` property. Map the human-readable DBPedia URIs to Wikidata URIs before performing entity queries.

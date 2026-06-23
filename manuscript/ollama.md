@@ -245,3 +245,31 @@ Here is a summary of the text:
 Jupiter is the 5th planet from the Sun and the largest gas giant in our Solar System, with a mass 1/1000 that of the Sun and 2.5 times that of all other planets combined. It's one of the brightest objects visible to the naked eye and has been known since ancient times. On average, it's the 3rd-brightest natural object in the night sky after the Moon and Venus.
 ```
 
+## Optional Practice Problems
+
+1. **Model Switching and Custom Host Configuration (Easy)**
+   Build on the core functionality in the [OllamaLlmClient](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/ollama-llm-client/src/main/java/com/markwatson/ollama/OllamaLlmClient.java) class. Write a runner program that prompts the user dynamically for a model name (e.g., `gemma3:1b`, `mistral`, or `llama3`) and a custom query, then passes those variables to the [OllamaLlmClient.getCompletion](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/ollama-llm-client/src/main/java/com/markwatson/ollama/OllamaLlmClient.java#L29-L35) method. Try querying two different local models with the same prompt and compare the quality and structure of their outputs.
+
+2. **Multi-Variable Prompt Templates (Medium)**
+   The utility method [OllamaLlmClient.promptVar](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/ollama-llm-client/src/main/java/com/markwatson/ollama/OllamaLlmClient.java#L70-L73) replaces a single variable inside a prompt template. Often, you will need to replace multiple variables (e.g., `{input_text}`, `{tone}`, `{language}`). Create a new utility class or extend the client to support a method signature like:
+   ```java
+   public static String promptVars(String promptTemplate, Map<String, String> variables)
+   ```
+   Test your method by loading the [two-shot-2-var.txt](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/prompts/two-shot-2-var.txt) template and substituting multiple variables dynamically.
+
+3. **Robust JSON Output Parsing (Medium)**
+   When running the test in [OllamaLlmClientTest.testTwoShotTemplate](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/ollama-llm-client/src/test/java/com/markwatson/ollama/OllamaLlmClientTest.java#L25-L36), the returned response is a raw text representation of a JSON object. Create a parser method that accepts this raw `String`, strips away any Markdown wrappers (such as ` ```json ` and ` ``` `), parses the cleaned string into an `org.json.JSONObject`, and maps the fields into a Java record class called `ContactInfo` containing the `name`, `address`, and `email` properties. Handle `null` fields gracefully.
+
+4. **Advanced Ollama Request Options (Hard)**
+   Ollama's `/api/generate` endpoint supports optional parameters under a `"system"` parameter (setting a system prompt) and an `"options"` map (containing parameters like `"temperature"`, `"top_k"`, or `"num_predict"`). 
+   Modify the method signature in [OllamaLlmClient](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/ollama-llm-client/src/main/java/com/markwatson/ollama/OllamaLlmClient.java) to accept these configurations:
+   ```java
+   public static String getCompletion(
+       String prompt, 
+       String modelName, 
+       String baseUrl, 
+       String systemPrompt, 
+       Map<String, Object> options
+   )
+   ```
+   Construct the correct `JSONObject` to serialize these parameters, send them to Ollama, and write a test case to demonstrate the differences in output creativity by setting low and high `"temperature"` values.

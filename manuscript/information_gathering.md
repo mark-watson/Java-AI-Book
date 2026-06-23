@@ -428,3 +428,20 @@ I respect the rights of people and organizations who put information on the web.
 
 - Read the terms of service on web sites to make sure your your of the site's data is compliant and also avoid accessing any one web site too frequently.
 - When you access services like DBpedia and Geonames consider caching the results so that you don't ask the service for the same information repeatedly. This is particularly important during development and testing. In a later chapter we will see how to use the Apache Derby database to cache SPARQL queries to the DBPedia service.
+
+## Optional Practice Problems
+
+1. **Filtering Scraped Content by Length and Relevance (Easy)**
+   In [MySitesExamples](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/info_gathering/src/main/java/com/markwatson/web_scraping/MySitesExamples.java) and [WebSpider](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/info_gathering/src/main/java/com/markwatson/info_spiders/WebSpider.java), we extracted raw text from paragraphs (`div p`) or the entire body (`doc.text()`). Often, this text contains noise like footer links, headers, or short phrases like "Toggle navigation." Extend the jsoup-based scraping logic in a new utility class to filter out any paragraph or text block that contains fewer than 5 words or contains common boilerplate terms (e.g., "login", "cookie", "privacy policy"). This helps clean input text before passing it to downstream AI/NLP systems.
+
+2. **Hierarchical GeoNames Lookup and Validation (Medium)**
+   The [GeoNamesClient](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/info_gathering/src/main/java/com/markwatson/info_spiders/GeoNamesClient.java) class allows retrieving data for states and cities independently. However, a city name (like "Paris") can belong to multiple countries or states. Create a validation class `GeoHierarchyValidator` that queries the GeoNames API for a given city and a state/country name, and verifies if the city actually lies within the specified state or country by checking coordinates (calculating distance/bounding box overlap) or checking the returned parent region codes (like `countryCode` or administrative divisions in [GeoNameData](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/info_gathering/src/main/java/com/markwatson/info_spiders/GeoNameData.java)).
+
+3. **Domain-Restricted Multi-Threaded Web Spider with Local Cache (Hard)**
+   The [WebSpider](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/info_gathering/src/main/java/com/markwatson/info_spiders/WebSpider.java) class operates sequentially (single-threaded) and does not persist visited URLs across runs. Modify the spider to:
+   - Use Java's `CompletableFuture` or an `ExecutorService` to fetch pages concurrently.
+   - Respect a polite crawling delay (e.g., 500ms) per host.
+   - Add a simple file-based JSON cache (or a serialized `HashMap` saved to disk) that stores the crawled URLs and their text content so that subsequent runs do not re-fetch already cached pages.
+
+4. **DBpedia Keyword Search and JSON Parsing Enhancement (Hard)**
+   The [DBpediaLookupClient](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/info_gathering/src/main/java/com/markwatson/info_spiders/DBpediaLookupClient.java) uses a legacy XML-based endpoint. Write an updated client class `DBpediaJsonLookupClient` using Java's built-in `HttpClient` to fetch results from DBpedia's JSON-based Lookup API instead. Parse the JSON response to extract entity URIs, labels, and description blocks, and implement an enhanced search filtering logic that ranks returned entities based on how many query keywords match in their description blocks.

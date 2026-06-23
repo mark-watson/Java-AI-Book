@@ -495,3 +495,32 @@ This example is simple but is intended to show you how to encode parameters for 
 
 The important takeaway is that if you can encode a problem space as a chromosome and you have a fitness function to rate the numerical effectiveness of a chromosome, then Genetic Algorithms are an effective alternative to greedy search algorithms.
 
+## Optional Practice Problems
+
+1. **Hyperparameter Tuning (Easy)**
+   In the class `TestGenetic`, the `MyGenetic` instance is created with specific crossover (`crossoverFraction = 0.85`) and mutation (`mutationFraction = 0.3`) rates. Write a script or modify `TestGenetic.java` to run the genetic algorithm multiple times under different configuration settings:
+   - High mutation (`0.8`), low crossover (`0.1`)
+   - Low mutation (`0.01`), high crossover (`0.9`)
+   - No mutation (`0.0`), high crossover (`0.9`)
+   Record the average number of generations needed to find the global maximum of the function. Explain how the crossover and mutation rates impact both the exploration of the search space and the convergence speed.
+
+2. **Multi-Dimensional Optimization (Medium)**
+   The current example optimizes a one-dimensional function `F(x)` where `x` is encoded using 10 bits in a single chromosome. Extend the code to find the maximum value of a two-dimensional function, such as:
+   `F(x, y) = sin(x) * cos(y) * sin(0.4 * x)`
+   where both `x` and `y` are in the range `[0.0, 10.0]`.
+   To do this:
+   - Create a new class `TwoDGenetic` extending `Genetic`.
+   - Use a chromosome length of 20 bits (`numGenesPerChromosome = 20`), where the first 10 bits represent `x` and the last 10 bits represent `y`.
+   - Implement `calcFitness()` by decoding the first 10 bits to `x`, the next 10 bits to `y`, and evaluating `F(x, y)`.
+   - Verify that your algorithm can successfully locate the optimal `(x, y)` coordinate.
+
+3. **Alternative Crossover Strategies (Hard)**
+   In `Genetic.java`, the `doCrossovers()` method implements a standard single-point crossover where genes are swapped at a single random `locus` index. 
+   - Override `doCrossovers()` in a subclass or modify `Genetic.java` to implement a *two-point crossover* (selecting two random indices and swapping the genetic material between them) or a *uniform crossover* (where each gene is randomly inherited from either parent with a 50% probability).
+   - Compare the efficiency of your new crossover method against the default single-point crossover. Which one converges to the optimal solution faster, and why?
+
+4. **Real-Valued Chromosomes (Advanced)**
+   The provided `Genetic` library is built around a binary genetic representation using `BitSet` in the `Chromosome` class. However, for continuous mathematical functions, real-valued/floating-point representation is often superior because it avoids quantization errors and allows for smoother local tuning.
+   - Refactor or design a new subclass of `Genetic` that represents chromosomes as arrays of `double` values directly.
+   - Implement continuous crossover (e.g., blend crossover or arithmetic crossover, where a child's gene value is a weighted average of the parents' gene values) and continuous mutation (e.g., adding a small Gaussian random variable to a gene value).
+   - Test this representation on the original function and compare the result quality and convergence rate to the binary representation.

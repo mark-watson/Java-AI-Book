@@ -374,3 +374,31 @@ company	13	 14  Coca Cola	<http://dbpedia.org/resource/Coca-Cola>
 ## Wrap-up for Resolving Entity Names to DBPedia References
 
 The idea behind this example is simple but useful for information processing applications using raw text input. We will use this library later in two semantic web examples.
+
+## Optional Practice Problems
+
+Here are some hands-on practice problems to help you explore and extend the Named Entity Recognition (NER) and DBpedia entity resolution library:
+
+1. **Enhancing Punctuation and Tokenization (Easy)**
+   The [tokenize](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/ner_dbpedia/src/main/java/com/markwatson/ner_dbpedia/TextToDbpediaUris.java#L140-L148) method in [TextToDbpediaUris](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/ner_dbpedia/src/main/java/com/markwatson/ner_dbpedia/TextToDbpediaUris.java) uses precompiled regular expressions to insert spaces around common punctuation marks (like `.`, `,`, `?`, and `;`). However, it does not handle exclamation marks (`!`), colons (`:`), or quotation marks (`"`).
+   - Write a unit test in [TextToDbpediaUrisTest](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/ner_dbpedia/src/test/java/com/markwatson/ner_dbpedia/TextToDbpediaUrisTest.java) containing a sentence like `"PTL Satellite Network: covered President Bill Clinton!"`.
+   - Observe how the colon and exclamation mark affect tokenization and entity matching.
+   - Update [tokenize](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/ner_dbpedia/src/main/java/com/markwatson/ner_dbpedia/TextToDbpediaUris.java#L140-L148) with additional precompiled `Pattern`s to isolate these punctuation marks.
+
+2. **Integrating a New Entity Category (Medium)**
+   The [NerMaps](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/ner_dbpedia/src/main/java/com/markwatson/ner_dbpedia/NerMaps.java) class maps entity types using specific text files loaded from resources.
+   - Create a new resource file `ProgrammingLanguagesDbpedia.txt` in the resource folder.
+   - Add a new static map to [NerMaps](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/ner_dbpedia/src/main/java/com/markwatson/ner_dbpedia/NerMaps.java) loaded from this new resource file.
+   - Register the new category inside [TextToDbpediaUris](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/ner_dbpedia/src/main/java/com/markwatson/ner_dbpedia/TextToDbpediaUris.java) and expose public lists for `languageUris` and `languageNames`.
+   - Verify that text like `"I write Java code"` correctly maps `"Java"` to the programming language URI.
+
+3. **Case-Insensitive Entity Matching (Medium-Hard)**
+   Currently, matching in [TextToDbpediaUris](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/ner_dbpedia/src/main/java/com/markwatson/ner_dbpedia/TextToDbpediaUris.java) is strictly case-sensitive because the keys in the mapping tables are loaded exactly as written.
+   - Modify the map loader [textFileToMap](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/ner_dbpedia/src/main/java/com/markwatson/ner_dbpedia/NerMaps.java#L22-L38) in [NerMaps](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/ner_dbpedia/src/main/java/com/markwatson/ner_dbpedia/NerMaps.java) (or adjust the lookup logic in `TextToDbpediaUris`) to support case-insensitive matching.
+   - Ensure that text containing `"bill clinton"` or `"guatemala"` in lowercase matches their respective DBpedia URIs.
+   - Consider how you will preserve the matched text and original DBpedia URI capitalization.
+
+4. **Handling Ambiguity and Category Priorities (Hard)**
+   In [TextToDbpediaUris](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/ner_dbpedia/src/main/java/com/markwatson/ner_dbpedia/TextToDbpediaUris.java), categories are checked in a fixed order (`person`, `city`, `company`, `country`, etc.). If an entity name is ambiguous (e.g., `"Washington"` could be a person, city, or state), the current priority ordering will always resolve it to the first category that matches.
+   - Design a configurable priority mechanism or a callback filter so that callers can customize the matching priority list per request.
+   - Alternatively, modify the [tryMatch](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/ner_dbpedia/src/main/java/com/markwatson/ner_dbpedia/TextToDbpediaUris.java#L127-L138) method to support a multi-match strategy where a single token can match multiple entity categories, returning all candidate URIs to be resolved by downstream code.

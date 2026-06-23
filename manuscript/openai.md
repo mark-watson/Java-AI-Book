@@ -193,3 +193,19 @@ summarization completion:
 
 Jupiter is the largest planet in the Solar System and the fifth from the Sun. It is a gas giant with a mass one-thousandth that of the Sun. It is visible to the naked eye and has been known since ancient times. Jupiter is named after the Roman god Jupiter and is the third-brightest natural object in the night sky.
 ```
+
+## Optional Practice Problems
+
+To solidify your understanding of how to use the OpenAI API in Java, try completing the following hands-on exercises:
+
+1. **Parameterize the Model selection (Easy)**
+   In [OpenAICompletions.java](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/openai-llm-client/src/main/java/com/markwatson/openai/OpenAICompletions.java), the model is hardcoded as `ChatModel.GPT_5_MINI`. Create an overloaded version of [getCompletion](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/openai-llm-client/src/main/java/com/markwatson/openai/OpenAICompletions.java#L24) that accepts a second parameter `ChatModel model` so that callers can choose their desired model dynamically. Write a unit test in [OpenAICompletionsTest.java](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/openai-llm-client/src/test/java/com/markwatson/openai/OpenAICompletionsTest.java) to test completion with a different model, such as `ChatModel.GPT_4O`.
+
+2. **Support Multi-Variable Prompt Templates (Medium)**
+   The utility method [promptVar](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/openai-llm-client/src/main/java/com/markwatson/openai/OpenAICompletions.java#L52) is limited to substituting a single variable. Implement a new method `promptVars(String promptTemplate, Map<String, String> variables)` that accepts a template string and a map of variable keys to replacement values. Write a test case in [OpenAICompletionsTest.java](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/openai-llm-client/src/test/java/com/markwatson/openai/OpenAICompletionsTest.java) that reads a template containing multiple variables (e.g., `{name}` and `{hobby}`) and successfully queries the model.
+
+3. **Maintain Conversation History (Medium)**
+   The current implementation of [getCompletion](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/openai-llm-client/src/main/java/com/markwatson/openai/OpenAICompletions.java#L24) behaves as a single-turn, stateless execution. In order to build a chat interface, we need to maintain previous messages. Create a class or method sequence that manages a list of messages. Add subsequent user and assistant messages to the [ChatCompletionCreateParams](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/openai-llm-client/src/main/java/com/markwatson/openai/OpenAICompletions.java#L27) builder using methods like `addUserMessage` and `addAssistantMessage`. Write a test validating a two-turn conversation.
+
+4. **Tune Creativity with Temperature and Handle Errors (Hard)**
+   In [ChatCompletionCreateParams](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/openai-llm-client/src/main/java/com/markwatson/openai/OpenAICompletions.java#L27), configure the request with custom temperature values: set it high (e.g., `1.2`) for a creative task like story generation, and low (e.g., `0.0`) for a structured task like fact extraction. Additionally, wrap the completion call `client.chat().completions().create(params)` in a try-catch block to handle API connection failures or rate-limiting errors gracefully, printing descriptive logs.

@@ -335,3 +335,22 @@ The prompt template utilities we built here, while simple, demonstrate a pattern
 
 In the next chapter we explore the AgentScope framework, which takes the concept of LLM abstraction further by adding agent-oriented programming patterns like reasoning loops and tool calling on top of the basic completion interface we used here.
 
+## Optional Practice Problems
+
+Here are a few optional practice problems to help you build hands-on experience with LangChain4j and Ollama:
+
+1. **Adjusting Temperature and Timeout (Easy)**
+   In the `OllamaLlmLangChain4j` class, look at how `OllamaChatModel` is built using the builder pattern. 
+   - Modify the `temperature` parameter from `0.7` to `0.1` and run the tests. Observe how this affects the variability and creativity of the answers.
+   - Adjust the `timeout` parameter to `Duration.ofSeconds(10)` or `Duration.ofSeconds(30)`. Try using a model that isn't loaded yet or query a non-existent URL to see how connection timeouts are handled by the library.
+
+2. **Multi-variable Prompt Template (Medium)**
+   The `OllamaLlmLangChain4j.promptVar` utility replaces only one variable at a time. Write a new utility method:
+   `public static String promptVars(String prompt, Map<String, String> variables)`
+   that replaces multiple placeholder variables (e.g., `{topic}` and `{tone}`) in a template string. Add a new JUnit test in `OllamaLlmLangChain4jTest` to test this method with a dynamic prompt template.
+
+3. **JSON Response Parsing (Medium-Hard)**
+   In `testTwoShotTemplate`, the LLM output is a JSON string representing extracted entities. Using the `org.json` library (which is already included in the project's dependencies in `pom.xml`), parse the returned string completion into a `JSONObject` and retrieve individual fields (such as `"name"`, `"address"`, and `"email"`). Add assertions in your test verifying that the fields match the expected extracted data.
+
+4. **Using the Agnostic ChatLanguageModel Interface (Hard)**
+   Refactor `OllamaLlmLangChain4j` to make the prompt execution code provider-agnostic. Currently, the `getCompletion` method directly instantiates and uses `OllamaChatModel`. Change the signature of `getCompletion` (or create a new helper) to take `ChatLanguageModel model` as its parameter. Instantiate `OllamaChatModel` in `main` or in the test class, and pass it to the helper method. This separation shows how easily you can swap the local Ollama backend for a cloud-based `OpenAiChatModel` or any other supported LangChain4j model without touching your business logic.
