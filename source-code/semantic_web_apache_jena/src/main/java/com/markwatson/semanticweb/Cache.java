@@ -1,7 +1,6 @@
 package com.markwatson.semanticweb;
 
 import java.sql.*;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,8 +24,8 @@ public class Cache implements AutoCloseable {
       if (fetchResultFromCache(query) != null) {
         return;
       }
-      try (PreparedStatement ps = conn.prepareStatement(
-          "INSERT INTO cache (query, result) VALUES (?, ?)")) {
+      try (PreparedStatement ps =
+          conn.prepareStatement("INSERT INTO cache (query, result) VALUES (?, ?)")) {
         ps.setString(1, query);
         ps.setBytes(2, result);
         ps.executeUpdate();
@@ -37,8 +36,7 @@ public class Cache implements AutoCloseable {
   }
 
   public byte[] fetchResultFromCache(String query) {
-    try (PreparedStatement ps = conn.prepareStatement(
-        "SELECT result FROM cache WHERE query = ?")) {
+    try (PreparedStatement ps = conn.prepareStatement("SELECT result FROM cache WHERE query = ?")) {
       ps.setString(1, query);
       try (ResultSet rs = ps.executeQuery()) {
         if (!rs.next()) return null;

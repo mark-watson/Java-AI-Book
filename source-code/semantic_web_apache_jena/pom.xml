@@ -5,11 +5,12 @@
   <artifactId>semanticweb</artifactId>
   <version>1.0.3-SNAPSHOT</version>
   <properties>
-    <jdk.version>21</jdk.version>
+    <maven.compiler.release>21</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <jena.version>6.1.0</jena.version>
     <slf4j.version>2.0.18</slf4j.version>
+    <exec.mainClass>com.markwatson.semanticweb.JenaApis</exec.mainClass>
   </properties>
   <repositories>
   </repositories>
@@ -35,7 +36,7 @@
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
-      <version>6.1.0</version>
+      <version>5.14.4</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -55,8 +56,36 @@
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.15.0</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.5.5</version>
+      </plugin>
+      <plugin>
+        <groupId>com.diffplug.spotless</groupId>
+        <artifactId>spotless-maven-plugin</artifactId>
+        <version>2.46.1</version>
         <configuration>
-          <release>21</release>
+          <java>
+            <googleJavaFormat>
+              <version>1.28.0</version>
+              <style>GOOGLE</style>
+              <reflowLongStrings>true</reflowLongStrings>
+            </googleJavaFormat>
+            <removeUnusedImports/>
+            <importOrder/>
+            <trimTrailingWhitespace/>
+            <endWithNewline/>
+          </java>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.5.0</version>
+        <configuration>
+          <mainClass>${exec.mainClass}</mainClass>
         </configuration>
       </plugin>
       <plugin>

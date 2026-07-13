@@ -1,22 +1,21 @@
 package com.markwatson.semanticweb;
 
-import org.apache.commons.lang3.SerializationUtils;
-import org.apache.jena.query.*;
-import org.apache.jena.rdf.model.*;
-import org.apache.jena.riot.RDFDataMgr;
-import org.apache.jena.riot.RDFFormat;
-
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import org.apache.commons.lang3.SerializationUtils;
+import org.apache.jena.query.*;
+import org.apache.jena.rdf.model.*;
+import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.riot.RDFFormat;
 
 public class JenaApis implements AutoCloseable {
 
   public JenaApis() {
-    //model = ModelFactory.createDefaultModel(); // use if OWL reasoning not required
+    // model = ModelFactory.createDefaultModel(); // use if OWL reasoning not required
     model = ModelFactory.createOntologyModel(); // use OWL reasoner
   }
 
@@ -41,9 +40,7 @@ public class JenaApis implements AutoCloseable {
   }
 
   public QueryResult query(String sparqlQuery) {
-    try (QueryExecution qexec = QueryExecution.model(model)
-        .query(sparqlQuery)
-        .build()) {
+    try (QueryExecution qexec = QueryExecution.model(model).query(sparqlQuery).build()) {
       ResultSet results = qexec.execSelect();
       var qr = new QueryResult(results.getResultVars());
       for (; results.hasNext(); ) {
@@ -62,12 +59,10 @@ public class JenaApis implements AutoCloseable {
     if (cache == null) cache = new Cache();
     byte[] b = cache.fetchResultFromCache(sparqlQuery);
     if (b != null) {
-      //System.out.println("Found query in cache.");
+      // System.out.println("Found query in cache.");
       return SerializationUtils.deserialize(b);
     }
-    try (QueryExecution qexec = QueryExecution.service(service)
-        .query(sparqlQuery)
-        .build()) {
+    try (QueryExecution qexec = QueryExecution.service(service).query(sparqlQuery).build()) {
       ResultSet results = qexec.execSelect();
       var qr = new QueryResult(results.getResultVars());
       for (; results.hasNext(); ) {
@@ -116,10 +111,9 @@ public class JenaApis implements AutoCloseable {
       System.out.println("Enter a SPARQL query:");
       Scanner sc = new Scanner(System.in);
       StringBuilder sb = new StringBuilder();
-      while (sc.hasNextLine()) {  //until no other inputs to proceed
+      while (sc.hasNextLine()) { // until no other inputs to proceed
         String s = sc.nextLine();
-        if (s.equalsIgnoreCase("quit") || s.equalsIgnoreCase("exit"))
-          System.exit(0);
+        if (s.equalsIgnoreCase("quit") || s.equalsIgnoreCase("exit")) System.exit(0);
         if (s.isEmpty()) break;
         sb.append(s);
         sb.append("\n");
