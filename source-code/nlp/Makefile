@@ -1,15 +1,36 @@
-names:
-	mvn install -DskipTests -q
-	mvn exec:java -Dexec.mainClass="com.markwatson.nlp.ExtractNames" -q
+.PHONY: install run test names autotagger fasttag check fmt fmt-check verify clean
 
-autotagger:
-	mvn install -DskipTests -q
-	mvn exec:java -Dexec.mainClass="com.markwatson.nlp.AutoTagger" -q
-
-fasttag:
-	mvn install -DskipTests -q
-	mvn exec:java -Dexec.mainClass="com.markwatson.nlp.FastTag" -q
-
+MVN := mvn -o -q
 
 install:
-	mvn install -DskipTest -Dmaven.test.skip=true -q
+	mvn -q dependency:go-offline
+	mvn -q test-compile spotless:apply
+
+# Default run target: name extraction.
+run: names
+
+names:
+	$(MVN) exec:java -Dexec.mainClass="com.markwatson.nlp.ExtractNames"
+
+autotagger:
+	$(MVN) exec:java -Dexec.mainClass="com.markwatson.nlp.AutoTagger"
+
+fasttag:
+	$(MVN) exec:java -Dexec.mainClass="com.markwatson.nlp.FastTag"
+
+test:
+	$(MVN) test
+
+check:
+	$(MVN) test-compile
+
+fmt:
+	$(MVN) spotless:apply
+
+fmt-check:
+	$(MVN) spotless:check
+
+verify: fmt-check check
+
+clean:
+	mvn -q clean
