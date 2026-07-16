@@ -58,10 +58,6 @@ The code in lines 65 through 73 calculates, for a training example, the value of
 
 Please note in the code example that I prepend class variables used in methods with "this." even when it is not required. I do this for legibility and is a personal style.
 
-The following UML class diagram will give you an overview before we dive into the code:
-
-{width: "80%"}
-![UML class diagram for the anomaly detection example](images/anomaly-uml.png)
 
 {width: "80%"}
 ![Architecture diagram](images/anomaly_detection-architecture.png)
