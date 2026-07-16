@@ -38,7 +38,7 @@ The activation absorbed through dendrites is summed together, but the firing of 
 
 
 The neural network model that we use is called backpropagation, also known as back-prop or delta rule learning. In this model, neurons are organized into data structures that we call layers. The figure [Backpropagation network with No Hidden Layer](#nn-backprop-no-hidden) shows a simple neural network with two layers; this network is shown in two different views: just the neurons organized as two one-dimensional arrays, and as two one-dimensional arrays with the connections between the neurons. In our model, there is a connection between two neurons that is characterized by a single floating-point number that we will call the connection’s weight. A
-weight **W_{i,j}** connects input neuron **i** to output neuron **j**. In the back propagation model, we always assume that a neuron is connected to every neuron in the previous layer.
+weight `W_{i,j}`$ connects input neuron `i`$ to output neuron `j`$. In the back propagation model, we always assume that a neuron is connected to every neuron in the previous layer.
 
 A key feature of back-prop neural networks is that they can be efficiently trained. Training is performed by calculating sets of weights for connecting each layer. As we will see, we will train networks by applying input values to the input layer, allowing these values to propagate through the network using the current weight values, and calculating the errors between desired output values and the output values from propagation of input values through the network.
 
@@ -83,11 +83,7 @@ In order to train the network in the figure for a [Backpropagation network with 
     value from setting the input layer neuron’s activation values to the
     input values in the current training example, and letting activation
     spread through the network.
-2.  Update the weight **W\_{i,j}** (where **i** is the index of an input
-    neuron, and **j** is the index of an output neuron) using the formula
-    **W\_{i,j} += learning\_rate * output\_error_j*I_i** (**learning\_rate**
-    is a tunable parameter) and **output\_error\_j** was calculated in step
-    1, and **I\_i** is the activation of input neuron at index **i**.
+2.  Update the weight `W_{i,j}`$ (where `i`$ is the index of an input neuron, and `j`$ is the index of an output neuron) using the update rule `W_{i,j} \mathrel{+}= \eta \cdot \delta_j \cdot I_i`$, where `\eta`$ is the learning rate (a tunable parameter), `\delta_j`$ is the output error calculated in step 1, and `I_i`$ is the activation of the input neuron at index `i`$.
 
 This process is continued to either a maximum number of learning cycles or until the calculated output errors get very small. We will see later that the algorithm is similar but slightly more complicated when we have hidden neuron layers; the difference is that we will “back propagate” output errors to the hidden layers in order to estimate errors for hidden neurons. We will cover more on this later. This type of neural network is too simple to solve very many interesting problems, and in practical applications we almost always use either one additional hidden neuron layer or two additional hidden neuron layers. The figure showing [mappings supported by zero hidden layer, one hidden layer, and two hidden hidden layer networks](#nn-mapping) shows the types of problems that can be solved by networks with different numbers of hidden layers.
 
@@ -307,7 +303,7 @@ You can look at the implementation of the Swing GUI test class **GUTest\_2H** to
 
 ## Adding Momentum to Speed Up Back-Prop Training  {#nn-bprop-momentum}
 
-We did not use a momentum term in the Java code in the section for a [Java Class Library for Back Propagation](#nn-bp-lib). For difficult to train problems, adding a momentum term can drastically reduce the training time at a cost of doubling the weight storage requirements. To implement momentum, we remember how much each weight was changed in the previous learning cycle and make the weight change larger if the current change in “direction” is the same as the last learning cycle. For example, if the change to weight **W\_{i,j}** had a large positive value in the last learning cycle and the calculated weight change for **W\_{i,j}** is also a large positive value in the current learning cycle, then make the current weight change even larger. Adding a “momentum” term not only makes learning faster but also increases the chances of successfully learning more difficult problems.
+We did not use a momentum term in the Java code in the section for a [Java Class Library for Back Propagation](#nn-bp-lib). For difficult to train problems, adding a momentum term can drastically reduce the training time at a cost of doubling the weight storage requirements. To implement momentum, we remember how much each weight was changed in the previous learning cycle and make the weight change larger if the current change in “direction” is the same as the last learning cycle. For example, if the change to weight `W_{i,j}`$ had a large positive value in the last learning cycle and the calculated weight change for `W_{i,j}`$ is also a large positive value in the current learning cycle, then make the current weight change even larger. Adding a “momentum” term not only makes learning faster but also increases the chances of successfully learning more difficult problems.
 
 I modified two of the classes from the section for a [Java Class Library for Back Propagation](#nn-bp-lib) to use
 momentum:
@@ -372,11 +368,8 @@ The class [Neural_2H_momentum.java](file:///Users/markwatson/GITHUB/Java-AI-Book
 ### 3. Alternative Activation Functions (Medium/Hard)
 The current classes [Neural_1H.java](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/neuralnetworks/src/main/java/com/markwatson/neuralnetworks/Neural_1H.java) and [Neural_2H.java](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/neuralnetworks/src/main/java/com/markwatson/neuralnetworks/Neural_2H.java) use a Sigmoid activation function `sigmoid(float x)` and its derivative `sigmoidP(float x)`.
 * Implement a new class or subclass that uses the Hyperbolic Tangent (tanh) activation function instead.
-* Recall that the mathematical definition of tanh is:
-  `tanh(x) = (e^x - e^-x) / (e^x + e^-x)`
-  And its derivative in terms of the activation value `a = tanh(x)` is:
-  `d/dx tanh(x) = 1 - a^2`
-* Because the range of tanh is `[-1, 1]` (unlike Sigmoid's `[0, 1]`), how should you initialize the weights (in `randomizeWeights()`) and format your training example input/output values?
+* Recall that the mathematical definition of tanh is `\tanh(x) = \dfrac{e^{x} - e^{-x}}{e^{x} + e^{-x}}`$, and its derivative, in terms of the activation value `a = \tanh(x)`$, is `\dfrac{d}{dx}\,\tanh(x) = 1 - a^{2}`$.
+* Because the range of tanh is `[-1, 1]`$ (unlike Sigmoid's `[0, 1]`$), how should you initialize the weights (in `randomizeWeights()`) and format your training example input/output values?
 * Test your tanh network on the same rotation pattern as [NeuralNetwork_1H_Test.java](file:///Users/markwatson/GITHUB/Java-AI-Book/source-code/neuralnetworks/src/test/java/com/markwatson/neuralnetworks/NeuralNetwork_1H_Test.java).
 
 ### 4. Tracking and Visualizing Weight Trajectories (Hard)

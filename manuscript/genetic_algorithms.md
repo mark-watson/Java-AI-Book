@@ -394,8 +394,7 @@ Let's get back to our 1-dimensional example seen in the figure showing the [samp
       }
 ~~~~~~~~
 
-For each bit at index **j** with a value of 1, add
-{$$}2 ^j{/$$} to the sum **x**.
+For each bit at index **j** with a value of 1, add `2^{j}`$ to the sum **x**.
 We need to normalize this sum **x** that is an integer in the range of [0,1023] to a floating point number in the approximate range of [0, 10]:
 
 {lang="java",linenos=off}
